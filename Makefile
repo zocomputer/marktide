@@ -8,6 +8,9 @@
 .PHONY: help test conformance property e2e e2e-full cov lint typecheck bench bench-baseline all
 
 PYTEST := uv run pytest
+# Suites/harnesses that exercise the markdownify oracle + Rust adapters need the
+# benchmark dependency group.
+PYTEST_BENCH := uv run --group benchmark pytest
 
 help:  ## List available targets
 	@grep -E '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -16,10 +19,10 @@ test:  ## Fast unit + component tests (PR gate)
 	$(PYTEST) tests/unit tests/component
 
 conformance:  ## Conformance / differential corpus tests
-	$(PYTEST) tests/conformance
+	$(PYTEST_BENCH) tests/conformance
 
 property:  ## Bounded Hypothesis property / metamorphic tests
-	$(PYTEST) tests/property
+	$(PYTEST_BENCH) tests/property
 
 e2e:  ## Black-box E2E (inline + huge_tree + small/medium fixtures)
 	$(PYTEST) tests/e2e
@@ -37,9 +40,9 @@ typecheck:  ## Static type check (ty) of the package
 	uvx ty check src
 
 bench:  ## Run the phase-1 benchmark harness -> benchmarks/results/phase1.{json,md}
-	uv run python -m benchmarks.harness.runner
+	uv run --group benchmark python -m benchmarks.harness.runner
 
 bench-baseline:  ## Run the harness and write the perf-regression baseline
-	uv run python -m benchmarks.harness.runner --output benchmarks/results/baseline.json --report benchmarks/results/baseline.md
+	uv run --group benchmark python -m benchmarks.harness.runner --output benchmarks/results/baseline.json --report benchmarks/results/baseline.md
 
 all: lint typecheck test conformance property e2e  ## Lint + typecheck + the full PR test suite
