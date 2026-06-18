@@ -31,18 +31,18 @@ revisit = "when code_language_callback/options are wired; keep default markdowni
 [[divergence]]
 source = "markdownify_tests"
 case_id = "markdownify:test_conversions:182"
-diff_summary = "lxml/browser HTML tree construction auto-closes <h1> before nested <p>, while markdownify's BeautifulSoup html.parser fixture keeps <p> inside the heading"
-reason = "Intentional parser divergence: html2md uses lxml HTML parsing, matching browser/standards tree construction for invalid heading content. The heading handler sees only the valid heading text ('A'), while markdownify's parser treats invalid nested block content as inline heading text and emits '# A P C #'. Copying the oracle would require pre-parser invalid-markup repair that contradicts the lxml/browser parsing contract."
+diff_summary = "lxml/libxml2 auto-closes <h1> before nested <p>, while markdownify's BeautifulSoup html.parser fixture keeps <p> inside the heading"
+reason = "Intentional parser divergence on non-conforming HTML: html2md uses lxml/libxml2, whose HTML parser does not implement full HTML5 tree construction and auto-closes <h1> before the nested <p>. BeautifulSoup html.parser keeps the <p> inside the heading for this input, and coder-3's upstream check found html5lib agrees with that tree shape. Matching markdownify here would require a pre-lxml repair or a different parser contract, not a handler change."
 owner = "coder-1-leaf"
-revisit = "only if the project chooses BeautifulSoup html.parser compatibility over lxml/browser tree-construction for invalid nested block-in-heading markup"
+revisit = "only if the project chooses BeautifulSoup/html5lib-style tree construction over the current lxml/libxml2 parser contract for invalid nested block-in-heading markup"
 
 [[divergence]]
 source = "markdownify_tests"
 case_id = "markdownify:test_conversions:183"
-diff_summary = "lxml/browser HTML tree construction auto-closes <h1> before nested <p>, while markdownify's BeautifulSoup html.parser fixture keeps <p> inside the heading"
-reason = "Intentional parser divergence: same invalid nested block-in-heading input as markdownify:test_conversions:182, but with heading_style=ATX. html2md should preserve the lxml/browser parse contract instead of emulating BeautifulSoup html.parser's non-browser nesting."
+diff_summary = "lxml/libxml2 auto-closes <h1> before nested <p>, while markdownify's BeautifulSoup html.parser fixture keeps <p> inside the heading"
+reason = "Intentional parser divergence on the same non-conforming nested block-in-heading input as markdownify:test_conversions:182, but with heading_style=ATX. html2md preserves the lxml/libxml2 parser contract; coder-3's upstream check found this is a known libxml2 non-HTML5 tree-construction gap rather than browser-correct behavior."
 owner = "coder-1-leaf"
-revisit = "only if the project chooses BeautifulSoup html.parser compatibility over lxml/browser tree-construction for invalid nested block-in-heading markup"
+revisit = "only if the project chooses BeautifulSoup/html5lib-style tree construction over the current lxml/libxml2 parser contract for invalid nested block-in-heading markup"
 
 [[divergence]]
 source = "commonmark_expected_html"

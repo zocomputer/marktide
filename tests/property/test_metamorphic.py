@@ -91,11 +91,12 @@ def code_span_round_trip_document() -> st.SearchStrategy[str]:
     # meant to cover. The broader generated HTML grammar also exposes unrelated
     # Markdown textual-canonicalization choices such as an unescaped literal ``>``
     # becoming a CommonMark blockquote marker; those are not fixed by the code-span
-    # option. Edge-backtick and edge-whitespace sibling adjacency are separate
-    # ambiguities because a local HTML code-span handler cannot know the next
-    # sibling delimiter/spacing without changing markdownify-compatible sibling
-    # concatenation semantics.
-    code_text = st.text("abcxyz0123456789", min_size=1, max_size=20)
+    # option. Edge-backtick sibling adjacency is a separate ambiguity because a
+    # local HTML code-span handler cannot know the next sibling delimiter without
+    # changing markdownify-compatible sibling concatenation semantics. Edge-space
+    # cases are included: stable mode preserves code-span edge spaces rather than
+    # using markdownify's chomp-to-outside-code behavior.
+    code_text = st.text("abcxyz 0123456789", min_size=1, max_size=20)
     return st.lists(code_text, min_size=2, max_size=4).map(
         lambda parts: "<p>" + "".join(f"<code>{_escape_code_text(part)}</code>" for part in parts) + "</p>"
     )

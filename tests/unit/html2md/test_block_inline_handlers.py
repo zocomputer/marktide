@@ -73,6 +73,8 @@ def test_code_span_commonmark_roundtrip_stable_mode_uses_canonical_delimiters() 
     assert convert("<p><code>`lead</code></p>", options=opts) == "`` `lead ``"
     assert convert("<p><code>trail`</code></p>", options=opts) == "`` trail` ``"
     assert convert("<p><code>0</code><code>0</code></p>", options=opts) == "`0``0`"
+    assert convert("<p><code>0 </code><code> 0</code></p>", options=opts) == "`0 ` ` 0`"
+    assert convert("<p><code> 0 </code></p>", options=opts) == "`  0  `"
 
 
 def test_br_two_space_hard_break() -> None:

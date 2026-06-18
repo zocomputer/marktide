@@ -111,24 +111,42 @@ def _markdownify_code_span(text: str) -> tuple[str, str]:
     return delimiter, text
 
 
+def _commonmark_code_normalize(raw: str) -> str:
+    """Normalize code-span raw content per CommonMark's space stripping rule."""
+    if raw.startswith(" ") and raw.endswith(" ") and any(ch != " " for ch in raw):
+        return raw[1:-1]
+    return raw
+
+
 def _commonmark_stable_code_span(text: str) -> tuple[str, str]:
     """Return a CommonMark-valid, text-idempotent inline-code delimiter and text.
 
     CommonMark permits any delimiter length that is not present as a maximal backtick
     run in the code text. Choosing the smallest absent length gives a canonical form
     that survives a render-to-HTML-and-convert-back pass for adjacent code spans such
-    as ``<code>0</code><code>0</code>``. Padding is only needed when the code text
-    starts or ends with a backtick; otherwise an edge backtick would merge with the
-    delimiter and stop it being parsed as the intended opening/closing run.
+    as ``<code>0</code><code>0</code>``. The raw content is padded only when needed
+    for CommonMark to parse back to exactly ``text``: edge backticks need separation
+    from delimiters, and text with both leading and trailing spaces needs one extra
+    space on both sides because CommonMark strips one such pair.
     """
     run_lengths = {len(m.group()) for m in _RE_BACKTICKS.finditer(text)}
     delimiter_length = 1
     while delimiter_length in run_lengths:
         delimiter_length += 1
     delimiter = "`" * delimiter_length
-    if text.startswith("`") or text.endswith("`"):
-        text = " " + text + " "
-    return delimiter, text
+
+    for total_padding in range(5):
+        for left_padding in range(total_padding + 1):
+            right_padding = total_padding - left_padding
+            raw = (" " * left_padding) + text + (" " * right_padding)
+            if raw.startswith("`") or raw.endswith("`"):
+                continue
+            if _commonmark_code_normalize(raw) == text:
+                return delimiter, raw
+    # The bounded search above covers all combinations of edge backticks and
+    # leading/trailing spaces. Keep a defensive fallback rather than failing in
+    # conversion for an unexpected Unicode whitespace corner.
+    return delimiter, " " + text + " "
 
 
 class _Code:
@@ -151,13 +169,29 @@ class _Code:
         if in_noformat(em):
             em.emit(content)
             return
+        if em.options.commonmark_roundtrip_stable:
+            if not content:
+                return
+            delimiter, text = _commonmark_stable_code_span(content)
+            parent = em.state.top
+            edge_space = content.startswith(" ") or content.endswith(" ")
+            previous_edge_space = False
+            if parent is not None:
+                previous_edge_space = bool(parent.data.pop("stable_code_span_edge_space", False))
+            if (edge_space or previous_edge_space) and "".join(em._buf()).endswith("`"):
+                # Adjacent code spans with edge spaces are not text-stable in
+                # CommonMark without a separator: the closing and opening backtick
+                # runs merge into one longer run. In the optional stable mode, add
+                # the minimal separator only for those edge-space adjacency cases.
+                em.emit(" ")
+            em.emit("%s%s%s" % (delimiter, text, delimiter))
+            if parent is not None:
+                parent.data["stable_code_span_edge_space"] = edge_space
+            return
         prefix, suffix, text = chomp(content)
         if not text:
             return
-        if em.options.commonmark_roundtrip_stable:
-            delimiter, text = _commonmark_stable_code_span(text)
-        else:
-            delimiter, text = _markdownify_code_span(text)
+        delimiter, text = _markdownify_code_span(text)
         em.emit("%s%s%s%s%s" % (prefix, delimiter, text, delimiter, suffix))
 
 
