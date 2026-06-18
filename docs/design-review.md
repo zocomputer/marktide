@@ -1,8 +1,7 @@
 # Review: `docs/design.md` / `docs/test-plan.md` (`reviewer-leaf`)
 
 - Source docs: `docs/design.md`, `docs/test-plan.md`
-- Reviewed commit: `073759f` (`docs(html2md): design doc + test plan for zo-1fp.1`)
-- Requested commit in assignment: `c23884b` (not present in the local history I reviewed)
+- Reviewed commit: `445bae8` (`docs(html2md): fold coder-3-leaf GIL/streaming spike into design go/no-go`)
 - Reviewer: `reviewer-leaf`
 - Bead: `zo-1fp.1`
 
@@ -12,7 +11,7 @@
 
 **Problem**
 
-`docs/design.md:462` through `docs/design.md:467` correctly names `markdownify==1.2.2` as the single primary oracle, and `docs/design.md:482` through `docs/design.md:485` correctly says Turndown/CommonMark/Pandoc must not be mixed into primary assertions raw. However, the actual normalization contract remains too vague for an implementer to write without inventing behavior. `docs/design.md:489` through `docs/design.md:495` says Turndown uses a "Turndown→markdownify transform" and Pandoc uses a "Pandoc→canonical transform", but only gives examples like heading/emphasis/`<br>` conversion. `docs/design.md:524` through `docs/design.md:529` then says normalization will collapse blank lines, normalize list markers/indent, trim trailing whitespace, and normalize link style before asserting semantic equivalence. `docs/test-plan.md:84` through `docs/test-plan.md:88` makes that normalizer gating for the drop-in oracle, with divergences recorded only after normalization.
+`docs/design.md:500` through `docs/design.md:505` correctly names `markdownify==1.2.2` as the single primary oracle, and `docs/design.md:520` through `docs/design.md:523` correctly says Turndown/CommonMark/Pandoc must not be mixed into primary assertions raw. However, the actual normalization contract remains too vague for an implementer to write without inventing behavior. `docs/design.md:525` through `docs/design.md:533` says Turndown uses a "Turndown→markdownify transform" and Pandoc uses a "Pandoc→canonical transform", but only gives examples like heading/emphasis/`<br>` conversion. `docs/design.md:562` through `docs/design.md:568` then says normalization will collapse blank lines, normalize list markers/indent, trim trailing whitespace, and normalize link style before asserting semantic equivalence. `docs/test-plan.md:84` through `docs/test-plan.md:88` makes that normalizer gating for the drop-in oracle, with divergences recorded only after normalization.
 
 That is dangerous because these transforms can easily hide real regressions: list indentation is semantic in Markdown; blank lines can change list/code/table parsing; escaping changes can alter emitted text; link normalization can mask URL/title bugs. The plan says the normalizer is unit-tested at `docs/test-plan.md:101` through `docs/test-plan.md:105`, but it does not define the normalizer's input/output rules, invariants, or fixture examples tightly enough to test.
 
@@ -31,14 +30,14 @@ Add a concrete normalization specification before implementation:
 
 **Problem**
 
-The plan states that `html2md` is a drop-in replacement for `markdownify` at `docs/design.md:3` through `docs/design.md:6`, that the `Options` surface mirrors `markdownify` at `docs/design.md:58` through `docs/design.md:60`, and that defaults track `markdownify==1.2.2` at `docs/design.md:469` through `docs/design.md:480`. But the proposed `Options` dataclass in `docs/design.md:568` through `docs/design.md:586` already diverges from `markdownify.MarkdownConverter.DefaultOptions` in ways that will affect output:
+The plan states that `html2md` is a drop-in replacement for `markdownify` at `docs/design.md:3` through `docs/design.md:6`, that the `Options` surface mirrors `markdownify` at `docs/design.md:58` through `docs/design.md:60`, and that defaults track `markdownify==1.2.2` at `docs/design.md:507` through `docs/design.md:518`. But the proposed `Options` dataclass in `docs/design.md:604` through `docs/design.md:624` already diverges from `markdownify.MarkdownConverter.DefaultOptions` in ways that will affect output:
 
-- `docs/design.md:573` uses `bullet: str = "-"`, while `markdownify` defaults to `bullets = '*+-'` and chooses nested unordered-list markers by depth.
-- `docs/design.md:581` uses `escape_misc: bool = True`, while `markdownify` defaults `escape_misc = False` and separately defaults `escape_asterisks = True` and `escape_underscores = True`.
-- `docs/design.md:582` and `docs/design.md:583` define `strip_tags` / `drop_tags`, but `markdownify` exposes mutually exclusive `strip` / `convert` semantics; these are not equivalent.
+- `docs/design.md:611` uses `bullet: str = "-"`, while `markdownify` defaults to `bullets = '*+-'` and chooses nested unordered-list markers by depth.
+- `docs/design.md:619` uses `escape_misc: bool = True`, while `markdownify` defaults `escape_misc = False` and separately defaults `escape_asterisks = True` and `escape_underscores = True`.
+- `docs/design.md:620` and `docs/design.md:621` define `strip_tags` / `drop_tags`, but `markdownify` exposes mutually exclusive `strip` / `convert` semantics; these are not equivalent.
 - The dataclass omits or defers important compatibility knobs such as `keep_inline_images_in`, `default_title`, `table_infer_header`, `strip_document`, `strip_pre`, `code_language`, `code_language_callback`, `sub_symbol`, `sup_symbol`, and wrapping semantics.
 
-The plan acknowledges uncertainty at `docs/design.md:773`, but this is not an implementation detail: option compatibility determines the oracle, fixture expectations, adapter normalization, and public API migration path.
+The plan acknowledges uncertainty at `docs/design.md:811`, but this is not an implementation detail: option compatibility determines the oracle, fixture expectations, adapter normalization, and public API migration path.
 
 **Required fix**
 
@@ -55,7 +54,7 @@ Before implementation, decide the compatibility target and encode it precisely:
 
 **Problem**
 
-The design promises true streaming output at `docs/design.md:445` through `docs/design.md:449`, says most rules are local at `docs/design.md:400` through `docs/design.md:401`, and relies on a small `pending inline buffer` at `docs/design.md:382` through `docs/design.md:383`. But markdownify-compatible output is not purely local: the plan itself identifies whitespace boundary trimming from `markdownify.MarkdownConverter.process_tag` and `markdownify.MarkdownConverter.process_text` as part of the contract at `docs/design.md:477` through `docs/design.md:480`, and table output is explicitly buffered until `</table>` at `docs/design.md:379` through `docs/design.md:381`.
+The design promises true streaming output at `docs/design.md:480` through `docs/design.md:487`, says most rules are local at `docs/design.md:438` through `docs/design.md:439`, and relies on a small `pending inline buffer` at `docs/design.md:420` through `docs/design.md:421`. But markdownify-compatible output is not purely local: the plan itself identifies whitespace boundary trimming from `markdownify.MarkdownConverter.process_tag` and `markdownify.MarkdownConverter.process_text` as part of the contract at `docs/design.md:515` through `docs/design.md:518`, and table output is explicitly buffered until `</table>` at `docs/design.md:417` through `docs/design.md:419`.
 
 For a public `convert_stream(...) -> Iterator[str]` / `convert_stream_async(...) -> AsyncIterator[str]` API, once a chunk has been yielded it cannot be rewritten. The plan does not specify "safe emission barriers" for paragraphs, nested lists, blockquotes, table rows, inline whitespace, or pending links/images. Without those barriers, an implementation can pass many tag-local tests and still fail `convert_stream(split) == convert(whole)` when future siblings determine whether whitespace/newlines should be stripped or collapsed.
 
@@ -74,7 +73,7 @@ Add a streaming emission contract:
 
 **Problem**
 
-The stage decomposition at `docs/design.md:250` through `docs/design.md:269` is a strong improvement: it separates parse-only, parse+iteration, and full conversion. The calibration controls at `docs/design.md:271` through `docs/design.md:284` are also appropriate. However, the phase-2 design still makes a structural claim that is not guaranteed by the described implementation: `docs/design.md:363` through `docs/design.md:365` says contiguous GIL-hold is bounded by one chunk's callbacks, and `docs/design.md:442` through `docs/design.md:444` says the event loop stays responsive because lxml releases the GIL during each `feed()`.
+The stage decomposition at `docs/design.md:288` through `docs/design.md:307` is a strong improvement: it separates parse-only, parse+iteration, and full conversion. The calibration controls at `docs/design.md:309` through `docs/design.md:322` are also appropriate. However, the phase-2 design still makes a structural claim that is not guaranteed by the described implementation: `docs/design.md:401` through `docs/design.md:403` says contiguous GIL-hold is bounded by one chunk's callbacks, and `docs/design.md:480` through `docs/design.md:482` says the event loop stays responsive because lxml releases the GIL during each `feed()`.
 
 That bound is too weak and may be false for adversarial HTML. A 64 KiB chunk can contain thousands of tiny tags, entities, or table cells, causing many Python `MarkdownEmitter.start`, `MarkdownEmitter.data`, and `MarkdownEmitter.end` callbacks inside a single `parser.feed(...)` call. Those callbacks run with the GIL held, and the plan does not include a callback budget, cooperative yield point, or dynamic chunk-size adjustment based on observed callback density. A small byte chunk is not necessarily a small Python-work chunk.
 
@@ -93,7 +92,7 @@ Strengthen the design and probe so the claim is falsifiable for callback-heavy i
 
 **Problem**
 
-The plan correctly identifies phase-1 and phase-3 gates, but the numeric criteria remain placeholders. `docs/design.md:306` through `docs/design.md:310` uses examples such as `≥ 5×` and `≤ 10 ms`, then `docs/design.md:312` through `docs/design.md:314` says thresholds are placeholders to be fixed later. `docs/design.md:669` through `docs/design.md:676` likewise uses `target×`, `≤ bound`, and `target%` for final acceptance. `docs/test-plan.md:172` through `docs/test-plan.md:175`, `docs/test-plan.md:135` through `docs/test-plan.md:139`, and `docs/test-plan.md:160` through `docs/test-plan.md:161` refer to bounds/tolerances without giving values.
+The plan correctly identifies phase-1 and phase-3 gates, but the numeric criteria remain placeholders. `docs/design.md:344` through `docs/design.md:348` uses examples such as `≥ 5×` and `≤ 10 ms`, then `docs/design.md:350` through `docs/design.md:352` says thresholds are placeholders to be fixed later. `docs/design.md:707` through `docs/design.md:714` likewise uses `target×`, `≤ bound`, and `target%` for final acceptance. `docs/test-plan.md:172` through `docs/test-plan.md:175`, `docs/test-plan.md:135` through `docs/test-plan.md:139`, and `docs/test-plan.md:160` through `docs/test-plan.md:161` refer to bounds/tolerances without giving values.
 
 Because this review gates implementation, leaving the pass/fail gates open means different agents can implement the harness, evaluate candidates, and decide whether phase 2 is needed using different unstated thresholds.
 
@@ -116,7 +115,7 @@ These can be revised after first measurements, but the initial gate must be conc
 
 **Problem**
 
-`docs/rust-candidate-smoke.md:51` through `docs/rust-candidate-smoke.md:78` shows the important nuance for the phase-1 decision: all three Rust candidates are one-shot/no-streaming APIs; `html2text_rs==0.2.5` is loop-friendly under `asyncio.to_thread`, but lower fidelity and still whole-string `str -> str`. The design has good streaming motivations in `docs/design.md:47` through `docs/design.md:50` and `docs/design.md:445` through `docs/design.md:449`, and `docs/design.md:309` includes peak RSS in the phase-1 gate. However, the phase-1/phase-3 gates at `docs/design.md:303` through `docs/design.md:314` and `docs/design.md:669` through `docs/design.md:678` do not include any explicit time-to-first-output or streaming-latency metric.
+`docs/rust-candidate-smoke.md:51` through `docs/rust-candidate-smoke.md:78` shows the important nuance for the phase-1 decision: all three Rust candidates are one-shot/no-streaming APIs; `html2text_rs==0.2.5` is loop-friendly under `asyncio.to_thread`, but lower fidelity and still whole-string `str -> str`. The design has good streaming motivations in `docs/design.md:47` through `docs/design.md:50` and `docs/design.md:480` through `docs/design.md:487`, and the new spike framing in `docs/design.md:187` through `docs/design.md:223` explicitly distinguishes async-friendliness, bounded memory, and time-to-first-output. However, the phase-1/phase-3 gates at `docs/design.md:339` through `docs/design.md:352` and `docs/design.md:707` through `docs/design.md:716` still do not include any explicit time-to-first-output or streaming-latency metric.
 
 That leaves the build-vs-adopt decision overly centered on async heartbeat, throughput, memory, and final output quality. Since `html2text_rs==0.2.5` demonstrates that an existing one-shot Rust library can be event-loop-friendly, the design should make the additional streaming value falsifiable: bounded peak RSS for huge inputs and early output before the full input is read. Peak RSS is present; time-to-first-output is not.
 
@@ -135,9 +134,9 @@ Add streaming-specific metrics and gates to phase 1/3:
 
 **Problem**
 
-`docs/design.md:187` through `docs/design.md:207` relies on the generated fixtures from `docs/research.md`, and `docs/test-plan.md:253` through `docs/test-plan.md:257` says large fixtures are regenerated by the pinned command. But the design doc does not incorporate the necessary manifest/hashing correction: the current research generator downloads live pages and byte-truncates assembled HTML. This can change over time and can accidentally create malformed fixtures that are not labeled as malformed.
+`docs/design.md:225` through `docs/design.md:245` relies on the generated fixtures from `docs/research.md`, and `docs/test-plan.md:253` through `docs/test-plan.md:257` says large fixtures are regenerated by the pinned command. But the design doc does not incorporate the necessary manifest/hashing correction: the current research generator downloads live pages and byte-truncates assembled HTML. This can change over time and can accidentally create malformed fixtures that are not labeled as malformed.
 
-This is especially important because `docs/design.md:298` through `docs/design.md:299` and `docs/test-plan.md:154` through `docs/test-plan.md:156` rely on output hashes and fixed input bytes for fair performance comparison.
+This is especially important because `docs/design.md:336` through `docs/design.md:337` and `docs/test-plan.md:154` through `docs/test-plan.md:156` rely on output hashes and fixed input bytes for fair performance comparison.
 
 **Required fix**
 
@@ -153,7 +152,7 @@ Add a benchmark fixture manifest requirement to `docs/design.md` / `docs/test-pl
 
 **Problem**
 
-`docs/design.md:558` through `docs/design.md:564` introduces an optional `ConversionResult` / `convert_detailed(...)` API for parity with the Rust candidate, then defers the decision to implementation. This adds public API uncertainty to a design that otherwise says the deliverable is a `markdownify` drop-in string-returning converter. It also has no consumer in the plan, no tests in `docs/design.md:616` through `docs/design.md:653`, and no black-box coverage in `docs/test-plan.md:51` through `docs/test-plan.md:72`.
+`docs/design.md:596` through `docs/design.md:602` introduces an optional `ConversionResult` / `convert_detailed(...)` API for parity with the Rust candidate, then defers the decision to implementation. This adds public API uncertainty to a design that otherwise says the deliverable is a `markdownify` drop-in string-returning converter. It also has no consumer in the plan, no tests in `docs/design.md:677` through `docs/design.md:715`, and no black-box coverage in `docs/test-plan.md:51` through `docs/test-plan.md:72`.
 
 **Required fix**
 
@@ -178,20 +177,8 @@ Add a small "artifact schemas and thresholds" section to `docs/test-plan.md` def
 
 ---
 
-### P3 - The reviewed commit identifier in orchestration does not match local history
-
-**Problem**
-
-The assignment asked for `docs/design.md` / `docs/test-plan.md` committed as `c23884b`, but the local repository shows the design/test-plan commit as `073759f` at HEAD. This is likely only an orchestration race or amended commit, but it should be reconciled so reviewers and incorporators discuss the same source.
-
-**Required fix**
-
-Have the concierge confirm whether `073759f` supersedes `c23884b`, or fetch/reset the review target if `c23884b` is the intended canonical commit.
-
----
-
 ## Summary
 
-9 findings: 0 P0, 5 P1, 3 P2, 1 P3
+8 findings: 0 P0, 5 P1, 3 P2, 0 P3
 
 **Verdict**: Not approved for implementation until the P1 findings are incorporated. The overall architecture is promising, and the docs hit the major required themes, but the oracle/normalizer, option compatibility, streaming flush safety, GIL bound, and numeric gates need to be made concrete before parallel implementation starts.
