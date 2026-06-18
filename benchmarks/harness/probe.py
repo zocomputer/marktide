@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import statistics
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
@@ -17,6 +17,30 @@ DEFAULT_DURATION_S = 1.0
 class Placement(StrEnum):
     INLINE = "inline"
     TO_THREAD = "to_thread"
+
+
+@dataclass(frozen=True)
+class StreamingCadenceResult:
+    workload: str
+    total_wall_s: float
+    first_chunk_s: float | None
+    max_inter_chunk_gap_s: float | None
+    p99_inter_chunk_gap_s: float | None
+    chunk_count: int
+    output_bytes: int
+    output_hash: str
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "workload": self.workload,
+            "total_wall_s": self.total_wall_s,
+            "first_chunk_s": self.first_chunk_s,
+            "max_inter_chunk_gap_s": self.max_inter_chunk_gap_s,
+            "p99_inter_chunk_gap_s": self.p99_inter_chunk_gap_s,
+            "chunk_count": self.chunk_count,
+            "output_bytes": self.output_bytes,
+            "output_hash": self.output_hash,
+        }
 
 
 @dataclass(frozen=True)
@@ -248,7 +272,75 @@ async def _probe_inline(
     )
 
 
+async def probe_streaming_adapter(
+    name: str,
+    stream_chunks: Callable[[bytes], Iterable[str]],
+    payload: bytes,
+) -> StreamingCadenceResult:
+    """Measure TTFO and inter-chunk cadence for a native streaming adapter.
+
+    The synchronous streaming iterator is consumed in a worker thread. Each yielded
+    chunk reports a timestamp back to the event loop immediately, so ``first_chunk_s``
+    and inter-chunk gaps describe the native stream rather than a post-hoc joined
+    result.
+    """
+
+    import hashlib
+
+    loop = asyncio.get_running_loop()
+    queue: asyncio.Queue[tuple[str, float, str | None]] = asyncio.Queue()
+    timing: dict[str, Any] = {}
+
+    def worker() -> None:
+        started = time.perf_counter()
+        chunks: list[str] = []
+        try:
+            for chunk in stream_chunks(payload):
+                now = time.perf_counter()
+                chunks.append(chunk)
+                loop.call_soon_threadsafe(
+                    queue.put_nowait, ("chunk", now - started, chunk)
+                )
+        except BaseException as exc:
+            timing["exception"] = exc
+        finally:
+            timing["total_wall_s"] = time.perf_counter() - started
+            timing["output"] = "".join(chunks)
+            loop.call_soon_threadsafe(
+                queue.put_nowait, ("done", timing["total_wall_s"], None)
+            )
+
+    worker_task = asyncio.create_task(asyncio.to_thread(worker))
+    chunk_times: list[float] = []
+    while True:
+        kind, offset_s, _chunk = await queue.get()
+        if kind == "chunk":
+            chunk_times.append(offset_s)
+            continue
+        if kind == "done":
+            break
+    await worker_task
+    if "exception" in timing:
+        raise timing["exception"]
+
+    gaps = [b - a for a, b in zip(chunk_times, chunk_times[1:])]
+    output = timing.get("output", "")
+    encoded = output.encode("utf-8", errors="replace")
+    sorted_gaps = sorted(gaps)
+    return StreamingCadenceResult(
+        workload=name,
+        total_wall_s=timing["total_wall_s"],
+        first_chunk_s=chunk_times[0] if chunk_times else None,
+        max_inter_chunk_gap_s=max(gaps) if gaps else None,
+        p99_inter_chunk_gap_s=_percentile(sorted_gaps, 0.99) if sorted_gaps else None,
+        chunk_count=len(chunk_times),
+        output_bytes=len(encoded),
+        output_hash=hashlib.sha256(encoded).hexdigest(),
+    )
+
+
 # Probe controls -------------------------------------------------------------
+
 
 def pure_python_burn(payload: bytes | None = None) -> str:
     n = 0

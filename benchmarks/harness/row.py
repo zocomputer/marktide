@@ -11,8 +11,8 @@ import time
 from pathlib import Path
 from typing import Any
 
-from benchmarks.harness.adapters.base import get_adapters
-from benchmarks.harness.probe import Placement, probe_adapter
+from benchmarks.harness.adapters.base import get_adapters, supports_streaming
+from benchmarks.harness.probe import Placement, probe_adapter, probe_streaming_adapter
 
 
 def _ru_maxrss_bytes() -> int:
@@ -50,10 +50,31 @@ async def _run(args: argparse.Namespace) -> dict[str, Any]:
     )
     wall_s = time.perf_counter() - t0
     rss_after = _ru_maxrss_bytes()
-    conversion_wall_s = heartbeat.conversion_wall_s if heartbeat.conversion_wall_s is not None else wall_s
+    conversion_wall_s = (
+        heartbeat.conversion_wall_s
+        if heartbeat.conversion_wall_s is not None
+        else wall_s
+    )
     input_bytes = len(payload)
-    throughput_mib_s = (input_bytes / 1024 / 1024) / conversion_wall_s if conversion_wall_s > 0 else None
-    missed_beat_pct = (heartbeat.missed_beats / heartbeat.samples * 100.0) if heartbeat.samples else None
+    throughput_mib_s = (
+        (input_bytes / 1024 / 1024) / conversion_wall_s
+        if conversion_wall_s > 0
+        else None
+    )
+    missed_beat_pct = (
+        (heartbeat.missed_beats / heartbeat.samples * 100.0)
+        if heartbeat.samples
+        else None
+    )
+    streaming_cadence = None
+    if supports_streaming(adapter):
+        streaming_probe = await probe_streaming_adapter(
+            f"{adapter.name}:{args.fixture_name}:streaming",
+            adapter.convert_stream_chunks,
+            payload,
+        )
+        streaming_cadence = streaming_probe.as_dict()
+
     return {
         "adapter": adapter.name,
         "package": adapter.package,
@@ -69,8 +90,11 @@ async def _run(args: argparse.Namespace) -> dict[str, Any]:
         "ru_maxrss_delta_bytes": max(0, rss_after - rss_before),
         "output_bytes": heartbeat.output_bytes,
         "output_hash": heartbeat.output_hash,
-        "output_to_input_ratio": (heartbeat.output_bytes / input_bytes) if heartbeat.output_bytes is not None else None,
+        "output_to_input_ratio": (heartbeat.output_bytes / input_bytes)
+        if heartbeat.output_bytes is not None
+        else None,
         "heartbeat": heartbeat.as_dict(),
+        "streaming_cadence": streaming_cadence,
         "async_gate": {
             "missed_beat_pct": missed_beat_pct,
             "max_delay_ms": heartbeat.max_ms,
