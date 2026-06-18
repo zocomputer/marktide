@@ -206,32 +206,32 @@ GIL-bound.
 
 | Library | Wall time | vs markdownify | Peak RSS growth | Missed event-loop beats | Time-to-first-chunk | Streams? |
 |---|--:|--:|--:|--:|--:|:--:|
-| `markdownify` (incumbent) | 53.44 s | 1.0× | 2808.9 MiB | 70.0% | — | no |
-| `html_to_markdown` (Rust) | 4.57 s | 11.7× | 4306.6 MiB | 50.0% | — | no |
-| `htmd_py` (Rust) | 1.63 s | 32.8× | 1569.1 MiB | 50.0% | — | no |
-| `html2text_rs` (Rust) | 2.89 s | 18.5× | 3905.5 MiB | 0.4% | — | no |
-| **`marktide` (streaming)** | **5.99 s** | **8.9×** | **244.7 MiB** | **0.0%** | **2.4 ms** | **yes** |
+| `markdownify` (incumbent) | 54.55 s | 1.0× | 2811.1 MiB | 60.4% | — | no |
+| `html_to_markdown` (Rust) | 4.78 s | 11.4× | 3761.0 MiB | 50.0% | — | no |
+| `htmd_py` (Rust) | 1.71 s | 31.8× | 1569.2 MiB | 50.0% | — | no |
+| `html2text_rs` (Rust) | 3.03 s | 18.0× | 3906.7 MiB | 0.4% | — | no |
+| **`marktide` (streaming)** | **4.73 s** | **11.5×** | **247.3 MiB** | **0.0%** | **2.2 ms** | **yes** |
 
-Reading it: marktide converts the 110 MiB document **8.9× faster than markdownify** while using
-**11.5× less peak memory** and **never starving the event loop** (0% missed heartbeat beats vs
-markdownify's 70%). The Rust one-shot libraries post lower raw wall times, but each fails a
+Reading it: marktide converts the 110 MiB document **11.5× faster than markdownify** while using
+**11.4× less peak memory** and **never starving the event loop** (0% missed heartbeat beats vs
+markdownify's 60%). The Rust one-shot libraries post lower raw wall times, but each fails a
 different axis: `html_to_markdown` and `htmd_py` **hold the GIL** (~50% missed beats; p99
-event-loop stalls of 1.6–4.6 s), `html2text_rs` releases the GIL (0.4% missed) but is
-**low-fidelity** (drops formatting), and all three use **6–18× more memory than marktide** and
+event-loop stalls of 1.7–4.8 s), `html2text_rs` releases the GIL (0.4% missed) but is
+**low-fidelity** (drops formatting), and all three use **6–15× more memory than marktide** and
 **cannot stream**. marktide is the only contender that is *simultaneously* fast-enough,
 async-friendly, streaming, memory-bounded, and faithful (**99.3% raw / 100% effective**
 normalized conformance against the markdownify oracle, with two
 [documented divergences](docs/usage.md#documented-divergences)).
 
 - **Async-friendly** — fraction of 5 ms event-loop heartbeats missed while a conversion runs on
-  a worker thread: marktide 0.0%, markdownify 70.0%, `html_to_markdown`/`htmd_py` ~50%,
+  a worker thread: marktide 0.0%, markdownify 60.4%, `html_to_markdown`/`htmd_py` ~50%,
   `html2text_rs` 0.4%.
-- **Streaming** — marktide emits the first Markdown chunk after **2.4 ms** and sustains output
+- **Streaming** — marktide emits the first Markdown chunk after **2.2 ms** and sustains output
   across the document; one-shot libraries emit only after the full conversion finishes.
 - **Bounded scaling** — marktide's peak RSS grows **sub-linearly**: its peak-RSS-to-input ratio
-  falls from 7.7× (small) to **2.2× (xlarge)**, while markdownify's stays ~**25× at every size**
-  (linear growth). On the 110 MiB input that puts marktide's growth (244.7 MiB) **11.5× below**
-  markdownify's 2808.9 MiB — because the streaming path builds no full DOM and drains completed
+  falls from 7.7× (small) to **2.3× (xlarge)**, while markdownify's stays ~**26× at every size**
+  (linear growth). On the 110 MiB input that puts marktide's growth (247.3 MiB) **11.4× below**
+  markdownify's 2811.1 MiB — because the streaming path builds no full DOM and drains completed
   blocks rather than holding the whole document. See
   `benchmarks/results/charts/memory_scaling_peak_rss.png`.
 
