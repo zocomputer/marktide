@@ -1,0 +1,427 @@
+{
+  "schema_version": 1,
+  "purpose": "Exhaustive per-handler block + inline golden fixtures for the html2md handlers (zo-1fp.12). Same schema as edge_cases.json; complements its cross-cutting docs/design.md §5.3.4 behavior-table set.",
+  "oracle": {
+    "package": "markdownify",
+    "version": "1.2.2",
+    "mode": "library defaults / markdownify_default_oracle semantics"
+  },
+  "cases": [
+    {
+      "id": "heading_h1_setext",
+      "behavior": "headings",
+      "markdownify_ref": "convert_hn",
+      "description": "h1 renders as a setext underline of '=' matching the text length.",
+      "input_html": "<h1>Title One</h1>",
+      "expected_markdown": "Title One\n========="
+    },
+    {
+      "id": "heading_h2_setext",
+      "behavior": "headings",
+      "markdownify_ref": "convert_hn",
+      "description": "h2 renders as a setext underline of '-' matching the text length.",
+      "input_html": "<h2>Title Two</h2>",
+      "expected_markdown": "Title Two\n---------"
+    },
+    {
+      "id": "heading_h3_atx",
+      "behavior": "headings",
+      "markdownify_ref": "convert_hn",
+      "description": "h3 uses ATX '###'.",
+      "input_html": "<h3>Title Three</h3>",
+      "expected_markdown": "### Title Three"
+    },
+    {
+      "id": "heading_h4_atx",
+      "behavior": "headings",
+      "markdownify_ref": "convert_hn",
+      "description": "h4 uses ATX '####'.",
+      "input_html": "<h4>Title Four</h4>",
+      "expected_markdown": "#### Title Four"
+    },
+    {
+      "id": "heading_h5_atx",
+      "behavior": "headings",
+      "markdownify_ref": "convert_hn",
+      "description": "h5 uses ATX '#####'.",
+      "input_html": "<h5>Title Five</h5>",
+      "expected_markdown": "##### Title Five"
+    },
+    {
+      "id": "heading_h6_atx",
+      "behavior": "headings",
+      "markdownify_ref": "convert_hn",
+      "description": "h6 uses ATX '######'.",
+      "input_html": "<h6>Title Six</h6>",
+      "expected_markdown": "###### Title Six"
+    },
+    {
+      "id": "heading_h1_inline_underline_len",
+      "behavior": "headings",
+      "markdownify_ref": "convert_hn",
+      "description": "Setext underline length counts the RENDERED text (incl. inline markup chars).",
+      "input_html": "<h1>Big <b>bold</b> and <i>italic</i></h1>",
+      "expected_markdown": "Big **bold** and *italic*\n========================="
+    },
+    {
+      "id": "heading_h2_unicode_codepoints",
+      "behavior": "headings",
+      "markdownify_ref": "convert_hn",
+      "description": "Setext underline counts Unicode code points, not bytes.",
+      "input_html": "<h2>Café — naïve</h2>",
+      "expected_markdown": "Café — naïve\n------------"
+    },
+    {
+      "id": "heading_h1_leading_trailing_ws",
+      "behavior": "headings",
+      "markdownify_ref": "convert_hn",
+      "description": "Leading/trailing whitespace in a heading is trimmed.",
+      "input_html": "<h1>   spaced   </h1>",
+      "expected_markdown": "spaced\n======"
+    },
+    {
+      "id": "heading_h3_with_code",
+      "behavior": "headings",
+      "markdownify_ref": "convert_hn",
+      "description": "ATX heading containing an inline code span.",
+      "input_html": "<h3>Use <code>convert()</code> here</h3>",
+      "expected_markdown": "### Use `convert()` here"
+    },
+    {
+      "id": "paragraph_simple",
+      "behavior": "paragraphs",
+      "markdownify_ref": "convert_p",
+      "description": "A single paragraph.",
+      "input_html": "<p>Just a sentence.</p>",
+      "expected_markdown": "Just a sentence."
+    },
+    {
+      "id": "paragraph_two_blank_line",
+      "behavior": "paragraphs",
+      "markdownify_ref": "convert_p",
+      "description": "Two paragraphs separated by one blank line.",
+      "input_html": "<p>First.</p><p>Second.</p>",
+      "expected_markdown": "First.\n\nSecond."
+    },
+    {
+      "id": "paragraph_inline_formatting",
+      "behavior": "paragraphs",
+      "markdownify_ref": "convert_p",
+      "description": "Paragraph with bold and emphasis.",
+      "input_html": "<p>A <strong>bold</strong> and <em>em</em> word.</p>",
+      "expected_markdown": "A **bold** and *em* word."
+    },
+    {
+      "id": "paragraph_internal_whitespace_run",
+      "behavior": "paragraphs",
+      "markdownify_ref": "process_text",
+      "description": "Internal whitespace runs collapse to a single space.",
+      "input_html": "<p>collapse     these     spaces</p>",
+      "expected_markdown": "collapse these spaces"
+    },
+    {
+      "id": "paragraph_leading_trailing_ws",
+      "behavior": "paragraphs",
+      "markdownify_ref": "process_text",
+      "description": "Leading/trailing whitespace is trimmed at the paragraph boundary.",
+      "input_html": "<p>   trim me   </p>",
+      "expected_markdown": "trim me"
+    },
+    {
+      "id": "paragraph_source_newlines",
+      "behavior": "paragraphs",
+      "markdownify_ref": "process_text",
+      "description": "Source newlines + indentation collapse to single spaces.",
+      "input_html": "<p>line one\n    line two\n    line three</p>",
+      "expected_markdown": "line one\nline two\nline three"
+    },
+    {
+      "id": "blockquote_simple",
+      "behavior": "blockquote",
+      "markdownify_ref": "convert_blockquote",
+      "description": "A simple blockquote.",
+      "input_html": "<blockquote>Quoted text.</blockquote>",
+      "expected_markdown": "> Quoted text."
+    },
+    {
+      "id": "blockquote_two_paragraphs",
+      "behavior": "blockquote",
+      "markdownify_ref": "convert_blockquote",
+      "description": "Blockquote with two paragraphs.",
+      "input_html": "<blockquote><p>Para one.</p><p>Para two.</p></blockquote>",
+      "expected_markdown": "> Para one.\n>\n> Para two."
+    },
+    {
+      "id": "blockquote_nested",
+      "behavior": "blockquote",
+      "markdownify_ref": "convert_blockquote",
+      "description": "Nested blockquote.",
+      "input_html": "<blockquote>Outer <blockquote>Inner</blockquote></blockquote>",
+      "expected_markdown": "> Outer\n> > Inner"
+    },
+    {
+      "id": "blockquote_with_list",
+      "behavior": "blockquote",
+      "markdownify_ref": "convert_blockquote",
+      "description": "Blockquote containing a list (each line gets the '> ' prefix).",
+      "input_html": "<blockquote><ul><li>one</li><li>two</li></ul></blockquote>",
+      "expected_markdown": "> * one\n> * two"
+    },
+    {
+      "id": "blockquote_with_inline",
+      "behavior": "blockquote",
+      "markdownify_ref": "convert_blockquote",
+      "description": "Blockquote with inline formatting.",
+      "input_html": "<blockquote>Quote with <b>bold</b>.</blockquote>",
+      "expected_markdown": "> Quote with **bold**."
+    },
+    {
+      "id": "hr_between_paragraphs",
+      "behavior": "hr",
+      "markdownify_ref": "convert_hr",
+      "description": "hr between two paragraphs.",
+      "input_html": "<p>Above.</p><hr><p>Below.</p>",
+      "expected_markdown": "Above.\n\n---\n\nBelow."
+    },
+    {
+      "id": "hr_lone",
+      "behavior": "hr",
+      "markdownify_ref": "convert_hr",
+      "description": "A lone hr.",
+      "input_html": "<hr>",
+      "expected_markdown": "---"
+    },
+    {
+      "id": "list_ul_flat",
+      "behavior": "lists",
+      "markdownify_ref": "convert_li",
+      "description": "Flat unordered list.",
+      "input_html": "<ul><li>alpha</li><li>beta</li><li>gamma</li></ul>",
+      "expected_markdown": "* alpha\n* beta\n* gamma"
+    },
+    {
+      "id": "list_ol_flat",
+      "behavior": "lists",
+      "markdownify_ref": "convert_li",
+      "description": "Flat ordered list.",
+      "input_html": "<ol><li>one</li><li>two</li><li>three</li></ol>",
+      "expected_markdown": "1. one\n2. two\n3. three"
+    },
+    {
+      "id": "list_ul_nested_three_levels",
+      "behavior": "lists",
+      "markdownify_ref": "convert_li",
+      "description": "Nested unordered list: bullets cycle '*','+','-' by depth with 2-space indents.",
+      "input_html": "<ul><li>top<ul><li>second<ul><li>third</li></ul></li></ul></li></ul>",
+      "expected_markdown": "* top\n  + second\n    - third"
+    },
+    {
+      "id": "list_ol_nested",
+      "behavior": "lists",
+      "markdownify_ref": "convert_li",
+      "description": "Nested ordered list.",
+      "input_html": "<ol><li>a<ol><li>a.1</li><li>a.2</li></ol></li><li>b</li></ol>",
+      "expected_markdown": "1. a\n   1. a.1\n   2. a.2\n2. b"
+    },
+    {
+      "id": "list_mixed_ul_ol",
+      "behavior": "lists",
+      "markdownify_ref": "convert_li",
+      "description": "Ordered list nested under an unordered item.",
+      "input_html": "<ul><li>bullet<ol><li>num one</li><li>num two</li></ol></li></ul>",
+      "expected_markdown": "* bullet\n  1. num one\n  2. num two"
+    },
+    {
+      "id": "list_li_inline_formatting",
+      "behavior": "lists",
+      "markdownify_ref": "convert_li",
+      "description": "List items with inline formatting.",
+      "input_html": "<ul><li>plain</li><li><strong>bold item</strong></li></ul>",
+      "expected_markdown": "* plain\n* **bold item**"
+    },
+    {
+      "id": "list_ol_start_attr",
+      "behavior": "lists",
+      "markdownify_ref": "convert_li",
+      "description": "Ordered list honoring the start attribute.",
+      "input_html": "<ol start=\"3\"><li>three</li><li>four</li></ol>",
+      "expected_markdown": "3. three\n4. four"
+    },
+    {
+      "id": "list_ul_multiblock_item",
+      "behavior": "lists",
+      "markdownify_ref": "convert_li",
+      "description": "List item with a second paragraph (continuation indented under the marker).",
+      "input_html": "<ul><li>first<p>second para in item</p></li></ul>",
+      "expected_markdown": "* first\n\n  second para in item"
+    },
+    {
+      "id": "emphasis_strong_tag",
+      "behavior": "emphasis",
+      "markdownify_ref": "convert_strong",
+      "description": "strong -> **.",
+      "input_html": "<p><strong>strong</strong></p>",
+      "expected_markdown": "**strong**"
+    },
+    {
+      "id": "emphasis_b_tag",
+      "behavior": "emphasis",
+      "markdownify_ref": "convert_b",
+      "description": "b -> **.",
+      "input_html": "<p><b>bold</b></p>",
+      "expected_markdown": "**bold**"
+    },
+    {
+      "id": "emphasis_em_tag",
+      "behavior": "emphasis",
+      "markdownify_ref": "convert_em",
+      "description": "em -> *.",
+      "input_html": "<p><em>emphasis</em></p>",
+      "expected_markdown": "*emphasis*"
+    },
+    {
+      "id": "emphasis_i_tag",
+      "behavior": "emphasis",
+      "markdownify_ref": "convert_i",
+      "description": "i -> *.",
+      "input_html": "<p><i>italic</i></p>",
+      "expected_markdown": "*italic*"
+    },
+    {
+      "id": "emphasis_nested_strong_em",
+      "behavior": "emphasis",
+      "markdownify_ref": "convert_strong",
+      "description": "Nested strong/em.",
+      "input_html": "<p><strong>bold <em>and italic</em></strong></p>",
+      "expected_markdown": "**bold *and italic***"
+    },
+    {
+      "id": "emphasis_adjacent",
+      "behavior": "emphasis",
+      "markdownify_ref": "convert_em",
+      "description": "Two adjacent emphasis spans.",
+      "input_html": "<p><em>one</em><em>two</em></p>",
+      "expected_markdown": "*one**two*"
+    },
+    {
+      "id": "emphasis_empty_strong_suppressed",
+      "behavior": "emphasis",
+      "markdownify_ref": "convert_strong",
+      "description": "An empty inline emphasis element produces no markup.",
+      "input_html": "<p>before<strong></strong>after</p>",
+      "expected_markdown": "beforeafter"
+    },
+    {
+      "id": "emphasis_literal_chars_escaped",
+      "behavior": "emphasis",
+      "markdownify_ref": "process_text",
+      "description": "Literal '*' and '_' are escaped (escape_asterisks/escape_underscores default on).",
+      "input_html": "<p>a * b _ c</p>",
+      "expected_markdown": "a \\* b \\_ c"
+    },
+    {
+      "id": "code_simple",
+      "behavior": "code",
+      "markdownify_ref": "convert_code",
+      "description": "A simple inline code span.",
+      "input_html": "<p><code>plain_code</code></p>",
+      "expected_markdown": "`plain_code`"
+    },
+    {
+      "id": "code_contains_one_backtick",
+      "behavior": "code",
+      "markdownify_ref": "convert_code",
+      "description": "Content with one backtick -> fence grows to '``' with padding spaces.",
+      "input_html": "<p><code>a`b</code></p>",
+      "expected_markdown": "`` a`b ``"
+    },
+    {
+      "id": "code_contains_two_backticks",
+      "behavior": "code",
+      "markdownify_ref": "convert_code",
+      "description": "Content with a double-backtick run -> fence grows past it.",
+      "input_html": "<p><code>a``b</code></p>",
+      "expected_markdown": "``` a``b ```"
+    },
+    {
+      "id": "code_leading_backtick",
+      "behavior": "code",
+      "markdownify_ref": "convert_code",
+      "description": "Leading backtick -> a padding space is added.",
+      "input_html": "<p><code>`lead</code></p>",
+      "expected_markdown": "`` `lead ``"
+    },
+    {
+      "id": "code_trailing_backtick",
+      "behavior": "code",
+      "markdownify_ref": "convert_code",
+      "description": "Trailing backtick -> a padding space is added.",
+      "input_html": "<p><code>trail`</code></p>",
+      "expected_markdown": "`` trail` ``"
+    },
+    {
+      "id": "code_only_backtick",
+      "behavior": "code",
+      "markdownify_ref": "convert_code",
+      "description": "Content is a single backtick.",
+      "input_html": "<p><code>`</code></p>",
+      "expected_markdown": "`` ` ``"
+    },
+    {
+      "id": "code_no_escape_inside",
+      "behavior": "code",
+      "markdownify_ref": "convert_code",
+      "description": "Markdown metacharacters inside code are NOT escaped.",
+      "input_html": "<p><code>*not emphasis*</code></p>",
+      "expected_markdown": "`*not emphasis*`"
+    },
+    {
+      "id": "br_in_paragraph",
+      "behavior": "br",
+      "markdownify_ref": "convert_br",
+      "description": "br -> two trailing spaces + newline.",
+      "input_html": "<p>line one<br>line two</p>",
+      "expected_markdown": "line one  \nline two"
+    },
+    {
+      "id": "br_multiple",
+      "behavior": "br",
+      "markdownify_ref": "convert_br",
+      "description": "Multiple hard breaks.",
+      "input_html": "<p>a<br>b<br>c</p>",
+      "expected_markdown": "a  \nb  \nc"
+    },
+    {
+      "id": "br_then_whitespace",
+      "behavior": "br",
+      "markdownify_ref": "convert_br",
+      "description": "Hard break followed by whitespace then text.",
+      "input_html": "<p>start<br>   end</p>",
+      "expected_markdown": "start  \n end"
+    },
+    {
+      "id": "span_plain",
+      "behavior": "span",
+      "markdownify_ref": "process_tag",
+      "description": "A span is transparent: only its text remains.",
+      "input_html": "<p><span>just text</span></p>",
+      "expected_markdown": "just text"
+    },
+    {
+      "id": "span_with_inline_child",
+      "behavior": "span",
+      "markdownify_ref": "process_tag",
+      "description": "Span wrapping inline formatting.",
+      "input_html": "<p><span>wrap <b>bold</b> here</span></p>",
+      "expected_markdown": "wrap **bold** here"
+    },
+    {
+      "id": "span_adjacent",
+      "behavior": "span",
+      "markdownify_ref": "process_tag",
+      "description": "Adjacent spans.",
+      "input_html": "<p><span>a</span><span>b</span></p>",
+      "expected_markdown": "ab"
+    }
+  ]
+}
