@@ -253,8 +253,26 @@ Adversarial input generation beyond the curated corpus (design §9 URP items 2�
 - **Chunk-split fuzz:** the design §9.1 property at fuzz scale — random split points inside
   tags/attrs/entities/comments/code/table-rows/nested-lists. *Path:*
   `e2etests/fuzz/test_chunk_fuzz.py`.
-- **Runner:** `make fuzz` → `pytest e2etests/fuzz` (bounded examples in nightly; long
-  campaign on-demand with `--hypothesis-profile=campaign`). **Cadence:** nightly (short) +
+### 7.1 Hypothesis profiles & bounds (all property/fuzz tests)
+
+Every generative test — the fuzz tests here, the design §9.1 chunk-invariance property, and
+the §2/differential fuzz — is **bounded**: no unbounded property runs land in CI. Profiles are
+registered once in `e2etests/conftest.py` and selected with `--hypothesis-profile`:
+
+| Profile | `max_examples` | `deadline` (per example) | Suite wall-clock | When |
+|---|---|---|---|---|
+| `fast` (default) | 100 | 200 ms | **10 s** hard cap | PR CI |
+| `nightly` | 500 | 500 ms | per-suite budget | nightly |
+| `campaign` | uncapped | none | on-demand only | manual deep runs |
+
+The `fast` profile's 10 s suite wall-clock cap (via `pytest-timeout` on the property module)
+is the backstop so a pathological generator can never hang a PR. `deadline` fails any single
+example that runs long (catching accidental O(n²) emitter paths). `campaign` is the only
+unbounded mode and never runs automatically.
+
+- **Runner:** `make fuzz` → `pytest e2etests/fuzz` (defaults to `fast`; nightly job passes
+  `--hypothesis-profile=nightly`; long campaign on-demand with
+  `--hypothesis-profile=campaign`). **Cadence:** nightly (short) +
   on-demand (long). **Artifact:** Hypothesis example DB + minimized repros committed under
   `e2etests/fuzz/repros/` when a failure is found, each with a sidecar
   `<repro>.meta.json` (schema in §11): id, discovering test, seed, shrunk input hash,
@@ -342,7 +360,9 @@ so harnesses written by different agents agree. Thresholds mirror design §3.5 g
 | Concurrent (K=32) p99 heartbeat | ≤ 5 ms | §5 |
 | Soak RSS slope | ≤ 64 KiB/min (R² reported) | §5 |
 | Back-pressure queue depth | ≤ `Queue.maxsize` always | §5 |
-| Per-input fuzz timeout | 5 s | §7 |
+| Per-input fuzz timeout (mutation fuzz) | 5 s | §7 |
+| Property/fuzz `fast` profile | `max_examples`=100, `deadline`=200 ms, suite wall-clock ≤ 10 s | §7.1 |
+| Property/fuzz `nightly` profile | `max_examples`=500, `deadline`=500 ms | §7.1 |
 | Perf-regression tolerance | warm throughput > 10% **or** worker p99 > 0.5 ms vs baseline | §4 |
 
 ### 11.2 Result artifact schemas (required JSON fields)
