@@ -1,0 +1,15 @@
+{
+  "name": "turndown-attendant",
+  "version": "0.0.3",
+  "description": "Test runner for HTML to Markdown conversions with Turndown",
+  "main": "attendant.js",
+  "author": "Dom Christie",
+  "license": "MIT",
+  "browser": {
+    "jsdom": false
+  },
+  "dependencies": {
+    "jsdom": "^16.2.0",
+    "tape": "^4.8.0"
+  }
+}

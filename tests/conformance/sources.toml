@@ -1,11 +1,11 @@
 # Phase-2 HTML→Markdown conformance corpus manifest.
 #
-# Raw corpus files are generated under tests/conformance/fixtures/ and are
-# intentionally gitignored. Regenerate with:
+# Raw corpus files are vendored under tests/conformance/fixtures/ so CI and
+# fresh clones run the full oracle suite. Regenerate with:
 #
 #   python3 scripts/regenerate_conformance_corpus.py
 #
-# Each source is pinned to an immutable commit so phase-2 validation can run
+# Each source is pinned to an immutable commit so validation can run
 # reproducibly even though the upstream projects continue to evolve.
 
 [corpus]
@@ -29,6 +29,7 @@ name = "python-markdownify"
 license = "MIT"
 url = "https://github.com/matthewwithanm/python-markdownify.git"
 commit = "add391a6235cbc66af30ec0202cb00cb0ff0eb4c"
+version_note = "Upstream tests vendored from this exact commit; live runtime oracle remains the installed markdownify package used by the harness. The PyPI dependency is constrained separately in pyproject.toml."
 fixture_path = "tests/conformance/fixtures/markdownify"
 role = "Compatibility baseline for the Python library this project replaces."
 selected_paths = [

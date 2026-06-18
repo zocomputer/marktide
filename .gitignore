@@ -12,5 +12,4 @@ benchmarks/results/*.json
 # Spike-generated sample docs (regenerate via gen_sample_html.py)
 benchmarks/spikes/sample_*.html
 .DS_Store
-# External conformance corpora — regenerated, not committed
-tests/conformance/fixtures/
+# External conformance corpora are committed so CI runs the full oracle suite.

@@ -1,0 +1,71 @@
+{
+  "copied_paths": {
+    "commonmark-spec": [
+      "spec.txt",
+      "test/spec_tests.py",
+      "test/normalize.py",
+      "LICENSE"
+    ],
+    "markdownify": [
+      "tests/__init__.py",
+      "tests/test_advanced.py",
+      "tests/test_args.py",
+      "tests/test_basic.py",
+      "tests/test_conversions.py",
+      "tests/test_custom_converter.py",
+      "tests/test_escaping.py",
+      "tests/test_lists.py",
+      "tests/test_tables.py",
+      "tests/types.py",
+      "tests/utils.py",
+      "README.rst",
+      "LICENSE"
+    ],
+    "pandoc": [
+      "test/Tests/Readers/HTML.hs",
+      "test/Tests/Writers/HTML.hs",
+      "test/html-reader.html",
+      "test/lhs-test.html",
+      "test/s5-basic.html",
+      "test/s5-fancy.html",
+      "test/s5-fragment.html",
+      "test/s5-inserts.html",
+      "test/fb2/images-embedded.html",
+      "test/ipynb/rank.out.html",
+      "data/templates/default.html4",
+      "data/templates/default.html5",
+      "COPYING.md"
+    ],
+    "turndown": [
+      "test/index.html",
+      "test/turndown-test.js",
+      "test/internals-test.js",
+      "package.json",
+      "LICENSE"
+    ],
+    "turndown-attendant": [
+      "README.md",
+      "attendant.js",
+      "package.json",
+      "LICENSE"
+    ]
+  },
+  "fixture_root": "tests/conformance/fixtures",
+  "sources": {
+    "commonmark-spec": {
+      "spec_examples": 655
+    },
+    "markdownify": {
+      "assertion_count_approx": 323,
+      "test_py_files": 8
+    },
+    "pandoc": {
+      "html_files": 8,
+      "reader_haskell_specs": 1,
+      "writer_haskell_specs": 1
+    },
+    "turndown": {
+      "attendant_case_count": 147
+    }
+  }
+}
