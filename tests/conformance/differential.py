@@ -30,6 +30,33 @@ DEFAULT_REPORT_DIR = REPO_ROOT / "tests" / "conformance" / "reports"
 
 
 @dataclass(frozen=True)
+class Html2mdAdapter:
+    """Local correctness adapter for the in-repo html2md converter.
+
+    Kept in tests/conformance so the shared benchmark adapter interface remains
+    owned by coder-3 while phase-2 correctness wiring can start immediately.
+    """
+
+    name: str = "html2md"
+    package: str = "html2md local"
+    engine: str = "lxml target parser + Python emitter"
+    option_map: object | None = None
+
+    def convert(self, html_bytes: bytes) -> str:
+        import html2md
+
+        return html2md.convert(html_bytes)
+
+
+def _html2md_is_available() -> bool:
+    try:
+        import html2md  # noqa: F401
+    except ModuleNotFoundError:
+        return False
+    return True
+
+
+@dataclass(frozen=True)
 class Case:
     id: str
     layer: str
@@ -397,6 +424,8 @@ def main() -> None:
     if args.max_cases is not None:
         cases = cases[: args.max_cases]
     adapters = get_adapters(include_lxml_naive=args.include_lxml_naive)
+    if _html2md_is_available():
+        adapters.append(Html2mdAdapter())
     results = run_differential(cases, adapters, max_diff_chars=args.max_diff_chars)
     json_path, md_path = write_reports(results, args.report_dir)
     print(json.dumps(summarize(results), indent=2, sort_keys=True))
