@@ -7,7 +7,7 @@
 
 .DEFAULT_GOAL := help
 .PHONY: help lint test ruff typecheck unit conformance property e2e \
-        verify-fidelity cov bench bench-baseline all
+        verify-fidelity verify-canonical cov bench bench-baseline all
 
 # `uv run` for the suite; the benchmark group provides the markdownify oracle + Rust
 # adapters that the conformance/property layers and the e2e fixtures rely on.
@@ -41,6 +41,9 @@ e2e:  ## Black-box E2E (skips the >50 MiB fixtures when absent)
 
 verify-fidelity:  ## Reproduce the markdownify fidelity headline (raw/effective + divergences)
 	uv run --group benchmark python tests/conformance/verify_fidelity.py
+
+verify-canonical:  ## Verify examples/canonical.html semantically across converters
+	uv run --group benchmark python tests/conformance/verify_canonical.py
 
 ##@ Lint — each is a subset of `make lint`
 ruff:  ## Ruff lint only
