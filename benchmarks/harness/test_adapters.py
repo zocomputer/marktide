@@ -1,6 +1,7 @@
 import asyncio
 
 from benchmarks.harness.adapters.base import get_adapters, supports_streaming
+from benchmarks.harness.adapters.html2md_adapter import STREAM_INPUT_CHUNK_BYTES
 from benchmarks.harness.probe import probe_streaming_adapter
 
 HTML = b"<h1>hi</h1><p>Hello <strong>bold</strong></p>"
@@ -36,6 +37,21 @@ def test_html2md_streaming_adapter_exposes_native_chunks():
     streamed = "".join(adapter.convert_stream_chunks(HTML))
     assert out == streamed
     assert "hi" in out.lower()
+
+
+def test_html2md_streaming_adapter_chunks_fixture_input_for_cadence():
+    adapter = next(
+        a
+        for a in get_adapters(include_lxml_naive=False)
+        if a.name == "html2md_streaming"
+    )
+    paragraph = b"<p>streaming cadence block</p>"
+    payload = paragraph * ((STREAM_INPUT_CHUNK_BYTES // len(paragraph)) + 1000)
+
+    pieces = list(adapter.convert_stream_chunks(payload))
+
+    assert len(pieces) > 1
+    assert "".join(pieces) == adapter.convert(payload)
 
 
 def test_streaming_cadence_probe_measures_first_chunk_and_gaps():
