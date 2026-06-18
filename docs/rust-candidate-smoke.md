@@ -76,3 +76,24 @@ Evidence checked:
 - `/tmp/html2md-candidate-src/html-to-markdown-v3.5.7/crates/html-to-markdown-py/src/lib.rs:2747-2769` implements Python `convert(html: String, ...)` by calling `html_to_markdown_rs::convert(&html, Some(options_core))` directly, with no detach/allow_threads wrapper.
 - `/Users/dcosson/h2home/projects/new-html-parser/.venv/lib/python3.12/site-packages/html2text_rs/html2text_rs.pyi:1-3` exposes only `text_markdown`, `text_plain`, and `text_rich` whole-string functions.
 - `/tmp/html2md-candidate-src/html2text_rs/src/lib.rs:11-18` implements `text_markdown` by converting the Python string to a cow and calling `py.detach(|| from_read(html_cow.as_bytes(), width))`, which explains the near-idle heartbeat.
+
+## `html2text_rs` fidelity spot-check versus `markdownify`
+
+Question: since `html2text_rs==0.2.5` is the only Rust candidate that releases the GIL under `asyncio.to_thread`, can it serve as a viable async-friendly baseline/fallback despite being one-shot whole-string input/output?
+
+Method: compare `html2text_rs.text_markdown(html, width=100)` against `markdownify.markdownify(html)` on 10 representative fixtures that exercise core Markdown constructs. `markdownify` is treated as the current behavior oracle for this spot-check, not as a universal CommonMark oracle.
+
+| Fixture | `markdownify` behavior | `html2text_rs` behavior | Fidelity verdict |
+| --- | --- | --- | --- |
+| Heading + bold/emphasis paragraph | Setext H1 plus `**bold**` and `*em*`. | ATX H1 plus same bold/emphasis. | Acceptable style difference. |
+| Inline code + titled link | Preserves inline code and emits inline link with title: `[site](https://example.com "Example")`. | Preserves inline code, emits reference link, drops title: `[site][1]` / `[1]: https://example.com`. | Mostly acceptable, but title metadata is lost. |
+| `<pre><code>` code block | Emits fenced code block. | Emits a single backtick-delimited multi-line inline-code-ish block. | Bad for code blocks; likely invalid / poor Markdown. |
+| Nested unordered list | Emits `*` top-level and `+` nested marker. | Emits `*` for both levels with indentation. | Acceptable style difference. |
+| Nested ordered list | Matches ordered list numbering and nesting. | Matches ordered list numbering and nesting. | Good. |
+| Table | Emits a GitHub-style Markdown pipe table. | Emits box-drawing text table (`─┬─`, `A│B`, etc.). | Not Markdown-table compatible; bad for table fidelity. |
+| Blockquote + `<hr>` | Emits blockquote, horizontal rule, and following paragraph. | Emits blockquote and following paragraph; drops horizontal rule. | Loses structural separator. |
+| Image with `src` / `alt` / `title` | Emits image Markdown with source and title: `![Zo](/logo.png "Logo title")`. | Emits only `[Zo]`. | Loses image URL and title; bad for image fidelity. |
+| Escaping Markdown metacharacters | Escapes literal `*stars*` and `_under_`. | Leaves `*stars*` and `_under_` unescaped. | Changes literal text into emphasis; bad escaping fidelity. |
+| `<br>` hard breaks | Emits Markdown hard breaks with trailing spaces. | Emits plain newlines. | Loses hard-break semantics in Markdown renderers. |
+
+Conclusion: `html2text_rs` is a useful async-friendly performance baseline because its binding releases the GIL, but it is **not viable as the semantic fallback/replacement** for `markdownify` or for the planned library. The spot-check found material output incompatibilities for code blocks, tables, horizontal rules, images, Markdown escaping, hard breaks, and link titles. It should remain in phase-1 benchmarks as a lower-fidelity Rust baseline, not as a go/no-go alternative that removes the need for a streaming converter.
