@@ -45,3 +45,27 @@ def test_inline_placement_records_output_hash():
         assert result.iterations and result.iterations >= 1
 
     asyncio.run(run())
+
+
+def test_to_thread_raises_promptly_when_converter_raises():
+    async def run():
+        def boom(_payload: bytes) -> str:
+            raise RuntimeError("boom")
+
+        try:
+            await asyncio.wait_for(
+                probe_adapter(
+                    "boom",
+                    boom,
+                    b"",
+                    placement=Placement.TO_THREAD,
+                    interval_s=0.001,
+                ),
+                timeout=0.2,
+            )
+        except RuntimeError as exc:
+            assert str(exc) == "boom"
+        else:
+            raise AssertionError("probe_adapter did not propagate converter exception")
+
+    asyncio.run(run())

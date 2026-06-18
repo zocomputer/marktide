@@ -91,3 +91,11 @@ Before final report generation, consider renaming the normalized adapter row to 
 3 findings: 0 P0, 1 P1, 1 P2, 1 P3
 
 **Verdict**: Approved with revisions. Fix the `Placement.TO_THREAD` exception hang before relying on the harness for go/no-go evidence; the remaining findings can be handled as final-runner hardening/report-clarity work.
+
+## Disposition
+
+| # | Severity | Finding | Disposition | Commit | Notes |
+|---|----------|---------|-------------|--------|-------|
+| 1 | P1 | `Placement.TO_THREAD` hangs forever if the converter raises | Incorporated | this commit | `_probe_to_thread` now records exceptions, always sets the completion event in `finally`, and re-raises the original converter exception after heartbeat sampling exits. Added `test_to_thread_raises_promptly_when_converter_raises`. Reviewer confirmed re-raising is the desired shape. |
+| 2 | P2 | Fixture verification silently downgrades when lockfile or entry is missing | Incorporated | this commit | `load_fixture_set(..., verify_hashes=True)` now raises for a missing provided/default lockfile and for requested fixtures missing lock entries. `lock_path=None` remains the explicit opt-out for ad-hoc tests. |
+| 3 | P3 | Normalized markdownify adapter name is easy to confuse with the default oracle | Deferred | — | Reviewer confirmed this can defer to final result-table/reporting pass; current split is functionally correct and `markdownify_default_oracle` is already used by the differential harness. |

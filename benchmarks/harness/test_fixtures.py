@@ -25,3 +25,18 @@ def test_load_fixture_set_verifies_lock_hash(tmp_path: Path):
     import pytest
     with pytest.raises(ValueError, match="sha256|size"):
         load_fixture_set(tmp_path, names=("small",), lock_path=lock)
+
+
+def test_load_fixture_set_requires_lockfile_when_verifying(tmp_path: Path):
+    (tmp_path / "small.html").write_text("<p>small</p>")
+    import pytest
+    with pytest.raises(FileNotFoundError, match="fixture lockfile not found"):
+        load_fixture_set(tmp_path, names=("small",), lock_path=tmp_path / "missing.lock.json")
+
+
+def test_load_fixture_set_requires_lock_entry_when_verifying(tmp_path: Path):
+    (tmp_path / "small.html").write_text("<p>small</p>")
+    (tmp_path / "fixtures.lock.json").write_text('{"fixtures": []}')
+    import pytest
+    with pytest.raises(ValueError, match="no entry in lockfile"):
+        load_fixture_set(tmp_path, names=("small",), lock_path=tmp_path / "fixtures.lock.json")

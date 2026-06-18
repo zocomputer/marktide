@@ -168,19 +168,23 @@ async def _probe_to_thread(
         t0 = time.perf_counter()
         iterations = 0
         last_output = ""
-        if repeat_until_duration:
-            while time.perf_counter() - t0 < duration_s:
+        try:
+            if repeat_until_duration:
+                while time.perf_counter() - t0 < duration_s:
+                    last_output = await asyncio.to_thread(convert, payload)
+                    iterations += 1
+            else:
                 last_output = await asyncio.to_thread(convert, payload)
-                iterations += 1
-        else:
-            last_output = await asyncio.to_thread(convert, payload)
-            iterations = 1
-        elapsed = time.perf_counter() - t0
-        timing["conversion_wall_s"] = elapsed
-        timing["per_iter_s"] = elapsed / max(iterations, 1)
-        timing["iterations"] = iterations
-        timing["output"] = last_output
-        done.set()
+                iterations = 1
+        except BaseException as exc:  # propagate after heartbeat sampling exits
+            timing["exception"] = exc
+        finally:
+            elapsed = time.perf_counter() - t0
+            timing["conversion_wall_s"] = elapsed
+            timing["per_iter_s"] = elapsed / max(iterations, 1) if iterations else None
+            timing["iterations"] = iterations
+            timing["output"] = last_output
+            done.set()
 
     worker_task = asyncio.create_task(worker())
     jitter_ms: list[float] = []
@@ -189,6 +193,8 @@ async def _probe_to_thread(
         await asyncio.sleep(interval_s)
         jitter_ms.append((time.perf_counter() - t0 - interval_s) * 1000.0)
     await worker_task
+    if "exception" in timing:
+        raise timing["exception"]
     return _summarize(
         name,
         Placement.TO_THREAD,

@@ -51,7 +51,7 @@ def load_fixture_set(
     """
 
     fixture_root = Path(root)
-    lock = _load_lock(Path(lock_path)) if lock_path is not None else {}
+    lock = _load_lock(Path(lock_path), strict=verify_hashes) if lock_path is not None else {}
     fixtures: list[Fixture] = []
     missing: list[Path] = []
     for name in names:
@@ -61,7 +61,9 @@ def load_fixture_set(
             continue
         metadata = lock.get(name)
         size_bytes = path.stat().st_size
-        if verify_hashes and metadata is not None:
+        if verify_hashes and lock_path is not None:
+            if metadata is None:
+                raise ValueError(f"fixture {path} has no entry in lockfile {lock_path}")
             _verify_fixture(path, size_bytes, metadata)
         fixtures.append(
             Fixture(
@@ -78,8 +80,10 @@ def load_fixture_set(
     return FixtureSet(root=fixture_root, fixtures=tuple(fixtures))
 
 
-def _load_lock(path: Path) -> dict[str, dict[str, Any]]:
+def _load_lock(path: Path, *, strict: bool) -> dict[str, dict[str, Any]]:
     if not path.exists():
+        if strict:
+            raise FileNotFoundError(f"fixture lockfile not found: {path}")
         return {}
     raw = json.loads(path.read_text())
     entries: dict[str, dict[str, Any]] = {}
