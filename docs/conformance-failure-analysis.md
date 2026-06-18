@@ -95,3 +95,35 @@ Post-normalizer snapshot from `tests/conformance/reports/latest.json`: primary `
 - `tests/conformance/differential.py::_oracle_output` uses the upstream expected string as the oracle for this layer, so option-specific tests are measured against the behavior they actually assert.
 
 Corrected fast primary snapshot after block/inline + table handler landings: primary `html2md` fidelity is **229 / 298 = 76.8%** across `golden` + corrected `markdownify_tests`; the corrected `markdownify_tests` sublayer alone is **173 / 234 = 73.9%**. `html2md_streaming` matches the same numbers.
+
+## Corrected-harness residual classification after current converter
+
+Fast primary measurement on the corrected harness now reports **288 / 298 = 96.6%** across the primary `golden` + `markdownify_tests` layers. Only 10 primary failures remain in the current shared converter tree:
+
+| Case | Classification | Notes |
+| --- | --- | --- |
+| `markdownify:test_advanced:39` | Parser/handler residual | CDATA input (`<![CDATA[foobar]]>`) is dropped; this is a parser/content-preservation gap, not a markdownify divergence. |
+| `markdownify:test_conversions:83` | Table handler residual | Standalone `<td>foo<br />bar</td>` expects markdownify's table-cell text form (`foo bar |`). Decide whether to emulate or document as divergence with table owner; not pre-approved as a divergence yet. |
+| `markdownify:test_conversions:182` | Handler residual | `<h1>A <p>P</p> C </h1>` with `heading_style=ATX_CLOSED` should flatten nested block content inside heading text. |
+| `markdownify:test_conversions:183` | Handler residual | Same nested-block-in-heading flattening gap with `heading_style=ATX`. |
+| `markdownify:test_conversions:373` | Emitter whitespace residual | Text after blockquote retains a leading space (`after` vs ` after`). |
+| `markdownify:test_conversions:374` | Emitter/list whitespace residual | Second ordered-list marker retains a leading space. |
+| `markdownify:test_conversions:375` | Emitter/list whitespace residual | Second unordered-list marker retains a leading space. |
+| `markdownify:test_conversions:376` | Emitter whitespace residual | Text after fenced pre block retains a leading space. |
+| `markdownify:test_lists:47` | Emitter/list boundary residual | Ordered list followed by trailing text is missing markdownify's blank line after the list. |
+| `markdownify:test_lists:73` | Emitter/list boundary residual | Unordered list item followed by trailing text is missing markdownify's blank line after the list. |
+
+Bucket summary: **6 emitter whitespace/list-boundary**, **3 handler/table residual**, **1 parser CDATA residual**, **0 newly confirmed genuine divergences**. `tests/conformance/allowed_divergences.toml` remains limited to the three earlier candidate divergences until table/code-language policy decisions are made.
+
+## Property-suite validation against current converter
+
+`uv run --group benchmark pytest tests/property -vv` completes under the fast profile in **4.82s wall-clock** (<10s requirement) with **5 passed, 1 xfailed**:
+
+- `tests/property/test_metamorphic.py::test_container_wrapping_invariance` — pass.
+- `tests/property/test_metamorphic.py::test_concatenation_homomorphism` — pass.
+- `tests/property/test_metamorphic.py::test_convert_stream_equivalent_to_convert_for_generated_html` — pass.
+- `tests/property/test_metamorphic.py::test_markdown_commonmark_round_trip_is_structurally_stable` — xfail; remaining inline/block edge cases such as adjacent code spans can still round-trip to an equivalent but textually different Markdown representation.
+- `tests/property/test_metamorphic.py::test_fast_profile_is_default_and_bounded` — pass.
+- `tests/property/test_metamorphic.py::test_html_generator_smoke` — pass.
+
+A quiet run also completed in **6.34s** (`5 passed, 1 xfailed`), so the property suite is within the required fast-profile wall-clock budget on current hardware.
