@@ -72,3 +72,14 @@ These are **not active bypasses**. They are decision points to re-review with co
 3. Recompute this triage: handler bucket should collapse first.
 4. Implement the CommonMark/Pandoc/Turndown normalization rules above and move those cases out of raw textual-fidelity accounting.
 5. Promote, reject, or delete the candidate divergences before enabling an active allow-list in the differential gate.
+
+## Harness-side normalization implementation update
+
+Commit after this triage implements the converter-independent harness normalization items:
+
+- `tests/conformance/differential.py::commonmark_semantic_equal` renders `commonmark_expected_html` oracle/candidate Markdown with `markdown_it.MarkdownIt("commonmark")` and compares canonicalized HTML fragments instead of raw Markdown strings.
+- `tests/conformance/differential.py::strip_pandoc_chrome` removes Pandoc template chrome (`head`, `style`, `script`, `meta`, `link`, `title`) before both oracle and candidate conversion for the `pandoc` layer.
+- `tests/conformance/differential.py::load_turndown_cases` separates option-surface fixtures into the `turndown_options` layer so default Turndown triangulation is not conflated with unmapped option behavior.
+- `tests/conformance/differential.py::summarize` now reports primary markdownify-oracle fidelity over only `golden` + `markdownify_tests`; CommonMark, Pandoc, Turndown, and Turndown options remain guardrail/triangulation layers.
+
+Post-normalizer snapshot from `tests/conformance/reports/latest.json`: primary `html2md` fidelity is **257 / 306 = 84.0%**; overall guardrail total is **947 / 1115 = 84.9%**. This snapshot includes handler work present in the shared working tree at the time of the run; the durable harness change is the normalization and primary/guardrail accounting, not the exact handler-pass count.

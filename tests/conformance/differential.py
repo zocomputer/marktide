@@ -21,12 +21,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from lxml import etree
 from lxml import html as lxml_html
 
 from benchmarks.harness.adapters.base import Adapter, get_adapters
 
 DEFAULT_FIXTURE_ROOT = REPO_ROOT / "tests" / "conformance" / "fixtures"
 DEFAULT_REPORT_DIR = REPO_ROOT / "tests" / "conformance" / "reports"
+PRIMARY_MARKDOWNIFY_LAYERS = frozenset({"golden", "markdownify_tests"})
 
 
 @dataclass(frozen=True)
@@ -98,6 +100,70 @@ def normalize_markdown(text: str) -> str:
     return text + "\n" if text else ""
 
 
+def normalize_input_html(case: Case) -> str:
+    """Apply corpus-specific source normalization before oracle conversion.
+
+    The primary markdownify-oracle layers intentionally pass through unchanged.
+    Secondary corpora can contain fixture chrome that is useful for smoke
+    coverage but should not dominate fidelity accounting.
+    """
+
+    if case.layer != "pandoc":
+        return case.html
+    return strip_pandoc_chrome(case.html)
+
+
+def strip_pandoc_chrome(html: str) -> str:
+    """Return body content with Pandoc template/presentation chrome removed."""
+
+    try:
+        document = lxml_html.fromstring(html)
+    except (ValueError, etree.ParserError):
+        return html
+    for element in document.xpath("//head|//style|//script|//meta|//link|//title"):
+        parent = element.getparent()
+        if parent is not None:
+            parent.remove(element)
+    bodies = document.xpath("//body")
+    root = bodies[0] if bodies else document
+    return _inner_html(root)
+
+
+def commonmark_semantic_equal(expected_markdown: str, actual_markdown: str) -> bool:
+    """Compare CommonMark-rendered HTML trees instead of Markdown strings."""
+
+    try:
+        from markdown_it import MarkdownIt
+    except ModuleNotFoundError:
+        return False
+    renderer = MarkdownIt("commonmark")
+    expected_html = renderer.render(expected_markdown)
+    actual_html = renderer.render(actual_markdown)
+    return _canonical_html_fragment(expected_html) == _canonical_html_fragment(actual_html)
+
+
+def _canonical_html_fragment(html: str) -> object:
+    parser = lxml_html.HTMLParser(remove_comments=True)
+    root = lxml_html.fragment_fromstring(html, create_parent="div", parser=parser)
+    return _canonical_html_node(root, preserve_text=False)
+
+
+def _canonical_html_node(element, *, preserve_text: bool) -> tuple[object, ...]:
+    tag = str(element.tag).lower()
+    child_preserve = preserve_text or tag in {"pre", "code"}
+    attrs = tuple(sorted((str(key).lower(), str(value)) for key, value in element.attrib.items()))
+    text = _canonical_html_text(element.text or "", preserve=child_preserve)
+    children = tuple(_canonical_html_node(child, preserve_text=child_preserve) for child in element)
+    tail = _canonical_html_text(element.tail or "", preserve=preserve_text)
+    return tag, attrs, text, children, tail
+
+
+def _canonical_html_text(text: str, *, preserve: bool) -> str:
+    if preserve:
+        return text.replace("\r\n", "\n").replace("\r", "\n")
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def sha256_text(text: str) -> str:
     import hashlib
 
@@ -145,14 +211,15 @@ def load_turndown_cases(root: Path = DEFAULT_FIXTURE_ROOT) -> list[Case]:
         if not input_nodes:
             continue
         expected_nodes = case_el.xpath(".//pre[contains(concat(' ', normalize-space(@class), ' '), ' expected ')]")
+        data_options = case_el.get("data-options")
         cases.append(
             Case(
                 id=f"turndown:{index:04d}:{_slug(name)}",
-                layer="turndown",
+                layer="turndown_options" if data_options else "turndown",
                 source_path=_display_path(path),
                 html=_inner_html(input_nodes[0]),
                 upstream_expected_markdown=expected_nodes[0].text if expected_nodes else None,
-                metadata={"name": name, "data_options": case_el.get("data-options")},
+                metadata={"name": name, "data_options": data_options},
             )
         )
     return cases
@@ -311,7 +378,8 @@ def run_differential(cases: Iterable[Case], adapters: list[Adapter], *, max_diff
     candidates = [adapter for adapter in adapters if not adapter.name.startswith("markdownify")]
     results: list[CaseResult] = []
     for case in cases:
-        html_bytes = case.html.encode("utf-8", errors="replace")
+        normalized_html = normalize_input_html(case)
+        html_bytes = normalized_html.encode("utf-8", errors="replace")
         oracle_output = oracle.convert(html_bytes)
         normalized_oracle = normalize_markdown(oracle_output)
         candidate_results: list[CandidateResult] = []
@@ -319,7 +387,11 @@ def run_differential(cases: Iterable[Case], adapters: list[Adapter], *, max_diff
             try:
                 output = adapter.convert(html_bytes)
                 normalized = normalize_markdown(output)
-                passed = normalized == normalized_oracle
+                passed = (
+                    commonmark_semantic_equal(normalized_oracle, normalized)
+                    if case.layer == "commonmark_expected_html"
+                    else normalized == normalized_oracle
+                )
                 candidate_results.append(
                     CandidateResult(
                         adapter=adapter.name,
@@ -367,7 +439,25 @@ def summarize(results: list[CaseResult]) -> dict[str, object]:
             key = "passed" if candidate.passed else "error" if candidate.error else "failed"
             adapter_bucket[key] += 1
             layer_adapter_bucket[key] += 1
-    return {"case_count": len(results), "by_adapter": by_adapter, "by_layer": by_layer}
+    return {
+        "case_count": len(results),
+        "primary_markdownify_layers": sorted(PRIMARY_MARKDOWNIFY_LAYERS),
+        "primary_markdownify_oracle": _summarize_primary_markdownify(results),
+        "by_adapter": by_adapter,
+        "by_layer": by_layer,
+    }
+
+
+def _summarize_primary_markdownify(results: list[CaseResult]) -> dict[str, dict[str, int]]:
+    primary: dict[str, dict[str, int]] = {}
+    for case in results:
+        if case.layer not in PRIMARY_MARKDOWNIFY_LAYERS:
+            continue
+        for candidate in case.results:
+            adapter_bucket = primary.setdefault(candidate.adapter, {"passed": 0, "failed": 0, "error": 0})
+            key = "passed" if candidate.passed else "error" if candidate.error else "failed"
+            adapter_bucket[key] += 1
+    return primary
 
 
 def write_reports(results: list[CaseResult], report_dir: Path) -> tuple[Path, Path]:
@@ -390,6 +480,20 @@ def _summary_markdown(summary: dict[str, object], json_path: Path) -> str:
     lines.append(f"Full per-fixture JSON: `{json_path}`")
     lines.append("")
     lines.append(f"Case count: `{summary['case_count']}`")
+    lines.append("")
+    lines.append("## Primary markdownify-oracle fidelity")
+    lines.append("")
+    layers = ", ".join(f"`{layer}`" for layer in summary["primary_markdownify_layers"])  # type: ignore[index]
+    lines.append(f"Primary layers: {layers}")
+    lines.append("")
+    lines.append("| Adapter | Passed | Failed | Errors | Fidelity |")
+    lines.append("| --- | ---: | ---: | ---: | ---: |")
+    for adapter, counts in sorted(summary["primary_markdownify_oracle"].items()):  # type: ignore[index, union-attr]
+        total = counts["passed"] + counts["failed"] + counts["error"]
+        fidelity = (counts["passed"] / total * 100) if total else 0.0
+        lines.append(
+            f"| `{adapter}` | {counts['passed']} | {counts['failed']} | {counts['error']} | {fidelity:.1f}% |"
+        )
     lines.append("")
     lines.append("## Totals by adapter")
     lines.append("")
@@ -424,7 +528,7 @@ def main() -> None:
     if args.max_cases is not None:
         cases = cases[: args.max_cases]
     adapters = get_adapters(include_lxml_naive=args.include_lxml_naive)
-    if _html2md_is_available():
+    if _html2md_is_available() and all(adapter.name != "html2md" for adapter in adapters):
         adapters.append(Html2mdAdapter())
     results = run_differential(cases, adapters, max_diff_chars=args.max_diff_chars)
     json_path, md_path = write_reports(results, args.report_dir)

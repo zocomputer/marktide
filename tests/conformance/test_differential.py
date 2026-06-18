@@ -4,7 +4,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from differential import Case, load_golden_cases, load_turndown_cases, normalize_markdown, run_differential, summarize
+from differential import (
+    Case,
+    commonmark_semantic_equal,
+    load_golden_cases,
+    load_turndown_cases,
+    normalize_input_html,
+    normalize_markdown,
+    run_differential,
+    summarize,
+)
 
 
 class FakeAdapter:
@@ -19,6 +28,19 @@ class FakeAdapter:
     def convert(self, html_bytes: bytes) -> str:
         text = html_bytes.decode("utf-8")
         return text.replace("<p>", "").replace("</p>", "") + self._suffix
+
+
+class StaticAdapter:
+    package = "fake"
+    engine = "fake"
+    option_map = None
+
+    def __init__(self, name: str, output: str) -> None:
+        self.name = name
+        self._output = output
+
+    def convert(self, html_bytes: bytes) -> str:
+        return self._output
 
 
 def test_normalize_markdown_policy_level_transforms():
@@ -42,6 +64,7 @@ def test_load_turndown_cases_from_attendant_html(tmp_path: Path):
     cases = load_turndown_cases(tmp_path)
     assert len(cases) == 1
     assert cases[0].id == "turndown:0000:p-case"
+    assert cases[0].layer == "turndown_options"
     assert "<p>Hello" in cases[0].html
     assert cases[0].upstream_expected_markdown == "Hello **world**"
     assert cases[0].metadata["data_options"] == '{"headingStyle":"atx"}'
@@ -99,3 +122,49 @@ def test_run_differential_compares_candidates_against_default_oracle():
     assert by_name["candidate_diff"].passed is False
     assert "different" in (by_name["candidate_diff"].diff or "")
     assert summarize(results)["by_adapter"]["candidate_same"]["passed"] == 1
+
+
+def test_commonmark_layer_compares_rendered_semantic_html():
+    cases = [Case(id="commonmark:semantic", layer="commonmark_expected_html", source_path="inline", html="<p>x</p>")]
+    adapters = [
+        StaticAdapter("markdownify_default_oracle", "*x*"),
+        StaticAdapter("candidate_same_html", "_x_"),
+    ]
+
+    results = run_differential(cases, adapters)
+
+    assert results[0].results[0].passed is True
+    assert commonmark_semantic_equal("x\n", "x\n\n") is True
+
+
+def test_pandoc_input_normalization_strips_template_chrome():
+    case = Case(
+        id="pandoc:chrome",
+        layer="pandoc",
+        source_path="inline",
+        html="<html><head><title>T</title><style>.x{}</style></head><body><h1>Body</h1><script>x()</script></body></html>",
+    )
+
+    normalized = normalize_input_html(case)
+
+    assert "<h1>Body</h1>" in normalized
+    assert "style" not in normalized
+    assert "script" not in normalized
+    assert "title" not in normalized
+
+
+def test_primary_markdownify_summary_is_separate_from_guardrail_layers():
+    cases = [
+        Case(id="golden:1", layer="golden", source_path="inline", html="<p>a</p>"),
+        Case(id="commonmark:1", layer="commonmark_expected_html", source_path="inline", html="<p>b</p>"),
+    ]
+    adapters = [
+        FakeAdapter("markdownify_default_oracle"),
+        FakeAdapter("candidate_same"),
+    ]
+
+    summary = summarize(run_differential(cases, adapters))
+
+    assert summary["primary_markdownify_layers"] == ["golden", "markdownify_tests"]
+    assert summary["primary_markdownify_oracle"]["candidate_same"]["passed"] == 1
+    assert summary["by_adapter"]["candidate_same"]["passed"] == 2
