@@ -5,7 +5,7 @@
 # tools that are not in the dependency group (ruff, ty, pytest-cov).
 
 .DEFAULT_GOAL := help
-.PHONY: help test conformance property e2e e2e-full cov lint typecheck bench bench-baseline all
+.PHONY: help test conformance verify-fidelity property e2e e2e-full cov lint typecheck bench bench-baseline all
 
 PYTEST := uv run pytest
 # Suites/harnesses that exercise the markdownify oracle + Rust adapters need the
@@ -20,6 +20,9 @@ test:  ## Fast unit + component tests (PR gate)
 
 conformance:  ## Conformance / differential corpus tests
 	$(PYTEST_BENCH) tests/conformance
+
+verify-fidelity:  ## Reproduce markdownify fidelity headline (raw/effective + divergences)
+	uv run --group benchmark python tests/conformance/verify_fidelity.py
 
 property:  ## Bounded Hypothesis property / metamorphic tests
 	$(PYTEST_BENCH) tests/property
