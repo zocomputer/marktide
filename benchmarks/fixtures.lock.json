@@ -1,0 +1,61 @@
+{
+  "fixtures": [
+    {
+      "actual_bytes": 102740,
+      "parse_guard": "closed outer HTML and lxml.html parse succeeded when lxml was importable",
+      "path": "benchmarks/fixtures/small.html",
+      "sha256": "0ee1ec952ec5279b84f18f44c43d6d2c100bb159aa62c399b48f0b611b4bdbf3",
+      "target_bytes": 102400
+    },
+    {
+      "actual_bytes": 5606346,
+      "parse_guard": "closed outer HTML and lxml.html parse succeeded when lxml was importable",
+      "path": "benchmarks/fixtures/medium.html",
+      "sha256": "c917eb770d068cb35a2f8c463fbc8014ae66e7d7416b05059e33ebfa89956afb",
+      "target_bytes": 5242880
+    },
+    {
+      "actual_bytes": 57590748,
+      "parse_guard": "closed outer HTML and lxml.html parse succeeded when lxml was importable",
+      "path": "benchmarks/fixtures/large.html",
+      "sha256": "7c9ae8a809b111b779433177ee8695c0bb154f7e9749fda94ba7598314bf16a6",
+      "target_bytes": 52428800
+    },
+    {
+      "actual_bytes": 115181313,
+      "parse_guard": "closed outer HTML and lxml.html parse succeeded when lxml was importable",
+      "path": "benchmarks/fixtures/xlarge.html",
+      "sha256": "a0704f7f1aefa8fee72f690c509c1fd6df4538a216bdab83deb4dfceda4bdb27",
+      "target_bytes": 104857600
+    }
+  ],
+  "generated_by": "scripts/regenerate_benchmark_fixtures.py",
+  "no_raw_byte_truncation": true,
+  "sources": [
+    {
+      "bytes": 509569,
+      "name": "wikipedia_html",
+      "sha256": "7d4aaa8b272cb9521129ad49660691563ad5ef7e3ee336b18438cf5e254afa42",
+      "url": "https://en.wikipedia.org/wiki/HTML"
+    },
+    {
+      "bytes": 1733147,
+      "name": "wikipedia_united_states",
+      "sha256": "97ca2910f667b3a97b31b1159afbe4452c19dfa3d4e02983afe92df1f39de6b3",
+      "url": "https://en.wikipedia.org/wiki/United_States"
+    },
+    {
+      "bytes": 1187554,
+      "name": "rfc9110",
+      "sha256": "d431760660ea44e130f6e919dab216df2d0b3a490567a98089267523368fe1e5",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html"
+    },
+    {
+      "bytes": 36037981,
+      "name": "nasa_apollo",
+      "sha256": "2b8051684d39e0e8dfd914320908e3d67b3729b68ffc17d5ee96449fdeeb18af",
+      "url": "https://history.nasa.gov/SP-4029/Apollo_00g_Table_of_Contents.htm"
+    }
+  ],
+  "version": 1
+}

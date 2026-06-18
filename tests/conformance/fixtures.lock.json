@@ -1,0 +1,232 @@
+{
+  "fixture_root": "tests/conformance/fixtures",
+  "generated_by": "scripts/regenerate_conformance_corpus.py",
+  "sources": {
+    "commonmark-spec": {
+      "commit": "3da939428d80f146f270cd1765e4ba462e96bb1b",
+      "files": [
+        {
+          "bytes": 206108,
+          "path": "commonmark-spec/spec.txt",
+          "sha256": "43fad3e0ac5190a3b0bc6a41f7b1a853201a26ec2e6b74871f5d96239a8c34cf"
+        },
+        {
+          "bytes": 6433,
+          "path": "commonmark-spec/test/spec_tests.py",
+          "sha256": "9db1ea4a3ee79c5ec74eebc09c5985eb252427e8d9d19ef45e5cc3f2ae410855"
+        },
+        {
+          "bytes": 6522,
+          "path": "commonmark-spec/test/normalize.py",
+          "sha256": "94a9dd253907e3dab7c02fc11e934f06112dcf0f3804255d09d732c8c7c4b5f4"
+        },
+        {
+          "bytes": 2792,
+          "path": "commonmark-spec/LICENSE",
+          "sha256": "3e4806ba6f20073e8ce40da5a0c4b59f7f44287965f538e195a4d734d833557b"
+        }
+      ],
+      "url": "https://github.com/commonmark/commonmark-spec.git"
+    },
+    "markdownify": {
+      "commit": "add391a6235cbc66af30ec0202cb00cb0ff0eb4c",
+      "files": [
+        {
+          "bytes": 0,
+          "path": "markdownify/tests/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "bytes": 1249,
+          "path": "markdownify/tests/test_advanced.py",
+          "sha256": "7d86a405a833b5fda0748f4b2880c0cefae00854faf4a772b00eb2cf6ee34104"
+        },
+        {
+          "bytes": 1923,
+          "path": "markdownify/tests/test_args.py",
+          "sha256": "f815be3c46ba88e6359ee7d8408a631d074100eeedad34f40889415b7a9142df"
+        },
+        {
+          "bytes": 293,
+          "path": "markdownify/tests/test_basic.py",
+          "sha256": "aa49c960c54ae6bc3b7d8f4393cef5b769150c840fe6cc8c7584908339b3c90e"
+        },
+        {
+          "bytes": 19233,
+          "path": "markdownify/tests/test_conversions.py",
+          "sha256": "08060140a033ad85603a462c731efc820cb4d8fb404e1882e0c968982dd41c40"
+        },
+        {
+          "bytes": 1651,
+          "path": "markdownify/tests/test_custom_converter.py",
+          "sha256": "cab7c2b161590f12e9265cf1567f78502156ff9b76810b826fb198044a602d2b"
+        },
+        {
+          "bytes": 3422,
+          "path": "markdownify/tests/test_escaping.py",
+          "sha256": "98c17274f782c618d91622be35c25e29361404425d13937525925cd82d3ddf8c"
+        },
+        {
+          "bytes": 2901,
+          "path": "markdownify/tests/test_lists.py",
+          "sha256": "9f666e8047c5bf5ea7460047f0953385bb1e77f67144877894ce6f119b6f3cf2"
+        },
+        {
+          "bytes": 9982,
+          "path": "markdownify/tests/test_tables.py",
+          "sha256": "7fa30a128ab1de362bf73f103a5ebc5d6db7dc4b8d240182a90949d329ece7a6"
+        },
+        {
+          "bytes": 2100,
+          "path": "markdownify/tests/types.py",
+          "sha256": "875fb509607e27f0b4183db2992fde8ebb26e2f17e7fcefd7f6925e2de2974ff"
+        },
+        {
+          "bytes": 292,
+          "path": "markdownify/tests/utils.py",
+          "sha256": "28b9e4e2008da56bed0f695aa170cc30f5b758e1e74992924db37c2c55c7d390"
+        },
+        {
+          "bytes": 8942,
+          "path": "markdownify/README.rst",
+          "sha256": "f96d91d11583d3f00968255004341f8949f914a13e754d7fa9fbd96e943af858"
+        },
+        {
+          "bytes": 1083,
+          "path": "markdownify/LICENSE",
+          "sha256": "fae8b42db142dabf03b0c5c495831a5d11b9649ead0cf0bd4ab4f52294b263be"
+        }
+      ],
+      "url": "https://github.com/matthewwithanm/python-markdownify.git"
+    },
+    "pandoc": {
+      "commit": "850c7b9613aa7beb1aed8c2c1f7abb01eaf3023e",
+      "files": [
+        {
+          "bytes": 6751,
+          "path": "pandoc/test/Tests/Readers/HTML.hs",
+          "sha256": "a5482a0324a4449307aae581a7db7a40610bb02d433d4c740f57e6d5ee961fab"
+        },
+        {
+          "bytes": 8623,
+          "path": "pandoc/test/Tests/Writers/HTML.hs",
+          "sha256": "bb7802c9c7bf885f0116561a02e08d586485e594b3ee9fe38ad9dea86b1f4ed6"
+        },
+        {
+          "bytes": 17314,
+          "path": "pandoc/test/html-reader.html",
+          "sha256": "a0ede6d299a88152efa6e776e4d3d6ecbdb2303e2efc195a7cb1d56820d71d25"
+        },
+        {
+          "bytes": 1199,
+          "path": "pandoc/test/lhs-test.html",
+          "sha256": "078e0f9ebdd35ec3cd95053f610549f44261a5dcd4a3ecfc0da6b94d10bd1283"
+        },
+        {
+          "bytes": 2845,
+          "path": "pandoc/test/s5-basic.html",
+          "sha256": "25ee72d1b9ac3cc53af84fc8058a2ed53446f55b53e0033b742e7b3e89e81c52"
+        },
+        {
+          "bytes": 2925,
+          "path": "pandoc/test/s5-fancy.html",
+          "sha256": "5d6041697e7ca4de173b5c0d1ff904a50e0ced8bc8a458b8a5e695dcb8040f1c"
+        },
+        {
+          "bytes": 225,
+          "path": "pandoc/test/s5-fragment.html",
+          "sha256": "bad07bc95efae058d1769cac0ad84efb1f7f69d371a5bc0599d87868bd85d9a3"
+        },
+        {
+          "bytes": 1896,
+          "path": "pandoc/test/s5-inserts.html",
+          "sha256": "f0c2a6fd67c43d02f85d6d720e5e5a612ce979fcb58960695d9ebdcecf2e14df"
+        },
+        {
+          "bytes": 6042,
+          "path": "pandoc/test/fb2/images-embedded.html",
+          "sha256": "986c4c2ab35d2b38940014c94f63ba89980cfa0ccc180a786de0fa05a4d4600e"
+        },
+        {
+          "bytes": 1219,
+          "path": "pandoc/test/ipynb/rank.out.html",
+          "sha256": "75b61ca463e825972be33c4be52c4e1a44360655d21203b11979b784b2efec2c"
+        },
+        {
+          "bytes": 1707,
+          "path": "pandoc/data/templates/default.html4",
+          "sha256": "cc00e00ceed4d52e37fe0683870aa0f24a15c46c5cdfb0254ce5e1addd4c4ae0"
+        },
+        {
+          "bytes": 1581,
+          "path": "pandoc/data/templates/default.html5",
+          "sha256": "7df4f9c282859fee6ff7522a5f83b2160cf7ca9e4a3e9a7f2b91bec303b55bdd"
+        },
+        {
+          "bytes": 17787,
+          "path": "pandoc/COPYING.md",
+          "sha256": "9d56cac92294e206af026a5502bee0fed77200b08b51ec28aa63c9efda4dcfdd"
+        }
+      ],
+      "url": "https://github.com/jgm/pandoc.git"
+    },
+    "turndown": {
+      "commit": "fb7a865ef5eba4081dfd4e20a894a61ef7a2edca",
+      "files": [
+        {
+          "bytes": 35476,
+          "path": "turndown/test/index.html",
+          "sha256": "89e1896e8d601d53eea0f4492ec342f096fff714fc82044c46fc4f946bed3cb5"
+        },
+        {
+          "bytes": 5350,
+          "path": "turndown/test/turndown-test.js",
+          "sha256": "4bbe861b037cba61e214df7a8e4c8e7733abe17c2a851afe13278758aa14aa8c"
+        },
+        {
+          "bytes": 1344,
+          "path": "turndown/test/internals-test.js",
+          "sha256": "8a8a1eeb19f4265832b94654534136a09d2623f3971bbc0569b21b67460f9c11"
+        },
+        {
+          "bytes": 2003,
+          "path": "turndown/package.json",
+          "sha256": "333b1738ad3079742aaf7be7d8b0f0bec2661c44fb49cfeff80b66ce4cb3e040"
+        },
+        {
+          "bytes": 1069,
+          "path": "turndown/LICENSE",
+          "sha256": "a055e3a15db4b4cbb5af381230eba085603126d7d5d8c4dae45ee85b877a9729"
+        }
+      ],
+      "url": "https://github.com/mixmark-io/turndown.git"
+    },
+    "turndown-attendant": {
+      "commit": "651033cae3862b2fadea2f778ab7902ca5f3eee8",
+      "files": [
+        {
+          "bytes": 1036,
+          "path": "turndown-attendant/README.md",
+          "sha256": "3eebc09a48d906fecb652fe173b14c2fe83429f14954eafb0cccee44c955d5cd"
+        },
+        {
+          "bytes": 2758,
+          "path": "turndown-attendant/attendant.js",
+          "sha256": "fa753e3dc47d5fa41ff3b437aa74370bc4b69226a2eaa95cb104048d841ec661"
+        },
+        {
+          "bytes": 319,
+          "path": "turndown-attendant/package.json",
+          "sha256": "c1b3de09344cdcf8e257355b5346611745d983365ec431ba7437f6ed1a6f4b69"
+        },
+        {
+          "bytes": 1069,
+          "path": "turndown-attendant/LICENSE",
+          "sha256": "a055e3a15db4b4cbb5af381230eba085603126d7d5d8c4dae45ee85b877a9729"
+        }
+      ],
+      "url": "https://github.com/mixmark-io/turndown-attendant.git"
+    }
+  },
+  "version": 1
+}

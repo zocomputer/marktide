@@ -20,6 +20,16 @@ Phase 1 should benchmark our lxml streaming implementation against three Rust-ba
 
 Do **not** treat `fast-html2md==0.2.0` as a primary Rust engine candidate. It installed cleanly, but its PyPI wheel is pure Python and its public API is a BeautifulSoup/tiktoken-oriented wrapper. It may be useful only as an end-user baseline if we want to compare against another LLM-content-extraction package.
 
+
+## Candidate metadata: license, maintenance, wheel coverage
+
+| Candidate | License metadata | Maintenance signal checked 2026-06-17 | Wheel/platform coverage checked 2026-06-17 | Supply-chain note |
+| --- | --- | --- | --- | --- |
+| `html-to-markdown==3.5.7` | PyPI license expression: MIT. | Active: latest PyPI release line was `3.6.13` on 2026-06-17; pinned `3.5.7` was released 2026-05-29. | Native `cp310-abi3` wheels for macOS x86_64/arm64, manylinux2014 x86_64/aarch64, Windows amd64, plus sdist. | Use `3.5.7` for benchmark pins because `3.6.13` is inside the 7-day cooldown. |
+| `htmd-py==0.1.2` | PyPI classifier: Apache Software License. | Active enough: releases in 2025 and 2026; `0.1.2` uploaded 2026-04-15. | Broad native wheels across CPython 3.9-3.13, macOS x86_64/arm64, manylinux/musllinux architectures, and Windows amd64. | Outside cooldown. |
+| `html2text_rs==0.2.5` | PyPI metadata: MIT License. | Moderate: multiple releases from 2024-2025; `0.2.5` uploaded 2025-08-30. | `cp38-abi3` and `cp313` wheels for macOS x86_64/arm64, manylinux/musllinux architectures, Windows amd64/win32, plus sdist. | Outside cooldown. |
+| `fast-html2md==0.2.0` | PyPI license expression/classifier: MIT. | Low-to-moderate: sparse release history; `0.2.0` uploaded 2026-06-06. | Pure Python `py3-none-any` wheel plus sdist; pulls `beautifulsoup4` and `tiktoken`. | Outside cooldown but not a primary Rust engine candidate. |
+
 ## Candidate Rust/Python libraries
 
 ### `html-to-markdown` / `html-to-markdown-rs`
@@ -98,14 +108,14 @@ assert markdown.startswith("# Hello")
 
 ## Large benchmark fixture files
 
-Generated files live under `benchmarks/fixtures/` and are intentionally gitignored by `.gitignore`:
+Generated files live under `benchmarks/fixtures/` and are intentionally gitignored by `.gitignore`. Their committed verification lockfile is `benchmarks/fixtures.lock.json`, and the reproducible generator is `scripts/regenerate_benchmark_fixtures.py`. The generator does **not** truncate raw HTML bytes; every fixture is closed with `</body></html>` and is parsed with `lxml.html` when `lxml` is importable:
 
 | File | Target | Actual local size | Generation strategy |
 | --- | ---: | ---: | --- |
-| `benchmarks/fixtures/small.html` | ~100 KiB | 102,401 bytes | prefix + truncated real-source corpus |
-| `benchmarks/fixtures/medium.html` | ~5 MiB | 5,242,881 bytes | repeated real-source corpus |
-| `benchmarks/fixtures/large.html` | ~50 MiB | 52,428,801 bytes | repeated real-source corpus |
-| `benchmarks/fixtures/xlarge.html` | ~100 MiB | 104,857,601 bytes | repeated real-source corpus |
+| `benchmarks/fixtures/small.html` | ~100 KiB | 102,740 bytes | parse-guarded generated HTML from real page text |
+| `benchmarks/fixtures/medium.html` | ~5 MiB | 5,606,346 bytes | complete real HTML source sections plus generated filler |
+| `benchmarks/fixtures/large.html` | ~50 MiB | 57,590,748 bytes | complete real HTML source sections plus generated filler |
+| `benchmarks/fixtures/xlarge.html` | ~100 MiB | 115,181,313 bytes | complete real HTML source sections plus generated filler |
 
 Source pages used for the deterministic corpus:
 
@@ -121,131 +131,87 @@ The NASA page was ~36 MiB locally and gives the corpus a genuinely large real-wo
 Run from repo root:
 
 ```bash
-mkdir -p benchmarks/fixtures
-python3 - <<'PY'
-from pathlib import Path
-from urllib.request import Request, urlopen
-
-sources = [
-    ("wikipedia_html", "https://en.wikipedia.org/wiki/HTML"),
-    ("wikipedia_united_states", "https://en.wikipedia.org/wiki/United_States"),
-    ("rfc9110", "https://www.rfc-editor.org/rfc/rfc9110.html"),
-    ("nasa_apollo", "https://history.nasa.gov/SP-4029/Apollo_00g_Table_of_Contents.htm"),
-]
-headers = {"User-Agent": "new-html-parser benchmark fixture generator/0.1"}
-chunks = []
-for name, url in sources:
-    req = Request(url, headers=headers)
-    with urlopen(req, timeout=30) as response:
-        data = response.read()
-    text = data.decode("utf-8", errors="replace")
-    chunks.append(f"\n<!-- source: {name} {url}; bytes={len(data)} -->\n" + text)
-
-base = "\n".join(chunks)
-out = Path("benchmarks/fixtures")
-out.mkdir(parents=True, exist_ok=True)
-targets = {
-    "small.html": 100 * 1024,
-    "medium.html": 5 * 1024 * 1024,
-    "large.html": 50 * 1024 * 1024,
-    "xlarge.html": 100 * 1024 * 1024,
-}
-for filename, target_bytes in targets.items():
-    prefix = (
-        "<!doctype html>\n"
-        f"<html><head><meta charset='utf-8'><title>{filename}</title></head><body>\n"
-        f"<!-- generated target_bytes={target_bytes}; repeat source corpus deterministically -->\n"
-    )
-    suffix = "\n</body></html>\n"
-    body_bytes = target_bytes - len(prefix.encode()) - len(suffix.encode())
-    reps = max(1, body_bytes // len(base.encode()) + 1)
-    raw = (prefix + (base * reps) + suffix).encode("utf-8")[:target_bytes]
-    if not raw.endswith(b"\n"):
-        raw += b"\n"
-    (out / filename).write_bytes(raw)
-    print(filename, (out / filename).stat().st_size)
-PY
-ls -lh benchmarks/fixtures
+python3 scripts/regenerate_benchmark_fixtures.py
 ```
 
-Expected local output from the 2026-06-17 run:
+The script writes:
 
-```text
-small.html   100K
-medium.html  5.0M
-large.html    50M
-xlarge.html  100M
-```
+- `benchmarks/fixtures/small.html`
+- `benchmarks/fixtures/medium.html`
+- `benchmarks/fixtures/large.html`
+- `benchmarks/fixtures/xlarge.html`
+- `benchmarks/fixtures.lock.json`
+
+The committed lockfile records the source URL byte hashes and fixture byte hashes. The 2026-06-17 fixture hashes are:
+
+| File | SHA-256 |
+| --- | --- |
+| `benchmarks/fixtures/small.html` | `0ee1ec952ec5279b84f18f44c43d6d2c100bb159aa62c399b48f0b611b4bdbf3` |
+| `benchmarks/fixtures/medium.html` | `c917eb770d068cb35a2f8c463fbc8014ae66e7d7416b05059e33ebfa89956afb` |
+| `benchmarks/fixtures/large.html` | `7c9ae8a809b111b779433177ee8695c0bb154f7e9749fda94ba7598314bf16a6` |
+| `benchmarks/fixtures/xlarge.html` | `a0704f7f1aefa8fee72f690c509c1fd6df4538a216bdab83deb4dfceda4bdb27` |
 
 ## Phase-2 conformance corpus options
 
-There is no single standards-body HTML→Markdown conformance suite. HTML→Markdown is an inverse conversion with many valid Markdown outputs for the same HTML. Use a layered corpus instead.
+There is no single standards-body HTML→Markdown conformance suite. HTML→Markdown is an inverse conversion with many valid Markdown outputs for the same HTML. Use the staged layered corpus under `tests/conformance/`.
+
+Committed corpus control files:
+
+- `tests/conformance/sources.toml` — source URLs, exact commit SHAs, licenses, selected source paths, fixture roles, case formats, expected-output normalization policy, and local case counts.
+- `tests/conformance/fixtures.lock.json` — generated fixture byte counts and SHA-256 hashes for byte-for-byte reproducibility.
+- `scripts/regenerate_conformance_corpus.py` — scripted import transform. It clones each source at the pinned commit, copies only selected files into `tests/conformance/fixtures/`, and rewrites `tests/conformance/fixtures.lock.json`.
+
+Generated corpus files live under `tests/conformance/fixtures/` and are intentionally gitignored. Regenerate from repo root:
+
+```bash
+python3 scripts/regenerate_conformance_corpus.py
+```
 
 ### Layer 1: `python-markdownify` tests as compatibility baseline
 
 - Repository: <https://github.com/matthewwithanm/python-markdownify>
-- Pull command:
+- Pinned commit: `add391a6235cbc66af30ec0202cb00cb0ff0eb4c`
+- License: MIT
+- Generated fixture path: `tests/conformance/fixtures/markdownify/`
+- Selected source paths: `tests/test_*.py`, `tests/types.py`, `tests/utils.py`, `README.rst`, `LICENSE`.
+- Local staged count: 8 `test_*.py` files, approximately 323 inline `assert` statements.
+- Expected-output policy: exact-output compatibility baseline unless a future harness marks a case semantic-only.
 
-```bash
-git clone --depth 1 https://github.com/matthewwithanm/python-markdownify.git /tmp/python-markdownify
-find /tmp/python-markdownify -maxdepth 3 -type f \( -name '*test*.py' -o -name '*tests*' \)
-```
-
-- Suggested use:
-  - Import or translate individual test vectors into `tests/conformance/markdownify_cases/`.
-  - Mark exact-output tests as `compat_markdownify` because our desired output may intentionally differ in whitespace, wrapping, or unsupported tags.
-  - Strongest value: preserving compatibility for cases users already expect from `markdownify`, the library being replaced.
+Strongest value: preserving compatibility for cases users already expect from `markdownify`, the library being replaced.
 
 ### Layer 2: Turndown tests and `turndown-attendant` HTML-case format
 
 - Turndown repository: <https://github.com/mixmark-io/turndown>
+- Turndown pinned commit: `fb7a865ef5eba4081dfd4e20a894a61ef7a2edca` (`v7.2.4` at staging time)
+- Turndown license: MIT
+- Turndown generated fixture path: `tests/conformance/fixtures/turndown/`
 - Turndown attendant repository: <https://github.com/mixmark-io/turndown-attendant>
-- Pull command:
-
-```bash
-git clone --depth 1 https://github.com/mixmark-io/turndown.git /tmp/turndown
-git clone --depth 1 https://github.com/mixmark-io/turndown-attendant.git /tmp/turndown-attendant
-find /tmp/turndown -maxdepth 4 -type f \( -name '*test*' -o -name '*.html' \)
-find /tmp/turndown-attendant -maxdepth 4 -type f
-```
-
-- Corpus format:
-  - `turndown-attendant` documents the convenient HTML fixture format: each case is a `<div class="case" data-name="...">` with nested `<div class="input">` and `<pre class="expected">` nodes.
-- Suggested use:
-  - Put normalized converted cases under `tests/conformance/turndown_cases/`.
-  - Use exact output for simple inline/block/list/table cases.
-  - Use semantic rendered-HTML comparison for cases where whitespace and Markdown style choices differ.
+- Turndown attendant pinned commit: `651033cae3862b2fadea2f778ab7902ca5f3eee8` (`v0.0.3` at staging time)
+- Turndown attendant license: MIT
+- Turndown attendant generated fixture path: `tests/conformance/fixtures/turndown-attendant/`
+- Local staged count: 147 `turndown-attendant` cases in `test/index.html`.
+- Corpus format: each case is a `<div class="case" data-name="...">` with nested `<div class="input">` and `<pre class="expected">` nodes, plus optional `data-options`.
+- Expected-output policy: exact-output for simple CommonMark cases; semantic rendered-HTML comparison for style/whitespace-sensitive cases.
 
 ### Layer 3: Pandoc as an oracle and edge-case corpus
 
 - Repository: <https://github.com/jgm/pandoc>
-- Manual: <https://pandoc.org/MANUAL.html>
-- Pull command:
-
-```bash
-git clone --depth 1 https://github.com/jgm/pandoc.git /tmp/pandoc
-find /tmp/pandoc -maxdepth 4 -type f \( -iname '*html*' -o -path '*/test/*' -o -path '*/tests/*' \)
-```
-
-- Suggested use:
-  - Do not blindly assert our output equals Pandoc output; Pandoc has a rich document model and distinct Markdown dialect choices.
-  - Use Pandoc for oracle comparisons on hard HTML structures: nested lists, tables, code/pre blocks, entities, inline formatting boundaries, malformed HTML, and block/inline transitions.
-  - Recommended check: render both our Markdown and Pandoc's Markdown back to normalized HTML, then compare normalized DOM/text for semantic equivalence.
+- Pinned commit: `850c7b9613aa7beb1aed8c2c1f7abb01eaf3023e`
+- License: GPL-2.0-or-later for the copied Pandoc test/source fixtures.
+- Generated fixture path: `tests/conformance/fixtures/pandoc/`
+- Selected paths include `test/Tests/Readers/HTML.hs`, `test/Tests/Writers/HTML.hs`, 8 standalone `.html` fixtures under `test/`, HTML templates, and `COPYING.md`.
+- Expected-output policy: never compare byte-for-byte against Pandoc Markdown. Use Pandoc for oracle comparisons on hard HTML structures and compare normalized rendered HTML/DOM plus structural invariants.
 
 ### Layer 4: CommonMark emitted-Markdown validation, not HTML→Markdown conformance
 
 - Repository: <https://github.com/commonmark/commonmark-spec>
-- Spec site: <https://spec.commonmark.org/>
-- Pull command:
-
-```bash
-git clone --depth 1 https://github.com/commonmark/commonmark-spec.git /tmp/commonmark-spec
-```
-
-- Suggested use:
-  - CommonMark tests are Markdown→HTML tests, so they are not direct HTML→Markdown fixtures.
-  - Use the CommonMark parser/spec to validate that emitted Markdown is parseable and stable under Markdown→HTML normalization.
-  - Good property test: for each HTML fixture, convert HTML→Markdown, render Markdown→HTML with a CommonMark parser, normalize the DOM, and assert important text/link/table/code invariants.
+- Pinned commit: `3da939428d80f146f270cd1765e4ba462e96bb1b`
+- Spec version: `0.31.2`
+- License: spec text is CC-BY-SA-4.0; test software is BSD-style per upstream `LICENSE`.
+- Generated fixture path: `tests/conformance/fixtures/commonmark-spec/`
+- Selected paths: `spec.txt`, `test/spec_tests.py`, `test/normalize.py`, `LICENSE`.
+- Local staged count: 655 CommonMark examples in `spec.txt`.
+- Expected-output policy: CommonMark tests are Markdown→HTML tests, so they are not direct HTML→Markdown fixtures. Use them to verify emitted Markdown is parseable and stable under Markdown→HTML normalization.
 
 ## Recommended phase-1 benchmark matrix
 
@@ -272,4 +238,4 @@ Measurements to record:
 
 - Before adding any package to `pyproject.toml`, re-check upload dates and pin versions outside the supply-chain cooldown unless there is an explicit exception.
 - Convert this research into checked-in benchmark/conformance harness code in the implementation beads; `benchmarks/fixtures/*.html` should remain generated and gitignored.
-- When phase-2 conformance starts, snapshot external corpus commit SHAs in a manifest so CI is reproducible.
+- Phase-2 conformance source SHAs are now staged in `tests/conformance/sources.toml`; generated fixtures are verified by `tests/conformance/fixtures.lock.json`.

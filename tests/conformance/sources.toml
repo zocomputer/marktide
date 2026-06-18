@@ -1,0 +1,131 @@
+# Phase-2 HTML→Markdown conformance corpus manifest.
+#
+# Raw corpus files are generated under tests/conformance/fixtures/ and are
+# intentionally gitignored. Regenerate with:
+#
+#   python3 scripts/regenerate_conformance_corpus.py
+#
+# Each source is pinned to an immutable commit so phase-2 validation can run
+# reproducibly even though the upstream projects continue to evolve.
+
+[corpus]
+fixture_root = "tests/conformance/fixtures"
+regeneration_script = "scripts/regenerate_conformance_corpus.py"
+generated_summary = "tests/conformance/fixtures/_generated_summary.json"
+last_staged_by = "coder-1-leaf"
+last_staged_date = "2026-06-17"
+lockfile = "tests/conformance/fixtures.lock.json"
+
+[normalization]
+line_endings = "Normalize CRLF and CR to LF before parsing cases or comparing expected Markdown."
+trailing_whitespace = "Trim trailing horizontal whitespace on each line for semantic comparisons; exact-output compatibility tests may opt out per case."
+blank_lines = "For semantic comparisons, collapse runs of more than two blank lines to two; exact-output compatibility tests may opt out per case."
+html_equivalence = "For non-exact cases, render Markdown back to HTML, parse with lxml.html, remove insignificant whitespace-only text nodes, sort attributes, and compare normalized DOM plus extracted text/link/image/table/code invariants."
+markdown_validation = "Every converter output should parse with the selected CommonMark parser without errors before semantic comparison."
+expected_output_policy = "markdownify and Turndown cases are exact-output compatibility baselines by default; Pandoc and CommonMark layers are oracle/semantic-validation inputs, not byte-for-byte expected Markdown for this library."
+
+[sources.markdownify]
+name = "python-markdownify"
+license = "MIT"
+url = "https://github.com/matthewwithanm/python-markdownify.git"
+commit = "add391a6235cbc66af30ec0202cb00cb0ff0eb4c"
+fixture_path = "tests/conformance/fixtures/markdownify"
+role = "Compatibility baseline for the Python library this project replaces."
+selected_paths = [
+  "tests/__init__.py",
+  "tests/test_advanced.py",
+  "tests/test_args.py",
+  "tests/test_basic.py",
+  "tests/test_conversions.py",
+  "tests/test_custom_converter.py",
+  "tests/test_escaping.py",
+  "tests/test_lists.py",
+  "tests/test_tables.py",
+  "tests/types.py",
+  "tests/utils.py",
+  "README.rst",
+  "LICENSE",
+]
+case_format = "Pytest functions with inline HTML input and expected Markdown assertions."
+expected_output_normalization = "Exact-output baseline unless the future harness explicitly marks a case semantic-only."
+local_counts = { test_py_files = 8, assertion_count_approx = 323 }
+
+[sources.turndown]
+name = "turndown"
+license = "MIT"
+url = "https://github.com/mixmark-io/turndown.git"
+commit = "fb7a865ef5eba4081dfd4e20a894a61ef7a2edca"
+tag_at_stage_time = "v7.2.4"
+fixture_path = "tests/conformance/fixtures/turndown"
+role = "Broad HTML→Markdown fixture set from a widely used JavaScript converter."
+selected_paths = [
+  "test/index.html",
+  "test/turndown-test.js",
+  "test/internals-test.js",
+  "package.json",
+  "LICENSE",
+]
+case_format = "turndown-attendant HTML cases in test/index.html: div.case[data-name] with div.input and pre.expected plus optional data-options."
+expected_output_normalization = "Exact-output for simple CommonMark cases; semantic rendered-HTML comparison for style/whitespace-sensitive cases."
+local_counts = { attendant_case_count = 147 }
+
+[sources.turndown_attendant]
+name = "turndown-attendant"
+license = "MIT"
+url = "https://github.com/mixmark-io/turndown-attendant.git"
+commit = "651033cae3862b2fadea2f778ab7902ca5f3eee8"
+tag_at_stage_time = "v0.0.3"
+fixture_path = "tests/conformance/fixtures/turndown-attendant"
+role = "Documents and implements the Turndown HTML case format used by test/index.html."
+selected_paths = [
+  "README.md",
+  "attendant.js",
+  "package.json",
+  "LICENSE",
+]
+case_format = "Reference parser/runner for div.case HTML fixtures."
+expected_output_normalization = "Not a case corpus itself; used to implement the fixture parser correctly."
+
+[sources.pandoc]
+name = "pandoc"
+license = "GPL-2.0-or-later (project COPYING.md is GPL v2 text; Pandoc source headers state GPL version 2 or later)"
+url = "https://github.com/jgm/pandoc.git"
+commit = "850c7b9613aa7beb1aed8c2c1f7abb01eaf3023e"
+fixture_path = "tests/conformance/fixtures/pandoc"
+role = "Oracle/reference HTML reader and writer edge cases for semantic comparison."
+selected_paths = [
+  "test/Tests/Readers/HTML.hs",
+  "test/Tests/Writers/HTML.hs",
+  "test/html-reader.html",
+  "test/lhs-test.html",
+  "test/s5-basic.html",
+  "test/s5-fancy.html",
+  "test/s5-fragment.html",
+  "test/s5-inserts.html",
+  "test/fb2/images-embedded.html",
+  "test/ipynb/rank.out.html",
+  "data/templates/default.html4",
+  "data/templates/default.html5",
+  "COPYING.md",
+]
+case_format = "Haskell reader/writer specs plus standalone HTML fixtures. Future harness should invoke Pandoc or translate selected tests into neutral JSON cases."
+expected_output_normalization = "Never compare byte-for-byte against Pandoc Markdown; compare normalized rendered HTML/DOM and structural invariants."
+local_counts = { html_files = 8, reader_haskell_specs = 1, writer_haskell_specs = 1 }
+
+[sources.commonmark_spec]
+name = "commonmark-spec"
+license = "Spec text: CC-BY-SA-4.0; test software: BSD-style per LICENSE"
+url = "https://github.com/commonmark/commonmark-spec.git"
+commit = "3da939428d80f146f270cd1765e4ba462e96bb1b"
+spec_version = "0.31.2"
+fixture_path = "tests/conformance/fixtures/commonmark-spec"
+role = "Markdown parser/rendering validation for emitted Markdown; not direct HTML→Markdown expected output."
+selected_paths = [
+  "spec.txt",
+  "test/spec_tests.py",
+  "test/normalize.py",
+  "LICENSE",
+]
+case_format = "CommonMark spec examples embedded in spec.txt between 32-backtick example fences."
+expected_output_normalization = "Use to verify emitted Markdown is parseable and stable under Markdown→HTML normalization; do not treat examples as HTML→Markdown cases."
+local_counts = { spec_examples = 655 }
