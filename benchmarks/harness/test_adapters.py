@@ -5,7 +5,7 @@ HTML = b'<h1>hi</h1><p>Hello <strong>bold</strong></p>'
 
 def test_all_phase1_adapters_convert_to_text():
     adapters = get_adapters(include_lxml_naive=True)
-    assert {a.name for a in adapters} >= {"markdownify", "html_to_markdown", "htmd_py", "html2text_rs", "lxml_naive"}
+    assert {a.name for a in adapters} >= {"markdownify", "markdownify_default_oracle", "html_to_markdown", "htmd_py", "html2text_rs", "lxml_naive"}
     for adapter in adapters:
         out = adapter.convert(HTML)
         assert isinstance(out, str), adapter.name

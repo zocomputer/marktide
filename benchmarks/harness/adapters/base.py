@@ -52,10 +52,11 @@ def get_adapter_specs(include_lxml_naive: bool = True) -> list[AdapterSpec]:
     from .html2text_rs_adapter import Html2TextRsAdapter
     from .html_to_markdown_adapter import HtmlToMarkdownAdapter
     from .htmd_adapter import HtmdAdapter
-    from .markdownify_adapter import MarkdownifyAdapter
+    from .markdownify_adapter import MarkdownifyAdapter, MarkdownifyDefaultOracleAdapter
 
     specs: list[AdapterSpec] = [
         AdapterSpec("markdownify", MarkdownifyAdapter),
+        AdapterSpec("markdownify_default_oracle", MarkdownifyDefaultOracleAdapter),
         AdapterSpec("html_to_markdown", HtmlToMarkdownAdapter),
         AdapterSpec("htmd_py", HtmdAdapter),
         AdapterSpec("html2text_rs", Html2TextRsAdapter),

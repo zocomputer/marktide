@@ -25,6 +25,7 @@ class HeartbeatResult:
     placement: Placement
     interval_s: float
     samples: int
+    conversion_wall_s: float | None
     per_iter_s: float | None
     iterations: int | None
     mean_ms: float
@@ -44,6 +45,7 @@ class HeartbeatResult:
             "placement": self.placement.value,
             "interval_s": self.interval_s,
             "samples": self.samples,
+            "conversion_wall_s": self.conversion_wall_s,
             "per_iter_s": self.per_iter_s,
             "iterations": self.iterations,
             "mean_ms": self.mean_ms,
@@ -70,6 +72,7 @@ def _summarize(
     placement: Placement,
     interval_s: float,
     jitter_ms: list[float],
+    conversion_wall_s: float | None,
     per_iter_s: float | None,
     iterations: int | None,
     output: str | None = None,
@@ -91,6 +94,7 @@ def _summarize(
         placement=placement,
         interval_s=interval_s,
         samples=len(jitter_ms),
+        conversion_wall_s=conversion_wall_s,
         per_iter_s=per_iter_s,
         iterations=iterations,
         mean_ms=statistics.mean(jitter_ms) if jitter_ms else float("nan"),
@@ -114,19 +118,37 @@ async def probe_adapter(
     placement: Placement = Placement.TO_THREAD,
     interval_s: float = DEFAULT_INTERVAL_S,
     duration_s: float = DEFAULT_DURATION_S,
+    repeat_until_duration: bool = False,
 ) -> HeartbeatResult:
     """Measure event-loop heartbeat jitter while ``convert(payload)`` runs.
 
-    ``TO_THREAD`` repeatedly calls the converter through ``asyncio.to_thread`` for
-    approximately ``duration_s``. ``INLINE`` is a negative-control placement that
-    intentionally runs the converter on the event-loop thread between heartbeat
-    ticks, so a blocking converter should be visible as a large delay.
+    The default is **single-conversion mode**: run exactly one conversion and
+    sample the heartbeat from start until that conversion completes. This is the
+    mode for real adapter×fixture benchmark rows, because output hash/bytes and
+    heartbeat metrics describe the same exact conversion.
+
+    ``repeat_until_duration=True`` is reserved for calibration controls that are
+    too short to produce enough heartbeat samples in one call.
     """
 
     if placement == Placement.TO_THREAD:
-        return await _probe_to_thread(name, convert, payload, interval_s=interval_s, duration_s=duration_s)
+        return await _probe_to_thread(
+            name,
+            convert,
+            payload,
+            interval_s=interval_s,
+            duration_s=duration_s,
+            repeat_until_duration=repeat_until_duration,
+        )
     if placement == Placement.INLINE:
-        return await _probe_inline(name, convert, payload, interval_s=interval_s, duration_s=duration_s)
+        return await _probe_inline(
+            name,
+            convert,
+            payload,
+            interval_s=interval_s,
+            duration_s=duration_s,
+            repeat_until_duration=repeat_until_duration,
+        )
     raise ValueError(f"unknown placement: {placement}")
 
 
@@ -137,6 +159,7 @@ async def _probe_to_thread(
     *,
     interval_s: float,
     duration_s: float,
+    repeat_until_duration: bool,
 ) -> HeartbeatResult:
     done = asyncio.Event()
     timing: dict[str, Any] = {}
@@ -145,10 +168,15 @@ async def _probe_to_thread(
         t0 = time.perf_counter()
         iterations = 0
         last_output = ""
-        while time.perf_counter() - t0 < duration_s:
+        if repeat_until_duration:
+            while time.perf_counter() - t0 < duration_s:
+                last_output = await asyncio.to_thread(convert, payload)
+                iterations += 1
+        else:
             last_output = await asyncio.to_thread(convert, payload)
-            iterations += 1
+            iterations = 1
         elapsed = time.perf_counter() - t0
+        timing["conversion_wall_s"] = elapsed
         timing["per_iter_s"] = elapsed / max(iterations, 1)
         timing["iterations"] = iterations
         timing["output"] = last_output
@@ -166,6 +194,7 @@ async def _probe_to_thread(
         Placement.TO_THREAD,
         interval_s,
         jitter_ms,
+        timing.get("conversion_wall_s"),
         timing.get("per_iter_s"),
         timing.get("iterations"),
         timing.get("output"),
@@ -179,13 +208,15 @@ async def _probe_inline(
     *,
     interval_s: float,
     duration_s: float,
+    repeat_until_duration: bool,
 ) -> HeartbeatResult:
     jitter_ms: list[float] = []
     per_iter: list[float] = []
     output = ""
-    deadline = time.perf_counter() + duration_s
-    while time.perf_counter() < deadline:
-        for _ in range(3):
+    start = time.perf_counter()
+    iterations = 0
+    while True:
+        for _ in range(3 if repeat_until_duration else 1):
             t0 = time.perf_counter()
             await asyncio.sleep(interval_s)
             jitter_ms.append((time.perf_counter() - t0 - interval_s) * 1000.0)
@@ -194,14 +225,19 @@ async def _probe_inline(
         work_start = time.perf_counter()
         output = convert(payload)
         per_iter.append(time.perf_counter() - work_start)
+        iterations += 1
         jitter_ms.append((time.perf_counter() - t0 - interval_s) * 1000.0)
+        if not repeat_until_duration or time.perf_counter() - start >= duration_s:
+            break
+    elapsed = time.perf_counter() - start
     return _summarize(
         name,
         Placement.INLINE,
         interval_s,
         jitter_ms,
+        elapsed,
         statistics.mean(per_iter) if per_iter else None,
-        len(per_iter),
+        iterations,
         output,
     )
 

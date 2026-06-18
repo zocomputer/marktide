@@ -43,3 +43,20 @@ class MarkdownifyAdapter(Adapter):
             strong_em_symbol=ASTERISK,
             code_language="",
         )
+
+
+@dataclass(frozen=True)
+class MarkdownifyDefaultOracleAdapter(Adapter):
+    name: str = "markdownify_default_oracle"
+    package: str = "markdownify>=0.13 + beautifulsoup4"
+    engine: str = "BeautifulSoup / pure Python"
+    option_map: OptionMap = OptionMap(
+        settings={"mode": "library defaults"},
+        targets={"mode": "drop-in oracle semantics; no benchmark normalization"},
+        residual=("Oracle mode for semantic comparison, not normalized throughput apples-to-apples mode.",),
+    )
+
+    def convert(self, html_bytes: bytes) -> str:
+        from markdownify import markdownify
+
+        return markdownify(decode_html(html_bytes))
