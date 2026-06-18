@@ -14,7 +14,7 @@ Headline xlarge result: `html2md_streaming` converted the 109.85 MiB fixture in 
 Streaming latency: xlarge TTFO was 2.42ms with 227 emitted chunks and 29.51ms maximum inter-chunk gap.
 Async health: xlarge `html2md_streaming` missed 0.00% of heartbeats with 5.42ms max stall; xlarge `markdownify` missed 70.02% with 500.11ms max stall.
 Memory: xlarge `html2md_streaming` peak RSS delta was 244.7 MiB (2.23× input), versus `markdownify` 2808.9 MiB (25.57×) and `html_to_markdown` 4306.6 MiB (39.21×).
-Conformance: raw primary markdownify-oracle fidelity for `html2md`/`html2md_streaming` is 294/298 (98.658%). Counting the two documented lxml/browser parser divergences in `tests/conformance/allowed_divergences.toml`, effective primary fidelity is 296/298 (99.329%).
+Conformance: raw primary markdownify-oracle fidelity for `html2md`/`html2md_streaming` is 296/298 (99.329%). Counting the two documented lxml/browser parser divergences in `tests/conformance/allowed_divergences.toml`, effective primary fidelity is 298/298 (100.000%).
 
 Recommendation: use `html2md_streaming` for large/user-supplied documents and keep `html2md.convert` as the one-shot compatibility API for simple call sites. Treat the remaining non-primary corpus gaps as follow-up normalization/oracle work, not blockers for the markdownify replacement decision.
 
@@ -118,8 +118,8 @@ The harness gate is intentionally strict and still labels some rows as failing b
 | `html_to_markdown` | pass | mixed/fail | high or baseline | no native streaming | primary 54.7% | No — semantic/streaming gap |
 | `htmd_py` | pass | mixed/fail | high or baseline | no native streaming | primary 46.0% | No — semantic/streaming gap |
 | `html2text_rs` | pass | mixed/fail | high or baseline | no native streaming | primary 38.9% | No — semantic/streaming gap |
-| `html2md` | mixed/fail | mixed/fail | best semantic slope | no native streaming | effective primary 99.329% | Partial — compatibility API, not streaming |
-| `html2md_streaming` | mixed/fail | pass | best semantic slope | pass | effective primary 99.329% | Yes — recommended streaming path |
+| `html2md` | mixed/fail | mixed/fail | best semantic slope | no native streaming | effective primary 100.000% | Partial — compatibility API, not streaming |
+| `html2md_streaming` | mixed/fail | pass | best semantic slope | pass | effective primary 100.000% | Yes — recommended streaming path |
 | `lxml_naive` | pass | mixed/fail | high or baseline | no native streaming | baseline only | No — semantic baseline only |
 
 ## Conformance / quality matrix
@@ -130,8 +130,8 @@ The primary markdownify oracle is `golden + markdownify_tests` because those lay
 
 | Adapter | Passed | Failed | Errors | Raw fidelity | Effective fidelity | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| `html2md` | 294 | 4 | 0 | 98.658% | 99.329% | Two documented lxml/browser parser divergences counted as effective passes. |
-| `html2md_streaming` | 294 | 4 | 0 | 98.658% | 99.329% | Two documented lxml/browser parser divergences counted as effective passes. |
+| `html2md` | 296 | 2 | 0 | 99.329% | 100.000% | Two documented lxml/browser parser divergences counted as effective passes. |
+| `html2md_streaming` | 296 | 2 | 0 | 99.329% | 100.000% | Two documented lxml/browser parser divergences counted as effective passes. |
 | `html_to_markdown` | 163 | 135 | 0 | 54.698% | 54.698% | Not markdownify-compatible enough for drop-in replacement. |
 | `htmd_py` | 137 | 161 | 0 | 45.973% | 45.973% | Not markdownify-compatible enough for drop-in replacement. |
 | `html2text_rs` | 116 | 182 | 0 | 38.926% | 38.926% | Not markdownify-compatible enough for drop-in replacement. |
@@ -153,14 +153,14 @@ The primary markdownify oracle is `golden + markdownify_tests` because those lay
 | `htmd_py` | `golden` | 31 | 33 | 0 | 48.4% |
 | `html2text_rs` | `golden` | 30 | 34 | 0 | 46.9% |
 | `lxml_naive` | `golden` | 18 | 46 | 0 | 28.1% |
-| `html2md` | `markdownify_tests` | 230 | 4 | 0 | 98.3% |
-| `html2md_streaming` | `markdownify_tests` | 230 | 4 | 0 | 98.3% |
+| `html2md` | `markdownify_tests` | 232 | 2 | 0 | 99.1% |
+| `html2md_streaming` | `markdownify_tests` | 232 | 2 | 0 | 99.1% |
 | `html_to_markdown` | `markdownify_tests` | 127 | 107 | 0 | 54.3% |
 | `htmd_py` | `markdownify_tests` | 106 | 128 | 0 | 45.3% |
 | `html2text_rs` | `markdownify_tests` | 86 | 148 | 0 | 36.8% |
 | `lxml_naive` | `markdownify_tests` | 49 | 183 | 2 | 20.9% |
-| `html2md` | `pandoc` | 6 | 2 | 0 | 75.0% |
-| `html2md_streaming` | `pandoc` | 6 | 2 | 0 | 75.0% |
+| `html2md` | `pandoc` | 7 | 1 | 0 | 87.5% |
+| `html2md_streaming` | `pandoc` | 7 | 1 | 0 | 87.5% |
 | `html_to_markdown` | `pandoc` | 1 | 7 | 0 | 12.5% |
 | `htmd_py` | `pandoc` | 1 | 7 | 0 | 12.5% |
 | `html2text_rs` | `pandoc` | 0 | 8 | 0 | 0.0% |
