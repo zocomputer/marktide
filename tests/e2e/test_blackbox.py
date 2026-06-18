@@ -67,9 +67,14 @@ def _load(name: str) -> bytes:
     return path.read_bytes()
 
 
-async def _collect_stream_async(data: bytes) -> str:
+# Small chunk sizes force real feed() boundaries on the committed inline doc, so PR CI always
+# exercises chunk-invariance without depending on the gitignored benchmark fixtures.
+_BOUNDARY_SIZES = (1, 7, 17, 256)
+
+
+async def _collect_stream_async(data: bytes, size: int = 64 * 1024) -> str:
     async def _agen() -> AsyncIterator[bytes]:
-        for chunk in _chunks(data):
+        for chunk in _chunks(data, size):
             yield chunk
 
     return "".join([part async for part in convert_stream_async(_agen())])
@@ -88,14 +93,23 @@ def test_inline_doc_converts_to_nonempty_markdown() -> None:
     assert "color:red" not in md
 
 
-def test_inline_convert_equals_stream() -> None:
-    assert convert(_INLINE_DOC) == "".join(convert_stream(_chunks(_INLINE_DOC.encode())))
+def test_inline_async_matches_sync() -> None:
+    assert asyncio.run(convert_async(_INLINE_DOC)) == convert(_INLINE_DOC)
 
 
-def test_inline_async_paths_match_sync() -> None:
+@pytest.mark.parametrize("size", _BOUNDARY_SIZES)
+def test_inline_convert_equals_stream_at_boundaries(size: int) -> None:
+    # multi-chunk on the committed doc: real feed() boundaries in default PR CI
     whole = convert(_INLINE_DOC)
-    assert asyncio.run(convert_async(_INLINE_DOC)) == whole
-    assert asyncio.run(_collect_stream_async(_INLINE_DOC.encode())) == whole
+    streamed = "".join(convert_stream(_chunks(_INLINE_DOC.encode(), size)))
+    assert streamed == whole
+
+
+@pytest.mark.parametrize("size", _BOUNDARY_SIZES)
+def test_inline_convert_stream_async_at_boundaries(size: int) -> None:
+    whole = convert(_INLINE_DOC)
+    streamed = asyncio.run(_collect_stream_async(_INLINE_DOC.encode(), size))
+    assert streamed == whole
 
 
 def test_huge_tree_no_truncation_on_large_text_node() -> None:
