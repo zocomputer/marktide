@@ -18,7 +18,7 @@ from __future__ import annotations
 import logging
 from types import TracebackType
 
-from lxml import etree
+from lxml import etree  # ty: ignore[unresolved-import]  # lxml ships no type stubs
 
 from .emitter import MarkdownEmitter
 from .options import Options

@@ -20,7 +20,8 @@ from __future__ import annotations
 
 import asyncio
 import threading
-from collections.abc import AsyncIterable, AsyncIterator, Callable
+from collections.abc import AsyncIterable, AsyncIterator, Callable, Coroutine
+from typing import Any
 
 from .options import Options
 from .parser import IncrementalDriver
@@ -71,11 +72,11 @@ class ChunkPump:
             await _run_to_completion(asyncio.to_thread(close))
 
 
-async def _run_to_completion(coro: object) -> None:
+async def _run_to_completion(coro: Coroutine[Any, Any, str]) -> None:
     """Await ``coro`` (the final close) to completion even if the surrounding coroutine
     is being cancelled, so the C parser is always released. The serialization lock makes
     this close wait for any in-flight feed rather than racing it."""
-    task = asyncio.ensure_future(coro)  # type: ignore[arg-type]
+    task = asyncio.ensure_future(coro)
     while True:
         try:
             await asyncio.shield(task)

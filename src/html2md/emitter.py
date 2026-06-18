@@ -50,6 +50,15 @@ _RE_ESCAPE_MISC_LIST = re.compile(r"((?:\s|^)[0-9]{1,9})([.)](?:\s|$))")
 # markdownify's `_noformat` pseudo-tag: inside any of these, text is not escaped.
 _NOFORMAT_TAGS = frozenset(("pre", "code", "kbd", "samp"))
 
+
+def _split_newlines(s: str) -> tuple[str, str, str]:
+    """Split into (leading newlines, content, trailing newlines). The pattern matches
+    every string, so ``match`` never returns None (the guard is unreachable)."""
+    m = _RE_EXTRACT_NEWLINES.match(s)
+    if m is None:  # pragma: no cover - pattern matches any input
+        return "", s, ""
+    return m.group(1), m.group(2), m.group(3)
+
 # markdownify should_remove_whitespace_inside: whitespace immediately inside these
 # block-level elements is trimmed at their edges. should_remove_whitespace_outside is
 # this set plus `pre` — used to drop whitespace adjacent to a block sibling (item-D).
@@ -189,7 +198,7 @@ class MarkdownEmitter:
         for child in parts:
             if not child:
                 continue
-            leading, content, trailing = _RE_EXTRACT_NEWLINES.match(child).groups()
+            leading, content, trailing = _split_newlines(child)
             if updated[-1] and leading:
                 prev = updated.pop()
                 leading = "\n" * min(2, max(len(prev), len(leading)))
@@ -343,7 +352,7 @@ class MarkdownEmitter:
         for child in children:
             if not child:
                 continue
-            leading, content, trailing = _RE_EXTRACT_NEWLINES.match(child).groups()
+            leading, content, trailing = _split_newlines(child)
             if carry and leading:
                 # previous child's trailing newlines collapse with this leading (≤2)
                 out.append("\n" * min(2, max(len(carry), len(leading))))
