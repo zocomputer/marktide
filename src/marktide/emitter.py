@@ -184,8 +184,9 @@ class MarkdownEmitter:
         return text
 
     def _in_noformat(self) -> bool:
-        """True if any open ancestor is pre/code/kbd/samp (markdownify ``_noformat``)."""
-        return any(frame.tag in _NOFORMAT_TAGS for frame in self.state.stack)
+        """True if any open ancestor is pre/code/kbd/samp (markdownify ``_noformat``).
+        O(1) via the noformat_depth counter maintained in start/end."""
+        return self.state.noformat_depth > 0
 
     @staticmethod
     def _collapse_join(parts: list[str], prefix: str = "") -> str:
@@ -237,6 +238,8 @@ class MarkdownEmitter:
             parent.seen_child = True
             parent.last_child_block = _is_block_outside(tag)
         frame = self.state.push(tag, dict(attrs))
+        if tag in _NOFORMAT_TAGS:  # O(1) noformat tracking (escape gate)
+            self.state.noformat_depth += 1
         handler = self._handlers.get(tag)
         converts = handler is not None and self._filter.converts(tag)
         # A transparent/streaming handler (or an unhandled/filtered tag, which passes its
@@ -280,6 +283,8 @@ class MarkdownEmitter:
         else:
             # no handler / filtered-out: children pass through unchanged
             self.emit(content)
+        if tag in _NOFORMAT_TAGS:  # leave noformat context (after this element's text)
+            self.state.noformat_depth -= 1
 
     def data(self, data: str) -> None:
         # Coalesce: lxml may split one text node across several data() callbacks at feed

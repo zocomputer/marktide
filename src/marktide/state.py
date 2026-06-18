@@ -122,6 +122,7 @@ class EmitterState:
         "list_stack",  # list[ListContext] — nested list context
         "blockquote_depth",  # int — number of "> " prefixes
         "pre_depth",  # int — >0 means verbatim text (no escape/collapse)
+        "noformat_depth",  # int — >0 inside pre/code/kbd/samp (escape gate, O(1))
         "table_stack",  # list[TableBuffer] — nested tables (rare but legal)
         "pending",  # list[str] — uncommitted inline lookahead buffer
     )
@@ -131,6 +132,7 @@ class EmitterState:
         self.list_stack: list[ListContext] = []
         self.blockquote_depth: int = 0
         self.pre_depth: int = 0
+        self.noformat_depth: int = 0
         self.table_stack: list[TableBuffer] = []
         self.pending: list[str] = []
 
