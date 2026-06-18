@@ -1,10 +1,12 @@
 # marktide
 
-Fast, streaming **HTML → Markdown** for Python, built on **lxml** (C, releases the GIL)
-instead of BeautifulSoup. A near drop-in replacement for [`markdownify`](https://pypi.org/project/markdownify/):
-markdownify-compatible options and output (with a few [documented divergences](docs/usage.md#documented-divergences)),
-but it parses large HTML incrementally — like a browser — and emits Markdown without stalling
-the asyncio event loop.
+Fast, streaming **HTML → Markdown** for Python — **sync *and* async** — built on **lxml**
+(C, releases the GIL) instead of BeautifulSoup. A near drop-in replacement for
+[`markdownify`](https://pypi.org/project/markdownify/) with markdownify-compatible options and
+output (a few [documented divergences](docs/usage.md#documented-divergences) aside), but it
+parses large HTML incrementally — like a browser — and emits Markdown without stalling the
+asyncio event loop. First-class `async`/`await` and streaming APIs keep the loop responsive on
+documents of any size.
 
 ```python
 import marktide
