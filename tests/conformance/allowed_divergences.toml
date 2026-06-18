@@ -27,3 +27,19 @@ diff_summary = "markdownify drops the language-python class and emits an unlabel
 reason = "Candidate genuine markdownify quirk: preserving an HTML code language class as a fence info string is more useful and semantically available, but this conflicts with strict markdownify default compatibility."
 owner = "coder-1-leaf"
 revisit = "when code_language_callback/options are wired; keep default markdownify-compatible unless product explicitly chooses richer default semantics"
+
+[[divergence]]
+source = "markdownify_tests"
+case_id = "markdownify:test_conversions:182"
+diff_summary = "lxml/browser HTML tree construction auto-closes <h1> before nested <p>, while markdownify's BeautifulSoup html.parser fixture keeps <p> inside the heading"
+reason = "Intentional parser divergence: html2md uses lxml HTML parsing, matching browser/standards tree construction for invalid heading content. The heading handler sees only the valid heading text ('A'), while markdownify's parser treats invalid nested block content as inline heading text and emits '# A P C #'. Copying the oracle would require pre-parser invalid-markup repair that contradicts the lxml/browser parsing contract."
+owner = "coder-1-leaf"
+revisit = "only if the project chooses BeautifulSoup html.parser compatibility over lxml/browser tree-construction for invalid nested block-in-heading markup"
+
+[[divergence]]
+source = "markdownify_tests"
+case_id = "markdownify:test_conversions:183"
+diff_summary = "lxml/browser HTML tree construction auto-closes <h1> before nested <p>, while markdownify's BeautifulSoup html.parser fixture keeps <p> inside the heading"
+reason = "Intentional parser divergence: same invalid nested block-in-heading input as markdownify:test_conversions:182, but with heading_style=ATX. html2md should preserve the lxml/browser parse contract instead of emulating BeautifulSoup html.parser's non-browser nesting."
+owner = "coder-1-leaf"
+revisit = "only if the project chooses BeautifulSoup html.parser compatibility over lxml/browser tree-construction for invalid nested block-in-heading markup"

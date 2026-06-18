@@ -137,3 +137,9 @@ A quiet run also completed in **6.34s** (`5 passed, 1 xfailed`), so the property
 - Both Markdown strings render to the same CommonMark HTML (`<p><code>0``0</code></p>`), so the product semantics and the primary markdownify-oracle contract are unaffected.
 
 This is fixable only if we choose a canonical/idempotent code-span delimiter policy for the property relation. Until then it should remain a documented xfail rather than an `allowed_divergences.toml` entry, because `allowed_divergences.toml` is reserved for conformance oracle cases and this is a metamorphic textual-stability relation.
+
+## Parser-construction divergence: invalid nested block inside heading
+
+`markdownify:test_conversions:182` and `markdownify:test_conversions:183` are now classified as intentional parser divergences, not handler bugs. The input shape is invalid HTML: `<h1>A <p>P</p> C </h1>`. lxml/browser-style tree construction auto-closes the heading before the nested paragraph, so the local heading handler correctly sees only `A`. markdownify's BeautifulSoup `html.parser` fixture keeps `<p>` inside `<h1>`, treats it like inline heading content, and expects `# A P C #` / `# A P C`.
+
+These two cases are added to `tests/conformance/allowed_divergences.toml` as markdownify-test parser divergences. They should not block the ≥99% gate unless the project explicitly changes its parser contract from lxml/browser behavior to BeautifulSoup `html.parser` invalid-markup compatibility.
