@@ -45,7 +45,11 @@ def _known_adapter_names() -> set[str]:
 
 
 def _run_row(
-    request: RowRequest, *, interval_s: float, timeout_s: float
+    request: RowRequest,
+    *,
+    interval_s: float,
+    memory_interval_s: float,
+    timeout_s: float,
 ) -> dict[str, Any]:
     cmd = [
         sys.executable,
@@ -59,6 +63,8 @@ def _run_row(
         request.fixture_name,
         "--interval-s",
         str(interval_s),
+        "--memory-interval-s",
+        str(memory_interval_s),
     ]
     started = time.perf_counter()
     try:
@@ -104,6 +110,31 @@ def _run_row(
     return row
 
 
+def _rss_delta_bytes(row: dict[str, Any]) -> int:
+    return int(row.get("peak_rss_delta_bytes") or row.get("ru_maxrss_delta_bytes") or 0)
+
+
+def _build_memory_scaling(
+    rows: list[dict[str, Any]],
+) -> dict[str, list[dict[str, Any]]]:
+    curve: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        if row.get("status") != "ok":
+            continue
+        input_bytes = row.get("input_bytes") or 1
+        delta = _rss_delta_bytes(row)
+        curve.setdefault(row["adapter"], []).append(
+            {
+                "fixture": row["fixture"],
+                "input_bytes": input_bytes,
+                "peak_rss_delta_bytes": delta,
+                "peak_rss_to_input_ratio": delta / input_bytes,
+                "samples": (row.get("memory_curve") or {}).get("samples"),
+            }
+        )
+    return curve
+
+
 def _evaluate_gate(rows: list[dict[str, Any]]) -> dict[str, Any]:
     by_adapter: dict[str, dict[str, dict[str, Any]]] = {}
     for row in rows:
@@ -144,7 +175,7 @@ def _evaluate_gate(rows: list[dict[str, Any]]) -> dict[str, Any]:
             r["async_gate"].get("passes_v1_worker_async") for r in async_rows
         )
         one_shot_rss_pass = all(
-            (r.get("ru_maxrss_delta_bytes") or 0) <= 3 * (r.get("input_bytes") or 1)
+            _rss_delta_bytes(r) <= 3 * (r.get("input_bytes") or 1)
             for r in fixture_rows.values()
         )
 
@@ -232,19 +263,21 @@ def _write_report(result: dict[str, Any], path: Path) -> None:
     lines.append("## Matrix results")
     lines.append("")
     lines.append(
-        "| Adapter | Fixture | Status | MiB/s | Wall s | Missed beat % | Max delay ms | p99 delay ms | TTFO ms | Max stream gap ms | Stream chunks | Output/Input | RSS delta MiB | Async pass |"
+        "| Adapter | Fixture | Status | MiB/s | Wall s | Missed beat % | Max delay ms | p99 delay ms | TTFO ms | Max stream gap ms | Stream chunks | Output/Input | Peak RSS Δ MiB | RSS/Input | Async pass |"
     )
-    lines.append("|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|")
+    lines.append(
+        "|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|"
+    )
     for row in rows:
         if row.get("status") != "ok":
             lines.append(
-                f"| {row.get('adapter')} | {row.get('fixture')} | {row.get('status')} | — | — | — | — | — | — | — | — | — | — | no |"
+                f"| {row.get('adapter')} | {row.get('fixture')} | {row.get('status')} | — | — | — | — | — | — | — | — | — | — | — | no |"
             )
             continue
         async_gate = row["async_gate"]
         cadence = row.get("streaming_cadence") or {}
         lines.append(
-            "| {adapter} | {fixture} | ok | {mibs} | {wall} | {missed} | {maxd} | {p99} | {ttfo} | {gap} | {chunks} | {ratio} | {rss} | {apass} |".format(
+            "| {adapter} | {fixture} | ok | {mibs} | {wall} | {missed} | {maxd} | {p99} | {ttfo} | {gap} | {chunks} | {ratio} | {rss} | {rssratio} | {apass} |".format(
                 adapter=row["adapter"],
                 fixture=row["fixture"],
                 mibs=_format_float(row.get("throughput_mib_s"), 2),
@@ -260,13 +293,36 @@ def _write_report(result: dict[str, Any], path: Path) -> None:
                 else "—",
                 chunks=cadence.get("chunk_count", "—") if cadence else "—",
                 ratio=_format_float(row.get("output_to_input_ratio"), 3),
-                rss=_format_float(
-                    (row.get("ru_maxrss_delta_bytes") or 0) / 1024 / 1024, 1
+                rss=_format_float(_rss_delta_bytes(row) / 1024 / 1024, 1),
+                rssratio=_format_float(
+                    _rss_delta_bytes(row) / (row.get("input_bytes") or 1), 2
                 ),
                 apass="yes" if async_gate.get("passes_v1_worker_async") else "no",
             )
         )
     lines.append("")
+    lines.append("## Memory scaling")
+    lines.append("")
+    lines.append(
+        "| Adapter | Fixture | Input MiB | Peak RSS Δ MiB | RSS/Input | Samples |"
+    )
+    lines.append("|---|---:|---:|---:|---:|---:|")
+    for adapter, entries in result.get("memory_scaling", {}).items():
+        for entry in entries:
+            lines.append(
+                "| {adapter} | {fixture} | {input_mib} | {rss_mib} | {ratio} | {samples} |".format(
+                    adapter=adapter,
+                    fixture=entry["fixture"],
+                    input_mib=_format_float(entry["input_bytes"] / 1024 / 1024, 2),
+                    rss_mib=_format_float(
+                        entry["peak_rss_delta_bytes"] / 1024 / 1024, 1
+                    ),
+                    ratio=_format_float(entry["peak_rss_to_input_ratio"], 2),
+                    samples=entry.get("samples") or "—",
+                )
+            )
+    lines.append("")
+
     lines.append("## Gate v1 evaluation")
     lines.append("")
     lines.append(
@@ -296,6 +352,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--adapters", nargs="+", default=list(DEFAULT_ADAPTERS))
     parser.add_argument("--timeout-s", type=float, default=900.0)
     parser.add_argument("--interval-s", type=float, default=0.005)
+    parser.add_argument("--memory-interval-s", type=float, default=0.02)
     parser.add_argument("--output", type=Path, default=PHASE1_JSON)
     parser.add_argument("--report", type=Path, default=PHASE1_REPORT)
     args = parser.parse_args(argv)
@@ -316,7 +373,12 @@ def main(argv: list[str] | None = None) -> None:
             f"[{index}/{len(requests)}] {request.adapter} × {request.fixture_name}",
             flush=True,
         )
-        row = _run_row(request, interval_s=args.interval_s, timeout_s=args.timeout_s)
+        row = _run_row(
+            request,
+            interval_s=args.interval_s,
+            memory_interval_s=args.memory_interval_s,
+            timeout_s=args.timeout_s,
+        )
         rows.append(row)
         if row.get("status") == "ok":
             print(
@@ -334,6 +396,7 @@ def main(argv: list[str] | None = None) -> None:
         "sizes": args.sizes,
         "adapters": args.adapters,
         "rows": rows,
+        "memory_scaling": _build_memory_scaling(rows),
         "gate": _evaluate_gate(rows),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)

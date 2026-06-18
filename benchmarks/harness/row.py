@@ -5,21 +5,13 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
-import resource
-import sys
 import time
 from pathlib import Path
 from typing import Any
 
 from benchmarks.harness.adapters.base import get_adapters, supports_streaming
+from benchmarks.harness.memory import ru_maxrss_bytes, sample_peak_rss_while
 from benchmarks.harness.probe import Placement, probe_adapter, probe_streaming_adapter
-
-
-def _ru_maxrss_bytes() -> int:
-    value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    if sys.platform == "darwin":
-        return int(value)
-    return int(value) * 1024
 
 
 def _adapter_by_name(name: str):
@@ -37,19 +29,21 @@ async def _run(args: argparse.Namespace) -> dict[str, Any]:
     # full conversion for output hash/heartbeat metrics.
     adapter.convert(b"<p>warmup</p>")
     payload = Path(args.fixture).read_bytes()
-    rss_before = _ru_maxrss_bytes()
     t0 = time.perf_counter()
-    heartbeat = await probe_adapter(
-        f"{adapter.name}:{args.fixture_name}",
-        adapter.convert,
-        payload,
-        placement=Placement.TO_THREAD,
-        interval_s=args.interval_s,
-        duration_s=args.duration_s,
-        repeat_until_duration=False,
+    heartbeat, peak_rss = await sample_peak_rss_while(
+        probe_adapter(
+            f"{adapter.name}:{args.fixture_name}",
+            adapter.convert,
+            payload,
+            placement=Placement.TO_THREAD,
+            interval_s=args.interval_s,
+            duration_s=args.duration_s,
+            repeat_until_duration=False,
+        ),
+        read_rss_bytes=ru_maxrss_bytes,
+        interval_s=args.memory_interval_s,
     )
     wall_s = time.perf_counter() - t0
-    rss_after = _ru_maxrss_bytes()
     conversion_wall_s = (
         heartbeat.conversion_wall_s
         if heartbeat.conversion_wall_s is not None
@@ -85,9 +79,13 @@ async def _run(args: argparse.Namespace) -> dict[str, Any]:
         "conversion_wall_s": conversion_wall_s,
         "subprocess_wall_s": wall_s,
         "throughput_mib_s": throughput_mib_s,
-        "ru_maxrss_before_bytes": rss_before,
-        "ru_maxrss_after_bytes": rss_after,
-        "ru_maxrss_delta_bytes": max(0, rss_after - rss_before),
+        "ru_maxrss_before_bytes": peak_rss.baseline_bytes,
+        "ru_maxrss_after_bytes": peak_rss.final_bytes,
+        "ru_maxrss_delta_bytes": peak_rss.peak_delta_bytes,
+        "peak_rss_before_bytes": peak_rss.baseline_bytes,
+        "peak_rss_bytes": peak_rss.peak_bytes,
+        "peak_rss_delta_bytes": peak_rss.peak_delta_bytes,
+        "memory_curve": peak_rss.as_dict(),
         "output_bytes": heartbeat.output_bytes,
         "output_hash": heartbeat.output_hash,
         "output_to_input_ratio": (heartbeat.output_bytes / input_bytes)
@@ -120,6 +118,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--fixture-name", required=True)
     parser.add_argument("--interval-s", type=float, default=0.005)
     parser.add_argument("--duration-s", type=float, default=1.0)
+    parser.add_argument("--memory-interval-s", type=float, default=0.02)
     args = parser.parse_args(argv)
     result = asyncio.run(_run(args))
     print(json.dumps(result, sort_keys=True))

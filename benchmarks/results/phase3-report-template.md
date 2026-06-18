@@ -45,7 +45,7 @@ Final narrative to fill after the run:
 - Each adapter row is warmed with a tiny payload before measuring one full fixture conversion.
 - Heartbeat metrics are sampled while the conversion runs in a worker thread.
 - Streaming cadence is measured only for adapters exposing a native streaming API.
-- RSS uses `resource.getrusage(...).ru_maxrss` deltas from each row subprocess.
+- RSS uses sampled `resource.getrusage(...).ru_maxrss` while each row conversion is in flight; `memory_curve` records peak delta and per-sample values for the small→xlarge scaling chart.
 
 ### Conformance methodology
 
@@ -58,7 +58,7 @@ Final narrative to fill after the run:
 
 Populate from `benchmarks/results/phase3.json`.
 
-| Adapter | Fixture | Status | MiB/s | Wall s | Missed beat % | Max stall ms | p99 stall ms | TTFO ms | Max stream gap ms | Stream chunks | Output/Input | RSS delta MiB | Async pass | Streaming pass |
+| Adapter | Fixture | Status | MiB/s | Wall s | Missed beat % | Max stall ms | p99 stall ms | TTFO ms | Max stream gap ms | Stream chunks | Output/Input | Peak RSS Δ MiB | Async pass | Streaming pass |
 |---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|
 | `markdownify` | small | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
 | `markdownify` | medium | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
@@ -88,6 +88,21 @@ Populate from `benchmarks/results/phase3.json`.
 | `lxml_naive` | medium | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
 | `lxml_naive` | large | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
 | `lxml_naive` | xlarge | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
+
+## Peak RSS / memory scaling
+
+Populate from `memory_scaling` in `benchmarks/results/phase3.json`.
+
+| Adapter | Fixture | Input MiB | Peak RSS Δ MiB | RSS/Input | Samples | Interpretation |
+|---|---:|---:|---:|---:|---:|---|
+| `markdownify` | small | TBD | TBD | TBD | TBD | Expected O(input) baseline. |
+| `markdownify` | medium | TBD | TBD | TBD | TBD | TBD |
+| `markdownify` | large | TBD | TBD | TBD | TBD | TBD |
+| `markdownify` | xlarge | TBD | TBD | TBD | TBD | TBD |
+| `html2md_streaming` | small | TBD | TBD | TBD | TBD | Expected bounded streaming path. |
+| `html2md_streaming` | medium | TBD | TBD | TBD | TBD | TBD |
+| `html2md_streaming` | large | TBD | TBD | TBD | TBD | TBD |
+| `html2md_streaming` | xlarge | TBD | TBD | TBD | TBD | Should stay substantially flatter than one-shot contenders. |
 
 ## Gate summary
 
@@ -121,7 +136,7 @@ Populate from the phase-3 conformance run.
 - Event-loop health: `adapter × max stall ms` and `adapter × missed beat %`.
 - Streaming latency: `html2md_streaming × TTFO/max gap` across sizes.
 - Conformance: `adapter × fidelity %`.
-- Memory: `adapter × RSS delta MiB` on large/xlarge.
+- Memory: `adapter × Peak RSS Δ MiB` on large/xlarge.
 
 ## Headline narrative draft
 
