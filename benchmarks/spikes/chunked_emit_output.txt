@@ -1,0 +1,15 @@
+python 3.12.13 | GIL switch 5ms | 50.0MB (sample_50mb.html) | feed 64KiB | heartbeat 1ms
+
+Heartbeat jitter + throughput + time-to-first-output:
+
+  monolithic     total= 1.614s ttfo=  378.0ms out= 29.9MB  p50= 0.273 p95=15.085 p99= 15.357 max= 109.518ms  missed>2ms=  77/378 (20.4%) stall= 1237.1ms
+  chunked        total= 1.903s ttfo=    1.7ms out= 29.9MB  p50= 1.265 p95= 1.550 p99=  2.434 max=  11.370ms  missed>2ms=  11/812 ( 1.4%) stall= 1090.7ms
+  chunked_cemit  total= 1.242s ttfo=    1.0ms out= 25.1MB  p50= 0.277 p95= 0.521 p99=  1.634 max=  14.575ms  missed>2ms=   9/932 ( 1.0%) stall=  309.4ms
+
+Verdict:
+  monolithic walk+emit: p99 15.36ms, 77/378 beats missed (>2ms), 1237ms total stall — GIL held through the walk.
+  chunked  walk+emit:   p99 2.43ms, 11/812 missed, 1091ms stall, ttfo 1.7ms.
+  => chunking the walk+emit with awaits KEEPS THE LOOP ALIVE: p99 15.4 -> 2.4ms (6x lower), max 110 -> 11ms, missed 20% -> 1%.
+     (NB: TOTAL GIL work is ~unchanged — 1237 vs 1091ms stall; chunking BOUNDS each stall into <2ms slices, it doesn't remove the work.)
+  cost: 1.18x wall vs monolithic; first output 2ms vs 378ms (whole-doc) = 222x faster TTFO.
+  C-emit variant: total GIL stall 309ms (4.0x less than Python emit) and 0.77x wall — 'push emit into C' is the lever that cuts TOTAL GIL work, chunking is the lever that bounds per-stall latency.
