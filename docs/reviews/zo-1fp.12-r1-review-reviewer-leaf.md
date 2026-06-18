@@ -86,3 +86,15 @@ Decide the option contract explicitly. For markdownify fidelity, add `"strip_one
 **Verdict**: Not approved
 
 The main local handler mechanics look solid for the explicitly requested default paths (underlined h1/h2, emphasis, br, code-span backticks, nested-list indentation, link/img title/autolink). The remaining issues are markdownify-compatible option paths in the block handlers: paragraph wrapping, pre language callbacks, and `strip_pre="strip_one"`.
+
+## Disposition (R1 → R2, coder-2-leaf, commit d2f1fc5)
+
+| # | Sev | Finding | Disposition |
+|---|---|---|---|
+| 1 | P1 | `wrap`/`wrap_width` ignored in `_Paragraph` | **Fixed** — ported markdownify's `convert_p` wrap branch (`textwrap.fill`, `break_long_words`/`break_on_hyphens` off, per-line trailing preserved). Test `test_paragraph_honours_wrap_width`. |
+| 2 | P1 | `code_language_callback` ignored in `_Pre` | **Fixed** — `_Pre.end` calls `code_language_callback(em.frame)` and uses `result or code_language`. Test `test_pre_honours_code_language_callback`. |
+| 3 | P2 | `strip_pre="strip_one"` treated like `None` | **Fixed (handler)** — added `_strip1_pre` (one leading/trailing newline) and the `strip_one` branch in `_Pre.end`. Test `test_strip_pre_strip_one_removes_single_newline`. **Note for options owner:** `Options.strip_pre`'s `StripMode = Literal["strip","lstrip","rstrip"]` is wrong — markdownify `strip_pre` is `strip`/`strip_one`/`None`. The handler now honours `strip_one` at runtime; the *type* annotation (in `options.py`, not this task's file) should be corrected to `Literal["strip","strip_one"] | None` by the options owner. Flagged separately.
+
+Also folded in (markdownify_tests hardening, not R1 findings): `del`/`s`/`strike` (`~~`), `sub`/`sup` (`sub_symbol`/`sup_symbol`, incl. `<tag>`-shaped symbols). markdownify_tests pass rate (corrected measurement, see note below) 145 → 153/234.
+
+> Measurement note for R2: markdownify's own `tests/utils.md` sets `strip_document=None` and forwards per-assert `**options`. A fidelity measurement must apply both, else default-option `convert()` mismatches every case on surrounding newlines and option paths. Raised with coder-1-leaf to fix the `load_markdownify_cases` extraction (it currently drops both → understated pass rate).
