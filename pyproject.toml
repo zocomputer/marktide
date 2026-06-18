@@ -4,13 +4,20 @@ version = "0.0.1"
 description = "Fast streaming HTML to Markdown conversion built on lxml (releases the GIL)."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["lxml>=5.0"]
+dependencies = [
+    "lxml>=5.0",
+]
 
 [dependency-groups]
 dev = [
     "pytest>=8.0",
-    "markdownify>=0.13",
+]
+benchmark = [
     "beautifulsoup4>=4.12",
+    "htmd-py>=0.1.2",
+    "html-to-markdown>=3.6.13",
+    "html2text-rs>=0.2.5",
+    "markdownify>=0.13",
 ]
 
 [build-system]
