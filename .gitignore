@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+.uv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+# Large test fixtures — generated/downloaded, not committed
+benchmarks/fixtures/*.html
+benchmarks/results/*.json
+.DS_Store
