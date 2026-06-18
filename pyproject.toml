@@ -15,7 +15,7 @@ dev = [
 benchmark = [
     "beautifulsoup4>=4.12",
     "htmd-py>=0.1.2",
-    "html-to-markdown>=3.6.13",
+    "html-to-markdown==3.5.7",
     "html2text-rs>=0.2.5",
     "markdownify>=0.13",
 ]
