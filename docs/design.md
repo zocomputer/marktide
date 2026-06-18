@@ -491,9 +491,10 @@ floor), **but the Python emit callbacks reacquire it** — and emit, not parse, 
 dominant cost (on a 50 MiB doc emit ≈ 1 s > parse ≈ 0.5 s, heartbeat pinned ~13 ms, the same
 as a pure-Python CPU loop). So "run the parse on a worker thread" is **necessary but not
 sufficient**; with the *target* parser the emit callbacks fire **inside `feed()`**, so
-async-friendliness reduces to a single question: **does one chunk's worth of callbacks hold
-the GIL for less than our 2 ms bound?** The worker releases the GIL/yields *between* `feed()`
-calls, so `chunk_size` is the load-bearing knob.
+async-friendliness originally appeared to reduce to a single question: **does one chunk's worth
+of callbacks hold the GIL for less than our 2 ms bound?** The later target-parser confirmation
+below refined this: lxml yields between target callbacks even inside one large `feed()`, so
+`chunk_size` is a cadence/memory/cancellation knob rather than the responsiveness knob.
 
 **`chunk_size = 64 KiB`, empirically chosen** (coder-1-leaf sweep, zo-1fp.6,
 `docs/chunk-size-sweep.md`). A worker-thread `feed()` sweep on a 50 MiB sample with a
