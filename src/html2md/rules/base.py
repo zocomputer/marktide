@@ -15,15 +15,23 @@ A handler is any object implementing :class:`TagHandler`::
 
 * ``start`` is called *after* the element's :class:`~html2md.state.Frame` is pushed,
   so ``em.state.top`` is this element. Use it to mutate state (e.g. ``pre_depth``, list
-  context) or capture attributes for ``end`` (e.g. a link href onto ``em.state.top.data``).
-  ``start`` normally emits nothing — output is produced at ``end`` from the rendered
-  children.
-* ``end`` is called *after* the frame is popped. The element's fully rendered child
-  Markdown is available as ``em.content`` (markdownify's ``text`` argument). The handler
-  emits the element's final Markdown via ``em.emit(...)``, which lands in the parent's
-  buffer — typically ``em.emit(prefix + em.content + suffix)``, but the handler may
+  context) or stash bookkeeping for ``end`` onto ``em.state.top.data``. ``start``
+  normally emits nothing — output is produced at ``end`` from the rendered children.
+* ``end`` is called *after* the frame is popped (so ``em.state.top`` is the **parent**).
+  The handler reads **its own** element via two context properties, both valid only
+  inside ``end``:
+    * ``em.content`` — the element's fully rendered child Markdown (markdownify's
+      ``text`` argument).
+    * ``em.frame`` — the just-popped :class:`~html2md.state.Frame`, exposing this
+      element's ``attrs`` and the ``data`` stashed at ``start``. Using ``em.frame``
+      (not handler-instance state) is what makes nested same-tag elements correct:
+      each ``end`` sees a distinct frame, so ``<a href=1><a href=2>…`` reads the right
+      href at each level. Attribute-only handlers (e.g. links/images) need no ``start``
+      at all — read ``em.frame.attrs`` directly at ``end``.
+  The handler emits the element's final Markdown via ``em.emit(...)``, which lands in
+  the parent's buffer — typically ``em.emit(prefix + em.content + suffix)``, but it may
   read/transform the content (setext underline length, code-fence sizing, dropping an
-  empty element).
+  empty element) or read ``em.frame.attrs`` (link href/title, image src/alt).
 * Text content arrives via the emitter's ``data``→``emit_text`` path, which escapes per
   ``Options`` centrally, so ``em.content`` is already-escaped — handlers do **not**
   re-escape it. ``em.emit`` writes raw (handler-produced) Markdown; ``em.escape`` is for

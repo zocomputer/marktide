@@ -32,7 +32,7 @@ from __future__ import annotations
 
 from .options import Options
 from .rules import TAG_HANDLERS
-from .state import EmitterState
+from .state import EmitterState, Frame
 
 # Characters markdownify escapes when escape_misc is on (foundation subset; the text
 # rules refine boundary-sensitive escaping per design §4.7).
@@ -45,7 +45,7 @@ _MISC_ESCAPE = str.maketrans({
 class MarkdownEmitter:
     """SAX target that emits Markdown. ``close()`` returns the assembled document."""
 
-    __slots__ = ("options", "state", "root", "_handlers", "_filter", "_content")
+    __slots__ = ("options", "state", "root", "_handlers", "_filter", "_content", "_frame")
 
     def __init__(self, options: Options | None = None) -> None:
         self.options = options or Options()
@@ -54,6 +54,7 @@ class MarkdownEmitter:
         self._handlers = TAG_HANDLERS
         self._filter = _TagFilter(self.options)
         self._content = ""                 # rendered children of element being ended
+        self._frame: Frame | None = None   # the element being ended (its own attrs/data)
 
     # --- handler-facing context API ------------------------------------------
 
@@ -91,6 +92,14 @@ class MarkdownEmitter:
         handler's ``end`` (empty otherwise)."""
         return self._content
 
+    @property
+    def frame(self) -> Frame | None:
+        """The element being ended — its own ``attrs`` and ``data``. Valid only inside
+        a handler's ``end``. This is the just-popped :class:`~html2md.state.Frame`, so a
+        handler reads *its own* per-element attributes/bookkeeping even when the same
+        tag is nested (``<a><a></a></a>``); ``em.state.top`` at ``end`` is the parent."""
+        return self._frame
+
     # --- lxml target protocol (SAX callbacks) --------------------------------
 
     def start(self, tag: str, attrs: dict[str, str]) -> None:
@@ -111,10 +120,12 @@ class MarkdownEmitter:
         handler = self._handlers.get(tag)
         if handler is not None and self._filter.converts(tag):
             self._content = content
+            self._frame = frame            # the just-popped element (its own attrs/data)
             try:
                 handler.end(self)          # emits into the parent buffer
             finally:
                 self._content = ""
+                self._frame = None
         else:
             # no handler / filtered-out: children pass through unchanged
             self.emit(content)
