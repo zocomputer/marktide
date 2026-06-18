@@ -15,12 +15,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from benchmarks.harness.adapters.base import get_adapters
-from benchmarks.harness.fixtures import FIXTURE_ORDER, load_fixture_set
+from .adapters.base import get_adapters
+from .fixtures import FIXTURE_ORDER, load_fixture_set
 
-RESULTS_DIR = Path("benchmarks/results")
+BENCHMARKS_DIR = Path(__file__).resolve().parents[1]
+RESULTS_DIR = BENCHMARKS_DIR / "results"
 PHASE1_JSON = RESULTS_DIR / "phase1.json"
 PHASE1_REPORT = RESULTS_DIR / "report.md"
+ROW_MODULE = f"{__package__}.row" if __package__ else "harness.row"
 DEFAULT_ADAPTERS = (
     "markdownify",
     "html_to_markdown",
@@ -54,7 +56,7 @@ def _run_row(
     cmd = [
         sys.executable,
         "-m",
-        "benchmarks.harness.row",
+        ROW_MODULE,
         "--adapter",
         request.adapter,
         "--fixture",
@@ -391,8 +393,8 @@ def main(argv: list[str] | None = None) -> None:
 
     result = {
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-        "fixture_manifest": "benchmarks/fixtures.lock.json",
-        "manifest_naming": "benchmarks/fixtures.lock.json is the canonical fixture manifest; no separate benchmarks/fixtures/manifest.json is used.",
+        "fixture_manifest": str(BENCHMARKS_DIR / "fixtures.lock.json"),
+        "manifest_naming": "fixtures.lock.json is the canonical fixture manifest; no separate fixtures/manifest.json is used.",
         "sizes": args.sizes,
         "adapters": args.adapters,
         "rows": rows,

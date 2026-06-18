@@ -1,8 +1,8 @@
 import asyncio
 
-from benchmarks.harness.adapters.base import get_adapters, supports_streaming
-from benchmarks.harness.adapters.html2md_adapter import STREAM_INPUT_CHUNK_BYTES
-from benchmarks.harness.probe import probe_streaming_adapter
+from .adapters.base import get_adapters, supports_streaming
+from .adapters.html2md_adapter import STREAM_INPUT_CHUNK_BYTES
+from .probe import probe_streaming_adapter
 
 HTML = b"<h1>hi</h1><p>Hello <strong>bold</strong></p>"
 

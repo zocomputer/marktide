@@ -1,6 +1,6 @@
 import asyncio
 
-from benchmarks.harness.probe import Placement, gil_releasing_sleep, probe_adapter, pure_python_burn
+from .probe import Placement, gil_releasing_sleep, probe_adapter, pure_python_burn
 
 
 def test_probe_distinguishes_sleep_from_gil_holding_cpu():

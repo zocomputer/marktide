@@ -1,0 +1,34 @@
+[project]
+name = "html2md-benchmarks"
+version = "0.0.1"
+description = "Self-contained reproducible benchmark harness for html2md."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.12",
+    "html2md",
+    "html-to-markdown==3.5.7",
+    "html2text-rs>=0.2.5",
+    "htmd-py>=0.1.2",
+    "markdown-it-py>=3.0",
+    "markdownify>=0.13",
+    "matplotlib>=3.9",
+    "pytest>=8.0",
+]
+
+[project.scripts]
+bench = "bench:verify_main"
+bench-verify = "bench:verify_main"
+bench-async-starvation = "bench:async_starvation_main"
+benchmarks = "bench:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["bench", "charts"]
+packages = ["harness", "harness.adapters"]
+
+[tool.uv.sources]
+html2md = { path = "..", editable = true }

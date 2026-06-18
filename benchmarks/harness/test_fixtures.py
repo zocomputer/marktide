@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from benchmarks.harness.fixtures import load_fixture_set
+from .fixtures import load_fixture_set
 
 
 def test_load_fixture_set_orders_available_sizes(tmp_path: Path):

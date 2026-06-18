@@ -9,9 +9,9 @@ import time
 from pathlib import Path
 from typing import Any
 
-from benchmarks.harness.adapters.base import get_adapters, supports_streaming
-from benchmarks.harness.memory import ru_maxrss_bytes, sample_peak_rss_while
-from benchmarks.harness.probe import Placement, probe_adapter, probe_streaming_adapter
+from .adapters.base import get_adapters, supports_streaming
+from .memory import ru_maxrss_bytes, sample_peak_rss_while
+from .probe import Placement, probe_adapter, probe_streaming_adapter
 
 
 def _adapter_by_name(name: str):

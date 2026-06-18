@@ -5,7 +5,10 @@ import sys
 import types
 from pathlib import Path
 
-from benchmarks.charts import CHART_FILENAMES, generate_charts
+try:
+    from .charts import CHART_FILENAMES, generate_charts
+except ImportError:  # Allows `cd benchmarks && uv run pytest`.
+    from charts import CHART_FILENAMES, generate_charts
 
 
 class _FakeFigure:
