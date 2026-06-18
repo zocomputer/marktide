@@ -201,12 +201,13 @@ class _ListContainer:
         if em.state.has_ancestor("li"):
             em.emit("\n" + text.rstrip())
         else:
-            # NOTE: markdownify appends one '\n' when the list is followed by a
-            # non-list block sibling (before_paragraph). That needs next-sibling
-            # lookahead the streaming SAX model lacks; handled by the §4.7 flush
-            # layer when it lands. Default (no trailing) is correct for a list at
-            # end of its container.
-            em.emit("\n\n" + text)
+            # markdownify's convert_list appends a blank line when the list is followed
+            # by a non-list block (before_paragraph). We always emit it: the emitter's
+            # trailing-newline hold-back drops it at document end, and boundary-collapse
+            # caps it at one blank line before a following list/block — so no next-sibling
+            # lookahead is needed. (Verified against markdownify across the list-boundary
+            # cases.)
+            em.emit("\n\n" + text.rstrip() + "\n\n")
 
 
 class _ListItem:
