@@ -117,6 +117,42 @@ Separately, the e2e suite and benchmarks run on **real-world HTML fixtures up to
 (Wikipedia / RFC / gov pages, pinned in `benchmarks/fixtures.lock.json`) to exercise the
 streaming path, huge-document handling (`huge_tree`), and `convert == convert_stream` at scale.
 
+## Compatibility & edge cases
+
+The markdownify drop-in contract is the primary guarantee — **296/298 raw, 298/298 effective**
+(`make verify-fidelity`). The handful of cases that differ are edge/guardrail behaviors, all
+on invalid or ambiguous HTML; each is shown below as *input → html2md → markdownify*.
+
+**Intentional parser divergences (the 2 primary effective-pass cases).** html2md parses with
+lxml, which builds the tree the way a browser does; markdownify uses BeautifulSoup's
+`html.parser`. They diverge only on *invalid* markup:
+
+| Input | html2md | markdownify | Why |
+|---|---|---|---|
+| `<h1>A <p>P</p> C </h1>` (ATX) | `# A`, then `P`, then `C` | `# A P C` | A `<p>` can't nest in a heading: lxml auto-closes the `<h1>` (browser-standard), so html2md sees a heading `A` plus a sibling paragraph; BeautifulSoup keeps the `<p>` inside and markdownify flattens it into the heading text. |
+
+**Guardrail edge cases** (from the Turndown / Pandoc / CommonMark corpora — not the primary
+contract):
+
+| Input | html2md | markdownify | Why |
+|---|---|---|---|
+| `<strike>bar</strike>` | `~~bar~~` | `bar` | html2md treats `<strike>` as a strikethrough alias of `<s>`/`<del>`; markdownify 1.2.2 strikethroughs only `<s>`/`<del>`. |
+| `<h7>Heading?</h7>` | `Heading?` | `###### Heading?` | `<h7>` is not a real tag; lxml leaves it transparent (so does Turndown), markdownify coerces it to an h6. |
+| `<p>Foo<span> </span>Bar</p>` | `FooBar` | `Foo Bar` | A `<span>` containing only collapsible ASCII whitespace: html2md drops it, markdownify keeps one separating space. |
+| `<p>Foo<span>  &nbsp;  </span>Bar</p>` | `'Foo \xa0Bar'` (NBSP, no space) | `'Foo \xa0 Bar'` (NBSP + space) | Mixed ASCII + NBSP in a whitespace-only span: html2md preserves the NBSP but drops the ASCII space after it. |
+| `<p>foo <![CDATA[>&<]]></p>` | `foo &<]]>` | `foo >&<` | CDATA with angle brackets: lxml's recovery doesn't expose the original `>&<` text, so html2md can't reconstruct it from the event stream. |
+
+These are tracked in `tests/conformance/allowed_divergences.toml` and surfaced by
+`make verify-fidelity`.
+
+**Optional: `commonmark_roundtrip_stable`.** Inline code-span delimiters are markdownify-exact
+by default (longest backtick run + 1, padded when the content has any backtick). Set
+`Options(commonmark_roundtrip_stable=True)` to instead use canonical CommonMark delimiters
+(the smallest absent run length, padded only at the edges), which keeps generated Markdown
+*textually* stable across a CommonMark render→convert round-trip (e.g. adjacent code spans like
+`<code>0</code><code>0</code>`). Leave it off for strict markdownify-output compatibility; the
+default never changes fidelity.
+
 ## Benchmarks
 
 html2md set out to replace `markdownify` on **five axes at once** — fast, async-friendly,
