@@ -2,7 +2,14 @@
 
 from __future__ import annotations
 
-from html2md.state import EmitterState, Frame, ListContext, TableBuffer
+from html2md.state import (
+    EmitterState,
+    Frame,
+    ListContext,
+    TableBuffer,
+    TableCell,
+    TableRow,
+)
 
 
 def test_push_pop_depth_top() -> None:
@@ -51,3 +58,11 @@ def test_list_and_table_contexts_construct() -> None:
     assert lc.ordered and lc.index == 1 and lc.marker == "*"
     tb = TableBuffer()
     assert tb.rows == [] and tb.in_header is False and tb.current_row is None
+    assert tb.current_cell is None and tb.parent_row_counts == {}
+
+    row = TableRow(
+        parent_tag="table", parent_key=0, parent_order=0, row_index_in_parent=0
+    )
+    row.cells.append(TableCell(tag="th", text="Name"))
+    tb.current_row = row
+    assert tb.current_row.cells[0].text == "Name"

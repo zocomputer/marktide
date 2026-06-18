@@ -36,8 +36,47 @@ class ListContext:
     """One level of ``<ul>``/``<ol>`` nesting."""
 
     ordered: bool
-    index: int           # next item number for <ol>; ignored for <ul>
-    marker: str          # bullet char for <ul> (chosen by depth from Options.bullets)
+    index: int  # next item number for <ol>; ignored for <ul>
+    marker: str  # bullet char for <ul> (chosen by depth from Options.bullets)
+
+
+@dataclass(slots=True)
+class TableCell:
+    """One logical Markdown table cell captured from ``<td>`` or ``<th>``.
+
+    ``text`` is already-rendered child Markdown (escaped by the emitter); table rules
+    must not re-escape it. ``colspan`` is clamped to markdownify's practical limit so
+    malformed input cannot explode the rendered grid.
+    """
+
+    tag: str
+    text: str
+    colspan: int = 1
+
+
+@dataclass(slots=True)
+class TableRow:
+    """One captured ``<tr>`` with enough parent metadata to match markdownify.
+
+    Markdownify decides whether a row is a header from both cell tags and parent
+    section context (direct table row vs ``thead``/``tbody``/``tfoot``), so rows carry
+    their parent section identity plus the row's index within that parent.
+    """
+
+    parent_tag: str
+    parent_key: int
+    parent_order: int
+    row_index_in_parent: int
+    cells: list[TableCell] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class TableSection:
+    """Open ``thead``/``tbody``/``tfoot`` context for the innermost table."""
+
+    tag: str
+    key: int
+    order: int
 
 
 @dataclass(slots=True)
@@ -46,11 +85,17 @@ class TableBuffer:
     be emitted (column count + alignment), so a table is buffered until ``</table>``.
     Bounded by table dimensions, never by document size (design §4.3)."""
 
-    rows: list[list[str]] = field(default_factory=list)
+    rows: list[TableRow] = field(default_factory=list)
     aligns: list[str | None] = field(default_factory=list)
     in_header: bool = False
     has_header: bool = False
-    current_row: list[str] | None = None
+    current_row: TableRow | None = None
+    current_cell: TableCell | None = None
+    section_stack: list[TableSection] = field(default_factory=list)
+    parent_row_counts: dict[int, int] = field(default_factory=dict)
+    next_parent_key: int = 1
+    next_section_order: int = 1
+    has_thead: bool = False
 
 
 class EmitterState:
@@ -58,12 +103,12 @@ class EmitterState:
     rule handlers read and mutate it through the emitter context."""
 
     __slots__ = (
-        "stack",            # list[Frame] — open elements (pushdown stack)
-        "list_stack",       # list[ListContext] — nested list context
-        "blockquote_depth", # int — number of "> " prefixes
-        "pre_depth",        # int — >0 means verbatim text (no escape/collapse)
-        "table_stack",      # list[TableBuffer] — nested tables (rare but legal)
-        "pending",          # list[str] — uncommitted inline lookahead buffer
+        "stack",  # list[Frame] — open elements (pushdown stack)
+        "list_stack",  # list[ListContext] — nested list context
+        "blockquote_depth",  # int — number of "> " prefixes
+        "pre_depth",  # int — >0 means verbatim text (no escape/collapse)
+        "table_stack",  # list[TableBuffer] — nested tables (rare but legal)
+        "pending",  # list[str] — uncommitted inline lookahead buffer
     )
 
     def __init__(self) -> None:
