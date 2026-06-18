@@ -174,3 +174,24 @@ def test_multiline_table_cell_whitespace_collapses_to_single_spaces() -> None:
             "| Smith Jackson |",
         ]
     )
+
+
+def test_standalone_table_cell_matches_markdownify_fragment() -> None:
+    html = "<td>foo<br />bar</td>"
+    assert (
+        convert(html, options=Options(strip_document=None, heading_style="atx"))
+        == " foo bar |"
+    )
+
+
+def test_standalone_table_row_and_section_match_markdownify_fragments() -> None:
+    opts = Options(strip_document=None, heading_style="atx")
+    assert convert("<tr><td>foo</td></tr>", options=opts) == "|  |\n| --- |\n| foo |\n"
+    assert (
+        convert("<tbody><tr><td>foo</td></tr></tbody>", options=opts)
+        == "|  |\n| --- |\n| foo |\n"
+    )
+    assert (
+        convert("<thead><tr><td>foo</td></tr></thead>", options=opts)
+        == "| foo |\n| --- |\n"
+    )

@@ -34,11 +34,12 @@ def _row_slot_count(cells: Iterable[TableCell]) -> int:
     return sum(cell.colspan for cell in cells)
 
 
+def _render_cell(cell: TableCell) -> str:
+    return " " + _normalise_cell_text(cell.text) + " |" * cell.colspan
+
+
 def _render_cells(cells: Iterable[TableCell]) -> str:
-    rendered = [
-        " " + _normalise_cell_text(cell.text) + " |" * cell.colspan for cell in cells
-    ]
-    return "|" + "".join(rendered)
+    return "|" + "".join(_render_cell(cell) for cell in cells)
 
 
 def _empty_header(columns: int) -> str:
@@ -152,6 +153,7 @@ class TableSectionHandler:
 
     def end(self, em) -> None:
         if not em.state.table_stack:
+            em.emit(em.content)
             return
         table = em.state.table_stack[-1]
         for index in range(len(table.section_stack) - 1, -1, -1):
@@ -168,6 +170,16 @@ class TableRowHandler:
 
     def start(self, em, attrs: Mapping[str, str]) -> None:
         if not em.state.table_stack:
+            frame = em.state.top
+            if frame is not None:
+                parent = em.state.stack[-2] if len(em.state.stack) >= 2 else None
+                parent_tag = (
+                    parent.tag
+                    if parent is not None and parent.tag in {"thead", "tbody", "tfoot"}
+                    else "table"
+                )
+                frame.data["table_parent_tag"] = parent_tag
+                frame.data["table_cells"] = []
             return
         table = em.state.table_stack[-1]
         if table.section_stack:
@@ -189,6 +201,28 @@ class TableRowHandler:
 
     def end(self, em) -> None:
         if not em.state.table_stack:
+            if em.frame is None:
+                return
+            cells = em.frame.data.get("table_cells")
+            if not isinstance(cells, list):
+                em.emit(em.content)
+                return
+            parent_tag = str(em.frame.data.get("table_parent_tag", "table"))
+            row = TableRow(
+                parent_tag=parent_tag,
+                parent_key=_TABLE_PARENT_KEY,
+                parent_order=0,
+                row_index_in_parent=0,
+                cells=cells,
+            )
+            table = TableBuffer(
+                rows=[row],
+                parent_row_counts={_TABLE_PARENT_KEY: 1},
+                has_thead=parent_tag == "thead",
+            )
+            em.emit(
+                render_table(table, infer_header=em.options.table_infer_header) + "\n"
+            )
             return
         table = em.state.table_stack[-1]
         row = table.current_row
@@ -209,16 +243,28 @@ class TableCellHandler:
         return None
 
     def end(self, em) -> None:
-        if not em.state.table_stack:
-            return
-        table = em.state.table_stack[-1]
-        if table.current_row is None or em.frame is None:
+        if em.frame is None:
             return
         cell = TableCell(
             tag=self.tag,
             text=em.content,
             colspan=_parse_colspan(em.frame.attrs),
         )
+        if not em.state.table_stack:
+            parent = em.state.top
+            cells = (
+                parent.data.get("table_cells")
+                if parent is not None and parent.tag == "tr"
+                else None
+            )
+            if isinstance(cells, list):
+                cells.append(cell)
+            else:
+                em.emit(_render_cell(cell))
+            return
+        table = em.state.table_stack[-1]
+        if table.current_row is None:
+            return
         table.current_row.cells.append(cell)
         if self.tag == "th":
             table.has_header = True
