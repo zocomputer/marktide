@@ -83,6 +83,37 @@ Defaults are identical to `markdownify==1.2.2` (setext `h1`/`h2`, `*` emphasis, 
 `<br>`, `*+-` depth bullets). See **[docs/usage.md](docs/usage.md)** for the full options
 table, every public function in detail, and a **migrating-from-markdownify** guide.
 
+## Correctness & conformance
+
+html2md is validated against a **1107-case differential suite**: each HTML input is converted
+by html2md and by an oracle, and the results are compared. It has two tiers.
+
+**Primary — the markdownify drop-in contract (298 cases).** markdownify's own test suite
+(234 cases) plus a hand-authored per-handler + edge-case golden corpus (64 cases), checked
+against `markdownify==1.2.2`. html2md passes **296/298 raw (99.3%)** and **298/298 effective
+(100%)**; the two raw misses are [documented divergences](docs/usage.md#documented-divergences)
+where lxml's browser-standard tree construction differs from BeautifulSoup on invalid
+nested-block-in-heading markup. `convert` and `convert_stream` agree on **0/1107** cases
+(exact streaming parity).
+
+**Guardrail / triangulation (809 cases).** Turndown (147), the CommonMark spec (654), and
+Pandoc (8). These libraries emit different Markdown dialects, so they are compared
+*semantically* (the output is rendered back to HTML and the structure compared) rather than
+byte-for-byte — they catch regressions the markdownify oracle alone would miss.
+
+Every corpus is pulled from its upstream project and **pinned to an immutable commit** in
+[`tests/conformance/sources.toml`](tests/conformance/sources.toml), regenerated
+deterministically by `scripts/regenerate_conformance_corpus.py`. Reproduce locally:
+
+```bash
+make verify-fidelity   # primary drop-in fidelity: raw/effective counts, parity, divergences
+make conformance       # the full 1107-case differential suite
+```
+
+Separately, the e2e suite and benchmarks run on **real-world HTML fixtures up to ~110 MiB**
+(Wikipedia / RFC / gov pages, pinned in `benchmarks/fixtures.lock.json`) to exercise the
+streaming path, huge-document handling (`huge_tree`), and `convert == convert_stream` at scale.
+
 ## Benchmarks
 
 html2md set out to replace `markdownify` on **five axes at once** — fast, async-friendly,
