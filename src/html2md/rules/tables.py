@@ -26,8 +26,8 @@ def _parse_colspan(attrs: Mapping[str, str]) -> int:
 
 
 def _normalise_cell_text(text: str) -> str:
-    # markdownify strips cell contents and flattens embedded line breaks into spaces.
-    return text.strip().replace("\n", " ")
+    # markdownify sees table-cell text after normal whitespace collapse, then strips.
+    return " ".join(text.split())
 
 
 def _row_slot_count(cells: Iterable[TableCell]) -> int:
@@ -110,8 +110,22 @@ class TableHandler:
             return
         table = em.state.table_stack.pop()
         markdown = render_table(table, infer_header=em.options.table_infer_header)
-        if markdown:
-            em.emit("\n\n" + markdown.strip() + "\n\n")
+        passthrough = em.content.strip()
+        pieces = [piece for piece in (passthrough, markdown.strip()) if piece]
+        if pieces:
+            em.emit("\n\n" + "\n\n".join(pieces) + "\n\n")
+
+
+class CaptionHandler:
+    __slots__ = ()
+
+    def start(self, em, attrs: Mapping[str, str]) -> None:
+        return None
+
+    def end(self, em) -> None:
+        text = em.content.strip()
+        if text:
+            em.emit(text + "\n\n")
 
 
 class TableSectionHandler:
@@ -215,6 +229,7 @@ HANDLERS: dict[str, TagHandler] = {
     "thead": TableSectionHandler("thead"),
     "tbody": TableSectionHandler("tbody"),
     "tfoot": TableSectionHandler("tfoot"),
+    "caption": CaptionHandler(),
     "tr": TableRowHandler(),
     "td": TableCellHandler("td"),
     "th": TableCellHandler("th"),

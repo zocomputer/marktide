@@ -109,3 +109,11 @@ Add a focused table-conformance test that iterates the upstream markdownify tabl
 **Verdict**: Not approved
 
 The bounded row/cell buffer and the main header/colspan paths look coherent, but table fidelity is not yet complete against markdownify's own table corpus: captions are dropped and multi-line cell whitespace is not normalized like markdownify. Fix those before closing zo-1fp.13.
+
+## Disposition
+
+| # | Severity | Finding | Disposition | Commit | Notes |
+|---|----------|---------|-------------|--------|-------|
+| 1 | P1 | `<caption>` content inside tables is dropped | Incorporated | this commit | Added `CaptionHandler` and changed `TableHandler.end` to preserve non-row rendered table-frame content before the rendered grid. |
+| 2 | P1 | Table cell newline/indentation normalization leaves repeated spaces | Incorporated | this commit | Changed table cell normalization to collapse whitespace runs before rendering, matching markdownify's observed table-cell text. |
+| 3 | P2 | Table tests do not cover the upstream markdownify table corpus | Incorporated | this commit | Added parametrized coverage over all vendored upstream markdownify table HTML cases for both `table_infer_header` modes, plus explicit caption and multiline-cell regressions. |
