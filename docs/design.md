@@ -1082,17 +1082,80 @@ Concrete, measured (every claim has a harness number behind it):
 
 ## 11. Alien Artifacts
 
-1. **Streaming HTML→Markdown as a deterministic pushdown transducer (DPDT).** Modeling the
-   emitter as a DPDT over SAX events (stack = open elements, output tape = Markdown) is not
-   just framing: it yields the chunk-invariance proof (§9.1) because `feed()` becomes a
-   monoid homomorphism over byte sequences, and it bounds memory to stack depth by
-   construction. This is the theoretical backbone that lets us assert correctness of a
-   streaming converter that never sees the whole document.
-2. **Bounded two-pass table alignment within a reservoir.** Markdown table column widths/
-   alignment need the header before emitting rows; we buffer only within a single table
-   (a bounded reservoir sized by table width), preserving the O(depth) global memory bound
-   while still producing aligned grids — a localized two-pass inside an otherwise single-pass
-   stream.
+### 11.1 The converter is a Deterministic Streaming Tree Transducer (DSTT)
+
+The emitter is not merely "a stack machine that happens to stream" — it is precisely a
+**Deterministic Streaming Tree Transducer**, the nested-word/tree generalization (Alur &
+D'Antoni, *Streaming Tree Transducers*, 2012) of the **Deterministic Streaming String
+Transducer** (Alur & Černý, 2010). DSSTs extend finite-state transducers with a finite
+set of **string-valued registers** updated by **copyless** (linear) assignments per input
+symbol; this is exactly the class of MSO-definable (regular) string transformations, and
+it buys single-pass, linear-time, bounded-memory evaluation. The tree variant lifts this
+to **nested words**, which is what our input is.
+
+**Why the input is a nested word.** lxml's target-parser callbacks form a *visibly
+pushdown alphabet*: `start(tag)` is a *call*, `end(tag)` is a *return*, and `data`/
+`comment` are *internal* symbols. The call/return structure is given by the tag nesting,
+so the SAX stream is a well-matched nested word — the native input of a streaming tree
+transducer.
+
+**The registers (EmitterState → DSTT registers).** Output is never written to a global
+tape; it accumulates in registers that are combined by copyless updates:
+
+| DSTT register | Implementation (`state.py` / `emitter.py`) | Update discipline |
+|---|---|---|
+| Pushdown stack of string registers | `Frame.content` for each open element (one register per stack frame) | On `end`, the frame's register is concatenated — with a fixed prefix/suffix or a transform — into its nearest *buffering* ancestor's register **exactly once**, then discarded. Copyless: no register is read into two places. |
+| Streamed-root register | `root` (drained incrementally) | Transparent containers stream children straight to it; it is released by `drain()`, so it is not retained. |
+| Boundary-collapse carry | `_carry` (last child's trailing newlines) | O(1) scalar; carries the child-boundary newline-collapse state across drains so the fold is split-independent. |
+| Document-trailing hold | `_tail` (held trailing newlines) | O(1) scalar; withholds separator newlines that the document-end strip may remove. |
+| Text-coalescing register | `_text_buf` (one logical text node) | Bounded by one text node; flushed on the next non-data event so normalization is feed-independent. |
+| Sibling-whitespace registers | `Frame.pending_ws` / `last_child_block` / `seen_child` | O(1) per frame; a one-event lookahead implementing markdownify's block-boundary trim without breaking single-pass evaluation. |
+| List/blockquote context | `list_stack`, blockquote depth, `pre_depth` | O(depth) finite context; the pushdown control state. |
+| **Bounded register-array (table reservoir)** | `table_stack` of `TableBuffer` | See §11.2. |
+
+**Structural theorems** (these are consequences of the DSTT structure, not aspirations):
+
+- **Linear time, single pass.** Each nested-word symbol triggers O(1) amortized register
+  operations (append to the current register; on `end`, one concatenation into the parent;
+  the boundary-collapse fold is incremental via `_carry`). Total work is
+  **O(|input| + |output|)** with a single left-to-right pass — no document re-scan.
+- **Bounded memory.** Resident register memory is **O(open-depth + largest-open-block +
+  table-reservoir)** — *not* O(|input|). The pushdown holds one register per *currently
+  open* element; completed output is drained and released. For documents whose individual
+  blocks and tables are bounded, this is **O(depth + table-width)**; the only way to
+  inflate it is a single pathological open block (a 100 MiB `<p>`) or one giant table,
+  which is the documented worst case (§4.7). This is the corrected bound: O(depth +
+  buffered-content), not pure O(depth).
+- **Chunk-invariance** (§9.1, *empirically confirmed* — 1107/1107 conformance cases give
+  byte-identical `convert == convert_stream` under adversarial splits). Determinism over
+  the nested word gives output independent of input chunking **provided the nested word
+  itself is chunk-independent**. lxml violates this for special elements (it splits one
+  text node across `data()` callbacks at feed boundaries); the **text-coalescing register**
+  restores it by reconstructing the logical text node before any feed-dependent
+  observation. With coalescing, `feed()` is a monoid homomorphism over byte sequences and
+  chunk-invariance holds by construction.
+
+### 11.2 Bounded two-pass table alignment within a register-array
+
+Markdown table column widths and alignment need the header row (and the widest cell)
+before *any* row can be emitted, so a `<table>` cannot stream cell-by-cell. We model the
+table as a **bounded register array** — the DSTT extension where a register holds a
+bounded vector of strings — sized by the table's own dimensions, never by document size
+(`TableBuffer`: rows → cells). The grid is flushed as one register concatenation at
+`</table>`. This is a localized two-pass (buffer rows, then align) nested inside the
+otherwise single-pass stream, and it preserves the global memory bound: O(depth +
+table-reservoir), with the reservoir bounded by the current table, independent of
+surrounding document length.
+
+### 11.3 Runtime invariant — the memory bound is measured, not assumed
+
+The bounded-memory theorem is enforced by a runtime invariant test
+(`tests/unit/html2md/test_memory_invariant.py`, `make test`): it streams documents of
+increasing size and asserts the **live register footprint** (open-frame buffers + the O(1)
+scalar registers + table reservoir, excluding drained output) does **not** scale with
+input length — 4× the input must not 4× the footprint — and that depth, a single giant
+block, and the table reservoir each behave as the theorems predict. This turns the
+DSTT structural claim into a continuously-checked property rather than a comment.
 
 ---
 
