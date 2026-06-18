@@ -17,9 +17,9 @@ from pathlib import Path
 
 import pytest
 
-from html2md.emitter import MarkdownEmitter
-from html2md.options import Options
-from html2md.parser import IncrementalDriver
+from marktide.emitter import MarkdownEmitter
+from marktide.options import Options
+from marktide.parser import IncrementalDriver
 
 # The 100 MiB xlarge fixture is gitignored (regenerated, not committed), so the
 # fixture-backed check below is skip-if-absent; the fast representative validation

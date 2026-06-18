@@ -1,4 +1,4 @@
-"""Local html2md phase-3 adapter."""
+"""Local marktide phase-3 adapter."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from .base import Adapter, OptionMap
 STREAM_INPUT_CHUNK_BYTES = 64 * 1024
 
 OPTION_MAP = OptionMap(
-    settings={"options": "html2md.Options() defaults"},
+    settings={"options": "marktide.Options() defaults"},
     targets={
         "options": "drop-in markdownify-compatible defaults; no benchmark normalization",
     },
@@ -23,25 +23,25 @@ OPTION_MAP = OptionMap(
 
 @dataclass(frozen=True)
 class Html2MdAdapter(Adapter):
-    name: str = "html2md"
-    package: str = "html2md local checkout"
+    name: str = "marktide"
+    package: str = "marktide local checkout"
     engine: str = "lxml target parser + Python streaming emitter"
     option_map: OptionMap = OPTION_MAP
 
     def convert(self, html_bytes: bytes) -> str:
-        import html2md
+        import marktide
 
-        return html2md.convert(html_bytes)
+        return marktide.convert(html_bytes)
 
 
 @dataclass(frozen=True)
 class Html2MdStreamingAdapter(Adapter):
-    name: str = "html2md_streaming"
-    package: str = "html2md local checkout"
+    name: str = "marktide_streaming"
+    package: str = "marktide local checkout"
     engine: str = "lxml target parser + Python streaming emitter (convert_stream)"
     option_map: OptionMap = OptionMap(
         settings={
-            "api": "html2md.convert_stream(chunked html_bytes)",
+            "api": "marktide.convert_stream(chunked html_bytes)",
             "input_chunk_bytes": STREAM_INPUT_CHUNK_BYTES,
         },
         targets={
@@ -54,9 +54,9 @@ class Html2MdStreamingAdapter(Adapter):
         return "".join(self.convert_stream_chunks(html_bytes))
 
     def convert_stream_chunks(self, html_bytes: bytes) -> Iterable[str]:
-        import html2md
+        import marktide
 
-        yield from html2md.convert_stream(_iter_input_chunks(html_bytes))
+        yield from marktide.convert_stream(_iter_input_chunks(html_bytes))
 
 
 def _iter_input_chunks(html_bytes: bytes) -> Iterable[bytes]:

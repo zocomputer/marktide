@@ -4,8 +4,8 @@
     "html_to_markdown",
     "htmd_py",
     "html2text_rs",
-    "html2md",
-    "html2md_streaming",
+    "marktide",
+    "marktide_streaming",
     "lxml_naive"
   ],
   "fixture_manifest": "benchmarks/fixtures.lock.json",
@@ -19,7 +19,7 @@
         "streaming_ttfo_pass": false,
         "throughput_pass": true
       },
-      "html2md": {
+      "marktide": {
         "async_pass": false,
         "fidelity_options_prelim_pass": true,
         "passes_all_v1": false,
@@ -27,7 +27,7 @@
         "streaming_ttfo_pass": false,
         "throughput_pass": false
       },
-      "html2md_streaming": {
+      "marktide_streaming": {
         "async_pass": true,
         "fidelity_options_prelim_pass": true,
         "passes_all_v1": false,
@@ -107,7 +107,7 @@
         "samples": 4
       }
     ],
-    "html2md": [
+    "marktide": [
       {
         "fixture": "small",
         "input_bytes": 102740,
@@ -137,7 +137,7 @@
         "samples": 291
       }
     ],
-    "html2md_streaming": [
+    "marktide_streaming": [
       {
         "fixture": "small",
         "input_bytes": 102740,
@@ -614,7 +614,7 @@
       "throughput_mib_s": 37.73681113829598
     },
     {
-      "adapter": "html2md",
+      "adapter": "marktide",
       "async_gate": {
         "max_delay_ms": 0.3324169712141155,
         "missed_beat_pct": 0.0,
@@ -642,7 +642,7 @@
         "placement": "to_thread",
         "samples": 1,
         "total_stall_ms": 0.3324169712141155,
-        "workload": "html2md:small"
+        "workload": "marktide:small"
       },
       "input_bytes": 102740,
       "memory_curve": {
@@ -668,7 +668,7 @@
           "Under active phase-2 implementation; final fidelity is owned by the conformance harness."
         ],
         "settings": {
-          "options": "html2md.Options() defaults"
+          "options": "marktide.Options() defaults"
         },
         "targets": {
           "options": "drop-in markdownify-compatible defaults; no benchmark normalization"
@@ -677,7 +677,7 @@
       "output_bytes": 94124,
       "output_hash": "16768d5c1595f39c4c4efdf21a97b5964f2f9e3d7d8bfcf0724295161123dd89",
       "output_to_input_ratio": 0.9161378236324703,
-      "package": "html2md local checkout",
+      "package": "marktide local checkout",
       "peak_rss_before_bytes": 32096256,
       "peak_rss_bytes": 33161216,
       "peak_rss_delta_bytes": 1064960,
@@ -690,7 +690,7 @@
       "throughput_mib_s": 26.342972577531103
     },
     {
-      "adapter": "html2md_streaming",
+      "adapter": "marktide_streaming",
       "async_gate": {
         "max_delay_ms": 0.2526670042425393,
         "missed_beat_pct": 0.0,
@@ -718,7 +718,7 @@
         "placement": "to_thread",
         "samples": 1,
         "total_stall_ms": 0.2526670042425393,
-        "workload": "html2md_streaming:small"
+        "workload": "marktide_streaming:small"
       },
       "input_bytes": 102740,
       "memory_curve": {
@@ -744,7 +744,7 @@
           "Under active phase-2 implementation; final fidelity is owned by the conformance harness."
         ],
         "settings": {
-          "api": "html2md.convert_stream(chunked html_bytes)",
+          "api": "marktide.convert_stream(chunked html_bytes)",
           "input_chunk_bytes": 65536
         },
         "targets": {
@@ -754,7 +754,7 @@
       "output_bytes": 94124,
       "output_hash": "16768d5c1595f39c4c4efdf21a97b5964f2f9e3d7d8bfcf0724295161123dd89",
       "output_to_input_ratio": 0.9161378236324703,
-      "package": "html2md local checkout",
+      "package": "marktide local checkout",
       "peak_rss_before_bytes": 32096256,
       "peak_rss_bytes": 32882688,
       "peak_rss_delta_bytes": 786432,
@@ -770,7 +770,7 @@
         "output_hash": "16768d5c1595f39c4c4efdf21a97b5964f2f9e3d7d8bfcf0724295161123dd89",
         "p99_inter_chunk_gap_s": 0.0014665419585071504,
         "total_wall_s": 0.0037078330060467124,
-        "workload": "html2md_streaming:small:streaming"
+        "workload": "marktide_streaming:small:streaming"
       },
       "subprocess_wall_s": 0.022124875045847148,
       "throughput_mib_s": 24.03495775450623
@@ -1278,7 +1278,7 @@
       "throughput_mib_s": 35.971044819810395
     },
     {
-      "adapter": "html2md",
+      "adapter": "marktide",
       "async_gate": {
         "max_delay_ms": 1.7885000025853515,
         "missed_beat_pct": 0.0,
@@ -1306,7 +1306,7 @@
         "placement": "to_thread",
         "samples": 49,
         "total_stall_ms": 51.4877518825233,
-        "workload": "html2md:medium"
+        "workload": "marktide:medium"
       },
       "input_bytes": 5606346,
       "memory_curve": {
@@ -1360,7 +1360,7 @@
           "Under active phase-2 implementation; final fidelity is owned by the conformance harness."
         ],
         "settings": {
-          "options": "html2md.Options() defaults"
+          "options": "marktide.Options() defaults"
         },
         "targets": {
           "options": "drop-in markdownify-compatible defaults; no benchmark normalization"
@@ -1369,7 +1369,7 @@
       "output_bytes": 2122154,
       "output_hash": "a8d62ba9f0d4ed59b1dd21dfbc8d38f635b6a6e5b4918032fbad5be57163dc2a",
       "output_to_input_ratio": 0.3785271190896887,
-      "package": "html2md local checkout",
+      "package": "marktide local checkout",
       "peak_rss_before_bytes": 37847040,
       "peak_rss_bytes": 62291968,
       "peak_rss_delta_bytes": 24444928,
@@ -1382,7 +1382,7 @@
       "throughput_mib_s": 18.259492497545928
     },
     {
-      "adapter": "html2md_streaming",
+      "adapter": "marktide_streaming",
       "async_gate": {
         "max_delay_ms": 1.7617910099215806,
         "missed_beat_pct": 0.0,
@@ -1410,7 +1410,7 @@
         "placement": "to_thread",
         "samples": 48,
         "total_stall_ms": 54.979288126342,
-        "workload": "html2md_streaming:medium"
+        "workload": "marktide_streaming:medium"
       },
       "input_bytes": 5606346,
       "memory_curve": {
@@ -1464,7 +1464,7 @@
           "Under active phase-2 implementation; final fidelity is owned by the conformance harness."
         ],
         "settings": {
-          "api": "html2md.convert_stream(chunked html_bytes)",
+          "api": "marktide.convert_stream(chunked html_bytes)",
           "input_chunk_bytes": 65536
         },
         "targets": {
@@ -1474,7 +1474,7 @@
       "output_bytes": 2122154,
       "output_hash": "a8d62ba9f0d4ed59b1dd21dfbc8d38f635b6a6e5b4918032fbad5be57163dc2a",
       "output_to_input_ratio": 0.3785271190896887,
-      "package": "html2md local checkout",
+      "package": "marktide local checkout",
       "peak_rss_before_bytes": 37765120,
       "peak_rss_bytes": 52690944,
       "peak_rss_delta_bytes": 14925824,
@@ -1490,7 +1490,7 @@
         "output_hash": "a8d62ba9f0d4ed59b1dd21dfbc8d38f635b6a6e5b4918032fbad5be57163dc2a",
         "p99_inter_chunk_gap_s": 0.03611570899374783,
         "total_wall_s": 0.29417379200458527,
-        "workload": "html2md_streaming:medium:streaming"
+        "workload": "marktide_streaming:medium:streaming"
       },
       "subprocess_wall_s": 0.3101921249763109,
       "throughput_mib_s": 18.2641186332641
@@ -3264,7 +3264,7 @@
       "throughput_mib_s": 37.70544341879238
     },
     {
-      "adapter": "html2md",
+      "adapter": "marktide",
       "async_gate": {
         "max_delay_ms": 8.42679199296981,
         "missed_beat_pct": 0.0,
@@ -3292,7 +3292,7 @@
         "placement": "to_thread",
         "samples": 494,
         "total_stall_ms": 570.5082813813351,
-        "workload": "html2md:large"
+        "workload": "marktide:large"
       },
       "input_bytes": 57590748,
       "memory_curve": {
@@ -3610,7 +3610,7 @@
           "Under active phase-2 implementation; final fidelity is owned by the conformance harness."
         ],
         "settings": {
-          "options": "html2md.Options() defaults"
+          "options": "marktide.Options() defaults"
         },
         "targets": {
           "options": "drop-in markdownify-compatible defaults; no benchmark normalization"
@@ -3619,7 +3619,7 @@
       "output_bytes": 21800197,
       "output_hash": "de3c22f69d2b337c765999bd572b1d831e20e41d45182549c88127156ade2910",
       "output_to_input_ratio": 0.3785364447775535,
-      "package": "html2md local checkout",
+      "package": "marktide local checkout",
       "peak_rss_before_bytes": 89702400,
       "peak_rss_bytes": 327090176,
       "peak_rss_delta_bytes": 237387776,
@@ -3632,7 +3632,7 @@
       "throughput_mib_s": 18.099934885799183
     },
     {
-      "adapter": "html2md_streaming",
+      "adapter": "marktide_streaming",
       "async_gate": {
         "max_delay_ms": 3.97479202831164,
         "missed_beat_pct": 0.0,
@@ -3660,7 +3660,7 @@
         "placement": "to_thread",
         "samples": 491,
         "total_stall_ms": 554.4283284270205,
-        "workload": "html2md_streaming:large"
+        "workload": "marktide_streaming:large"
       },
       "input_bytes": 57590748,
       "memory_curve": {
@@ -3976,7 +3976,7 @@
           "Under active phase-2 implementation; final fidelity is owned by the conformance harness."
         ],
         "settings": {
-          "api": "html2md.convert_stream(chunked html_bytes)",
+          "api": "marktide.convert_stream(chunked html_bytes)",
           "input_chunk_bytes": 65536
         },
         "targets": {
@@ -3986,7 +3986,7 @@
       "output_bytes": 21800197,
       "output_hash": "de3c22f69d2b337c765999bd572b1d831e20e41d45182549c88127156ade2910",
       "output_to_input_ratio": 0.3785364447775535,
-      "package": "html2md local checkout",
+      "package": "marktide local checkout",
       "peak_rss_before_bytes": 89899008,
       "peak_rss_bytes": 219529216,
       "peak_rss_delta_bytes": 129630208,
@@ -4002,7 +4002,7 @@
         "output_hash": "de3c22f69d2b337c765999bd572b1d831e20e41d45182549c88127156ade2910",
         "p99_inter_chunk_gap_s": 0.028438208042643964,
         "total_wall_s": 2.944637165986933,
-        "workload": "html2md_streaming:large:streaming"
+        "workload": "marktide_streaming:large:streaming"
       },
       "subprocess_wall_s": 3.0230217080097646,
       "throughput_mib_s": 18.249357347036845
@@ -8054,7 +8054,7 @@
       "throughput_mib_s": 38.0423945856682
     },
     {
-      "adapter": "html2md",
+      "adapter": "marktide",
       "async_gate": {
         "max_delay_ms": 20.881041947286576,
         "missed_beat_pct": 0.10298661174047373,
@@ -8082,7 +8082,7 @@
         "placement": "to_thread",
         "samples": 971,
         "total_stall_ms": 1130.4268341441639,
-        "workload": "html2md:xlarge"
+        "workload": "marktide:xlarge"
       },
       "input_bytes": 115181313,
       "memory_curve": {
@@ -8684,7 +8684,7 @@
           "Under active phase-2 implementation; final fidelity is owned by the conformance harness."
         ],
         "settings": {
-          "options": "html2md.Options() defaults"
+          "options": "marktide.Options() defaults"
         },
         "targets": {
           "options": "drop-in markdownify-compatible defaults; no benchmark normalization"
@@ -8693,7 +8693,7 @@
       "output_bytes": 43600384,
       "output_hash": "c6183acb59b298ffb0dcea5ec012986b27a5b4f24a63044f9bdc9aa5fb0e47fa",
       "output_to_input_ratio": 0.3785369593763877,
-      "package": "html2md local checkout",
+      "package": "marktide local checkout",
       "peak_rss_before_bytes": 147308544,
       "peak_rss_bytes": 621576192,
       "peak_rss_delta_bytes": 474267648,
@@ -8706,7 +8706,7 @@
       "throughput_mib_s": 18.370669698752618
     },
     {
-      "adapter": "html2md_streaming",
+      "adapter": "marktide_streaming",
       "async_gate": {
         "max_delay_ms": 5.424040956422687,
         "missed_beat_pct": 0.0,
@@ -8734,7 +8734,7 @@
         "placement": "to_thread",
         "samples": 973,
         "total_stall_ms": 1129.0964560955763,
-        "workload": "html2md_streaming:xlarge"
+        "workload": "marktide_streaming:xlarge"
       },
       "input_bytes": 115181313,
       "memory_curve": {
@@ -9338,7 +9338,7 @@
           "Under active phase-2 implementation; final fidelity is owned by the conformance harness."
         ],
         "settings": {
-          "api": "html2md.convert_stream(chunked html_bytes)",
+          "api": "marktide.convert_stream(chunked html_bytes)",
           "input_chunk_bytes": 65536
         },
         "targets": {
@@ -9348,7 +9348,7 @@
       "output_bytes": 43600384,
       "output_hash": "c6183acb59b298ffb0dcea5ec012986b27a5b4f24a63044f9bdc9aa5fb0e47fa",
       "output_to_input_ratio": 0.3785369593763877,
-      "package": "html2md local checkout",
+      "package": "marktide local checkout",
       "peak_rss_before_bytes": 147357696,
       "peak_rss_bytes": 403947520,
       "peak_rss_delta_bytes": 256589824,
@@ -9364,7 +9364,7 @@
         "output_hash": "c6183acb59b298ffb0dcea5ec012986b27a5b4f24a63044f9bdc9aa5fb0e47fa",
         "p99_inter_chunk_gap_s": 0.028744249953888357,
         "total_wall_s": 5.872267332975753,
-        "workload": "html2md_streaming:xlarge:streaming"
+        "workload": "marktide_streaming:xlarge:streaming"
       },
       "subprocess_wall_s": 6.022080041002482,
       "throughput_mib_s": 18.3249903602667

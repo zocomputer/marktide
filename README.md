@@ -1,4 +1,4 @@
-# html2md
+# marktide
 
 Fast, streaming **HTML → Markdown** for Python, built on **lxml** (C, releases the GIL)
 instead of BeautifulSoup. A near drop-in replacement for [`markdownify`](https://pypi.org/project/markdownify/):
@@ -7,16 +7,16 @@ but it parses large HTML incrementally — like a browser — and emits Markdown
 the asyncio event loop.
 
 ```python
-import html2md
+import marktide
 
-html2md.convert("<h1>Hello</h1><p>A <b>bold</b> word and a <a href='https://x.com'>link</a>.</p>")
+marktide.convert("<h1>Hello</h1><p>A <b>bold</b> word and a <a href='https://x.com'>link</a>.</p>")
 # 'Hello\n=====\n\nA **bold** word and a [link](https://x.com).'
 ```
 
 ## Install
 
 ```bash
-pip install html2md
+pip install marktide
 ```
 
 Requires Python 3.11+. The only runtime dependency is `lxml`.
@@ -28,7 +28,7 @@ Python, it **holds the GIL** for the whole conversion. Inside an async server th
 conversion stalls every other coroutine on the event loop — health checks time out, SSE
 streams stutter, unrelated requests queue.
 
-`html2md` drives **lxml's C parser**, which releases the GIL while it tokenizes, on a worker
+`marktide` drives **lxml's C parser**, which releases the GIL while it tokenizes, on a worker
 thread, and emits Markdown incrementally. The result:
 
 - **Async-friendly** — `convert_async` runs off the event loop and the loop keeps ticking.
@@ -51,16 +51,16 @@ thread, and emits Markdown incrementally. The result:
 | `convert_stream_async(chunks) -> AsyncIterator[str]` | Stream inside async code. |
 
 ```python
-import asyncio, html2md
+import asyncio, marktide
 
 # sync
-md = html2md.convert("<p>hi</p>")
+md = marktide.convert("<p>hi</p>")
 
 # async (does not block the event loop)
-md = asyncio.run(html2md.convert_async("<p>hi</p>"))
+md = asyncio.run(marktide.convert_async("<p>hi</p>"))
 
 # streaming: feed byte chunks, get Markdown chunks whose concatenation is the document
-for piece in html2md.convert_stream([b"<ul><li>a</li>", b"<li>b</li></ul>"]):
+for piece in marktide.convert_stream([b"<ul><li>a</li>", b"<li>b</li></ul>"]):
     ...   # '* a\n* b'
 ```
 
@@ -100,7 +100,7 @@ Pass an `Options` for non-default rendering, or `markdownify_compat(**kwargs)` t
 existing `markdownify` keyword arguments verbatim:
 
 ```python
-from html2md import convert, Options, markdownify_compat
+from marktide import convert, Options, markdownify_compat
 
 convert("<h1>Hello</h1>", options=Options(heading_style="atx"))            # '# Hello'
 convert("<h1>Hello</h1>", options=markdownify_compat(heading_style="atx")) # '# Hello'
@@ -112,12 +112,12 @@ table, every public function in detail, and a **migrating-from-markdownify** gui
 
 ## Correctness & conformance
 
-html2md is validated against a **1107-case differential suite**: each HTML input is converted
-by html2md and by an oracle, and the results are compared. It has two tiers.
+marktide is validated against a **1107-case differential suite**: each HTML input is converted
+by marktide and by an oracle, and the results are compared. It has two tiers.
 
 **Primary — the markdownify drop-in contract (298 cases).** markdownify's own test suite
 (234 cases) plus a hand-authored per-handler + edge-case golden corpus (64 cases), checked
-against `markdownify==1.2.2`. html2md passes **296/298 raw (99.3%)** and **298/298 effective
+against `markdownify==1.2.2`. marktide passes **296/298 raw (99.3%)** and **298/298 effective
 (100%)**; the two raw misses are [documented divergences](docs/usage.md#documented-divergences)
 on invalid nested-block-in-heading markup, where lxml's HTML tree construction differs from
 markdownify's BeautifulSoup parser. `convert` and `convert_stream` agree on **0/1107** cases
@@ -125,7 +125,7 @@ markdownify's BeautifulSoup parser. `convert` and `convert_stream` agree on **0/
 
 **Guardrail / triangulation (809 cases).** Diverse HTML inputs drawn from the Turndown (147),
 CommonMark spec (654), and Pandoc (8) test suites — real-world fragments beyond what the
-markdownify suite covers. html2md's output is compared to the markdownify oracle on the same
+markdownify suite covers. marktide's output is compared to the markdownify oracle on the same
 input after normalization (collapsing incidental blank-line/whitespace differences); the
 CommonMark layer adds a stricter *semantic* check that renders both outputs back to HTML and
 compares the structure. These catch regressions the curated markdownify cases alone would miss.
@@ -142,8 +142,8 @@ make verify-canonical  # semantic equivalence on examples/canonical.html/.md
 ```
 
 For a small human-readable smoke example, see [examples/canonical.html](examples/canonical.html)
-and the committed html2md output [examples/canonical.md](examples/canonical.md).
-`make verify-canonical` render-normalizes that example across html2md, markdownify,
+and the committed marktide output [examples/canonical.md](examples/canonical.md).
+`make verify-canonical` render-normalizes that example across marktide, markdownify,
 html-to-markdown, and pandoc when installed.
 
 Separately, the e2e suite and benchmarks run on **real-world HTML fixtures up to ~110 MiB**
@@ -155,26 +155,26 @@ streaming path, huge-document handling (`huge_tree`), and `convert == convert_st
 The markdownify drop-in contract is the primary guarantee — **296/298 raw, 298/298 effective**
 (`make verify-fidelity`). The cases that differ are edge/guardrail behaviors — some on
 invalid HTML, others convention or whitespace-normalization choices on valid HTML. A
-representative selection is shown below as *input → html2md → markdownify* (not exhaustive; the
+representative selection is shown below as *input → marktide → markdownify* (not exhaustive; the
 guardrail layers carry a few more, all non-primary).
 
-**Parser divergences (the 2 primary effective-pass cases).** html2md parses with lxml;
+**Parser divergences (the 2 primary effective-pass cases).** marktide parses with lxml;
 markdownify uses BeautifulSoup's `html.parser`. The two HTML parsers build different trees for
 *invalid* markup, and which one matches the HTML5 spec depends on the case:
 
-| Input | html2md | markdownify | Why |
+| Input | marktide | markdownify | Why |
 |---|---|---|---|
-| `<h1>A <p>P</p> C </h1>` (ATX) | `# A`, then `P`, then `C` | `# A P C` | A `<p>` can't nest in a heading (non-conforming input). The HTML5 algorithm does *not* close the heading here — `html5lib` and `html.parser` keep the `<p>` inside the `<h1>`, so markdownify flattens it into the heading text. lxml/libxml2 uses a custom, documented non-HTML5 tree builder that auto-closes the `<h1>`, so html2md sees a heading plus a sibling paragraph. (Here lxml is the one that diverges from HTML5.) |
+| `<h1>A <p>P</p> C </h1>` (ATX) | `# A`, then `P`, then `C` | `# A P C` | A `<p>` can't nest in a heading (non-conforming input). The HTML5 algorithm does *not* close the heading here — `html5lib` and `html.parser` keep the `<p>` inside the `<h1>`, so markdownify flattens it into the heading text. lxml/libxml2 uses a custom, documented non-HTML5 tree builder that auto-closes the `<h1>`, so marktide sees a heading plus a sibling paragraph. (Here lxml is the one that diverges from HTML5.) |
 
 **Guardrail edge cases** (from the Turndown / Pandoc / CommonMark corpora — not the primary
 contract):
 
-| Input | html2md | markdownify | Why |
+| Input | marktide | markdownify | Why |
 |---|---|---|---|
-| `<strike>bar</strike>` | `~~bar~~` | `bar` | html2md treats `<strike>` as a strikethrough alias of `<s>`/`<del>`; markdownify 1.2.2 strikethroughs only `<s>`/`<del>`. |
+| `<strike>bar</strike>` | `~~bar~~` | `bar` | marktide treats `<strike>` as a strikethrough alias of `<s>`/`<del>`; markdownify 1.2.2 strikethroughs only `<s>`/`<del>`. |
 | `<h7>Heading?</h7>` | `Heading?` | `###### Heading?` | `<h7>` is not a real tag; lxml leaves it transparent (so does Turndown), markdownify coerces it to an h6. |
-| `<p>Foo<span> </span>Bar</p>` | `FooBar` | `Foo Bar` | A `<span>` containing only collapsible ASCII whitespace: html2md drops it, markdownify keeps one separating space. |
-| `<p>Foo<span>  &nbsp;  </span>Bar</p>` | `'Foo \xa0Bar'` (NBSP, no space) | `'Foo \xa0 Bar'` (NBSP + space) | Mixed ASCII + NBSP in a whitespace-only span: html2md preserves the NBSP but drops the ASCII space after it. |
+| `<p>Foo<span> </span>Bar</p>` | `FooBar` | `Foo Bar` | A `<span>` containing only collapsible ASCII whitespace: marktide drops it, markdownify keeps one separating space. |
+| `<p>Foo<span>  &nbsp;  </span>Bar</p>` | `'Foo \xa0Bar'` (NBSP, no space) | `'Foo \xa0 Bar'` (NBSP + space) | Mixed ASCII + NBSP in a whitespace-only span: marktide preserves the NBSP but drops the ASCII space after it. |
 | `<p>foo <![CDATA[>&<]]></p>` | `foo &<]]>` | `foo >&<` | `<![CDATA[` in HTML content isn't a real CDATA section — the HTML5 tokenizer treats it as a bogus comment, and the `>` after `[CDATA[` ends it, leaving `&<]]>` as text. `html5lib` and lxml agree (lxml is HTML5-correct here); markdownify's `html.parser` instead preserves the raw `>&<` source text. |
 
 Of these, the two parser-divergence cases (`<h1>`-nesting) and the CDATA case are recorded in
@@ -193,7 +193,7 @@ default never changes fidelity.
 
 ## Benchmarks
 
-html2md set out to replace `markdownify` on **five axes at once** — fast, async-friendly,
+marktide set out to replace `markdownify` on **five axes at once** — fast, async-friendly,
 streaming, bounded-memory, and faithful. The phase-3 comparison shows no existing library
 clears all five: the faithful Rust converters (`htmd_py`, `html_to_markdown`) are faster in raw
 wall time but stall the event loop; `html2text_rs` stays responsive but is lower-fidelity; and
@@ -208,27 +208,27 @@ GIL-bound.
 | `html_to_markdown` (Rust) | 4.57 s | 11.7× | 4306.6 MiB | 50.0% | — | no |
 | `htmd_py` (Rust) | 1.63 s | 32.8× | 1569.1 MiB | 50.0% | — | no |
 | `html2text_rs` (Rust) | 2.89 s | 18.5× | 3905.5 MiB | 0.4% | — | no |
-| **`html2md` (streaming)** | **5.99 s** | **8.9×** | **244.7 MiB** | **0.0%** | **2.4 ms** | **yes** |
+| **`marktide` (streaming)** | **5.99 s** | **8.9×** | **244.7 MiB** | **0.0%** | **2.4 ms** | **yes** |
 
-Reading it: html2md converts the 110 MiB document **8.9× faster than markdownify** while using
+Reading it: marktide converts the 110 MiB document **8.9× faster than markdownify** while using
 **11.5× less peak memory** and **never starving the event loop** (0% missed heartbeat beats vs
 markdownify's 70%). The Rust one-shot libraries post lower raw wall times, but each fails a
 different axis: `html_to_markdown` and `htmd_py` **hold the GIL** (~50% missed beats; p99
 event-loop stalls of 1.6–4.6 s), `html2text_rs` releases the GIL (0.4% missed) but is
-**low-fidelity** (drops formatting), and all three use **6–18× more memory than html2md** and
-**cannot stream**. html2md is the only contender that is *simultaneously* fast-enough,
+**low-fidelity** (drops formatting), and all three use **6–18× more memory than marktide** and
+**cannot stream**. marktide is the only contender that is *simultaneously* fast-enough,
 async-friendly, streaming, memory-bounded, and faithful (**99.3% raw / 100% effective**
 normalized conformance against the markdownify oracle, with two
 [documented divergences](docs/usage.md#documented-divergences)).
 
 - **Async-friendly** — fraction of 5 ms event-loop heartbeats missed while a conversion runs on
-  a worker thread: html2md 0.0%, markdownify 70.0%, `html_to_markdown`/`htmd_py` ~50%,
+  a worker thread: marktide 0.0%, markdownify 70.0%, `html_to_markdown`/`htmd_py` ~50%,
   `html2text_rs` 0.4%.
-- **Streaming** — html2md emits the first Markdown chunk after **2.4 ms** and sustains output
+- **Streaming** — marktide emits the first Markdown chunk after **2.4 ms** and sustains output
   across the document; one-shot libraries emit only after the full conversion finishes.
-- **Bounded scaling** — html2md's peak RSS grows **sub-linearly**: its peak-RSS-to-input ratio
+- **Bounded scaling** — marktide's peak RSS grows **sub-linearly**: its peak-RSS-to-input ratio
   falls from 7.7× (small) to **2.2× (xlarge)**, while markdownify's stays ~**25× at every size**
-  (linear growth). On the 110 MiB input that puts html2md's growth (244.7 MiB) **11.5× below**
+  (linear growth). On the 110 MiB input that puts marktide's growth (244.7 MiB) **11.5× below**
   markdownify's 2808.9 MiB — because the streaming path builds no full DOM and drains completed
   blocks rather than holding the whole document. See
   `benchmarks/results/charts/memory_scaling_peak_rss.png`.
@@ -252,7 +252,7 @@ The benchmark harness is a self-contained uv project under `benchmarks/`:
 cd benchmarks && uv sync
 uv run bench                    # quick check: small+medium, all 7 contenders, async headline
 uv run bench --full            # full small→xlarge phase-3 matrix + charts
-uv run bench-async-starvation  # markdownify vs html2md_streaming heartbeat proof only
+uv run bench-async-starvation  # markdownify vs marktide_streaming heartbeat proof only
 ```
 
 `uv run bench --full` writes the phase-3 matrix to `benchmarks/results/`; the committed
@@ -263,7 +263,7 @@ canonical results are `benchmarks/results/phase3.json` and `benchmarks/results/r
 - **[docs/usage.md](docs/usage.md)** — full usage & migration guide
 - **[docs/design.md](docs/design.md)** — architecture, the GIL/streaming story, test strategy
 - **[docs/test-plan.md](docs/test-plan.md)** — the test harness
-- **[examples/README.md](examples/README.md)** — examples including [examples/canonical.html](examples/canonical.html) and the committed html2md output [examples/canonical.md](examples/canonical.md)
+- **[examples/README.md](examples/README.md)** — examples including [examples/canonical.html](examples/canonical.html) and the committed marktide output [examples/canonical.md](examples/canonical.md)
 
 Early but functional. The conversion handlers match `markdownify` across the bulk of its own
 test suite (a few edge cases — e.g. lossy tables, CDATA, invalid nested markup — are

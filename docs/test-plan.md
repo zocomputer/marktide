@@ -1,4 +1,4 @@
-# html2md — Test Plan
+# marktide — Test Plan
 
 > Companion to `docs/design.md`. The design doc covers the unit / component / integration
 > tests that **ship with the code** (design §7). This document covers the *additional* test
@@ -61,7 +61,7 @@ separate from the application package's lightweight unit tests.
 
 ## 1. Black-box end-to-end tests — `e2etests/`
 
-Exercise the public API exactly as a consumer would, treating `html2md` as opaque. No
+Exercise the public API exactly as a consumer would, treating `marktide` as opaque. No
 internal imports beyond the public surface (`convert`, `convert_async`, `convert_stream`,
 `convert_stream_async`, `Options`).
 
@@ -103,13 +103,13 @@ internal imports beyond the public surface (`convert`, `convert_async`, `convert
 
 This is the **porting-comparison harness** (design phase 3, rubric pts 1–4). Because we are
 replacing markdownify, the strongest correctness evidence is: *for the same input, does
-html2md agree with the agreed oracle, and how does it compare to every other candidate?*
+marktide agree with the agreed oracle, and how does it compare to every other candidate?*
 
 ### 2.1 Oracle comparison (gating)
 
 - **Oracle:** live `markdownify==1.2.2` (design §5.1), the drop-in target.
 - **Method:** over the conformance corpus (`tests/conformance/fixtures/*/`) **and** the
-  real-page corpus, run html2md and markdownify, normalize both with `normalize_md` (design
+  real-page corpus, run marktide and markdownify, normalize both with `normalize_md` (design
   §5.3.1), assert semantic equivalence. Every divergence must be a row in
   `e2etests/differential/allowed_divergences.toml` (schema in design §5.3.3), or the test
   fails. Net-new unexplained divergence vs the stored ledger = fail (the divergence budget).
@@ -118,7 +118,7 @@ html2md agree with the agreed oracle, and how does it compare to every other can
 ### 2.2 Cross-library comparison matrix (reporting, non-gating)
 
 - Run **all** adapters (markdownify, html_to_markdown 3.5.7, htmd-py, html2text_rs,
-  lxml_naive, html2md) over the corpus; for each case render every output → HTML via a
+  lxml_naive, marktide) over the corpus; for each case render every output → HTML via a
   CommonMark parser → normalized DOM, and score pairwise semantic agreement.
 - **Output:** a `differential_report.html` **diff gallery** — per case, side-by-side rendered
   Markdown + a structural diff, sorted worst-divergence-first. This is the human-reviewable
@@ -154,7 +154,7 @@ For each (adapter × fixture size × placement), with a background heartbeat cor
 
 - **Placements:** A = inline on the event-loop thread (negative control), B = via
   `asyncio.to_thread` / `run_in_executor`.
-- **Stage decomposition** for the lxml/html2md paths: S1 parse-only, S2 parse+iterate, S3
+- **Stage decomposition** for the lxml/marktide paths: S1 parse-only, S2 parse+iterate, S3
   full convert (design §3.3.1) — so we never overclaim parse-only GIL release.
 - **Callback-density fixtures** (design §3.3.2): thousands of empty/nested tags, a
   thousand-cell row, entity storms, link/image storms — run through placement B at each swept
@@ -175,7 +175,7 @@ For each (adapter × fixture size × placement), with a background heartbeat cor
   fixtures, with max per-`feed()` wall time ≤ 2 ms; p99 ≤ 2 ms reported as a secondary signal
   (design §3.5 crit 2, §3.3.2). Schema/fields in §11.
 - **CI smoke assertion:** on tiny inputs, a regression test asserts the *ordering* holds —
-  markdownify placement B stalls ≥ N× more than the lxml/html2md placement-B S1 — and that
+  markdownify placement B stalls ≥ N× more than the lxml/marktide placement-B S1 — and that
   the controls behave (CPU burner stalls, sleeper doesn't). This catches a probe that has
   silently broken. *Path:* `benchmarks/harness/test_gil_smoke.py`, runs in **PR CI** on
   tiny fixtures only (fast).
@@ -302,7 +302,7 @@ checks.
   with code samples in multiple languages, a CJK/RTL page); render the output Markdown in a
   real viewer and judge readability, list/heading/table fidelity, and code-block correctness
   against the original page rendered in a browser. Record verdicts in the checklist.
-- **Drop-in migration sanity:** take a real markdownify call site, swap in `html2md` with
+- **Drop-in migration sanity:** take a real markdownify call site, swap in `marktide` with
   `markdownify_compat(...)`, eyeball that output is acceptably close.
 - **Diff-gallery review:** a human skims the top-N worst cases from the §2.2
   `differential_report.html` and confirms each divergence is acceptable (and listed in

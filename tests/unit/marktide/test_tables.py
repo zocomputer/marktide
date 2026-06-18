@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from markdownify import MarkdownConverter
 
-from html2md import Options, convert
+from marktide import Options, convert
 
 
 def test_table_th_header_inference() -> None:

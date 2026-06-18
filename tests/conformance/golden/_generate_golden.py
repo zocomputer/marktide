@@ -6,9 +6,9 @@ complementary to the cross-cutting §5.3.4 behavior-table set in ``edge_cases.js
 **same JSON schema** as ``edge_cases.json`` so a single conformance loader handles both.
 
 Expected Markdown is produced **mechanically** by the pinned oracle ``markdownify==1.2.2`` with
-default options (the html2md compatibility contract: underlined h1/h2, ``*`` emphasis, two-space
+default options (the marktide compatibility contract: underlined h1/h2, ``*`` emphasis, two-space
 ``<br>``, ``*+-`` depth bullets, ``escape_asterisks``/``escape_underscores`` on, ``escape_misc``
-off) — never hand-transcribed. Pure data, no html2md dependency.
+off) — never hand-transcribed. Pure data, no marktide dependency.
 
 Regenerate (must be a no-op unless the oracle pin changes — a reviewed event)::
 
@@ -176,7 +176,7 @@ def build() -> dict:
     return {
         "schema_version": 1,
         "purpose": (
-            "Exhaustive per-handler block + inline golden fixtures for the html2md handlers "
+            "Exhaustive per-handler block + inline golden fixtures for the marktide handlers "
             "(zo-1fp.12). Same schema as edge_cases.json; complements its cross-cutting "
             "docs/design.md §5.3.4 behavior-table set."
         ),

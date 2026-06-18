@@ -11,11 +11,11 @@ Gate version: `v1`
 
 ## Executive summary
 
-**Headline:** `html2md` is expected to be the only contender that is simultaneously:
+**Headline:** `marktide` is expected to be the only contender that is simultaneously:
 
 1. **Fast** — competitive warm throughput on large/xlarge fixtures.
 2. **Async-friendly** — worker-thread conversion keeps event-loop stalls below the v1 heartbeat gate.
-3. **Streaming** — native `html2md.convert_stream` provides measurable TTFO/inter-chunk cadence; one-shot libraries structurally fail this criterion.
+3. **Streaming** — native `marktide.convert_stream` provides measurable TTFO/inter-chunk cadence; one-shot libraries structurally fail this criterion.
 4. **Markdownify-faithful** — ≥99% normalized conformance against the markdownify oracle.
 
 Final narrative to fill after the run:
@@ -32,8 +32,8 @@ throughput-only winner is insufficient. A semantically faithful but one-shot con
 also insufficient. The replacement needs to pass all four dimensions at once: fidelity,
 throughput, bounded memory behavior, and streaming/async behavior.
 
-The expected final conclusion is that `html2md_streaming` is the only row designed to
-satisfy the complete bar. `html2md` shares the same parser/emitter core through the
+The expected final conclusion is that `marktide_streaming` is the only row designed to
+satisfy the complete bar. `marktide` shares the same parser/emitter core through the
 one-shot API and is useful for API compatibility and simple call sites, but the streaming
 row is the decisive product path for large or user-supplied documents.
 
@@ -47,8 +47,8 @@ row is the decisive product path for large or user-supplied documents.
 | `html_to_markdown` | `html_to_markdown.convert(str).content` | Rust via PyO3 | No | High-throughput one-shot candidate. |
 | `htmd_py` | `htmd.convert_html(str)` | Rust via PyO3 | No | High-throughput one-shot candidate. |
 | `html2text_rs` | `html2text_rs.text_markdown(str)` | Rust via PyO3 | No | GIL/heartbeat-friendly but semantically divergent. |
-| `html2md` | `html2md.convert(bytes)` | lxml target parser + Python emitter | No | Local one-shot API row. |
-| `html2md_streaming` | `html2md.convert_stream([bytes])` | lxml target parser + Python emitter | Yes | Local streaming API row; only row with TTFO/cadence. |
+| `marktide` | `marktide.convert(bytes)` | lxml target parser + Python emitter | No | Local one-shot API row. |
+| `marktide_streaming` | `marktide.convert_stream([bytes])` | lxml target parser + Python emitter | Yes | Local streaming API row; only row with TTFO/cadence. |
 | `lxml_naive` | harness baseline | libxml2 parse + naive Python walk | No | Performance baseline only, not semantic contender. |
 
 ### Performance methodology
@@ -74,7 +74,7 @@ Interpretation rules:
 - A library that blocks the event loop in the worker-thread heartbeat probe is unsuitable
   for latency-sensitive async request paths, even if its total wall time is low.
 - A library whose RSS scales linearly with input is acceptable only for bounded batch
-  workloads; it is not the target architecture for `html2md.convert_stream`.
+  workloads; it is not the target architecture for `marktide.convert_stream`.
 - `lxml_naive` is included only to show parser/tree-walk performance shape; it is not a
   semantic contender.
 
@@ -119,14 +119,14 @@ read for trends; this table is the audit trail with exact values.
 | `html2text_rs` | medium | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
 | `html2text_rs` | large | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
 | `html2text_rs` | xlarge | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
-| `html2md` | small | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
-| `html2md` | medium | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
-| `html2md` | large | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
-| `html2md` | xlarge | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
-| `html2md_streaming` | small | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
-| `html2md_streaming` | medium | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
-| `html2md_streaming` | large | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
-| `html2md_streaming` | xlarge | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+| `marktide` | small | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
+| `marktide` | medium | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
+| `marktide` | large | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
+| `marktide` | xlarge | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
+| `marktide_streaming` | small | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+| `marktide_streaming` | medium | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+| `marktide_streaming` | large | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+| `marktide_streaming` | xlarge | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
 | `lxml_naive` | small | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
 | `lxml_naive` | medium | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
 | `lxml_naive` | large | TBD | TBD | TBD | TBD | TBD | TBD | — | — | — | TBD | TBD | TBD | No |
@@ -139,7 +139,7 @@ Populate from `memory_scaling` in `benchmarks/results/phase3.json`.
 This is the key DSST bounded-memory evidence. The important pattern is not just the
 absolute MiB value on one fixture; it is the slope from small to xlarge. One-shot
 adapters are expected to rise with input size because they materialize the input/DOM or
-full output in memory. The streaming `html2md_streaming` row should be substantially
+full output in memory. The streaming `marktide_streaming` row should be substantially
 flatter because the parser/emitter operates over chunks and stack depth instead of the
 entire document. If the final data does not show that shape, treat it as a release blocker
 for the streaming claim and inspect the largest retained buffers before publishing the
@@ -151,10 +151,10 @@ recommendation.
 | `markdownify` | medium | TBD | TBD | TBD | TBD | TBD |
 | `markdownify` | large | TBD | TBD | TBD | TBD | TBD |
 | `markdownify` | xlarge | TBD | TBD | TBD | TBD | TBD |
-| `html2md_streaming` | small | TBD | TBD | TBD | TBD | Expected bounded streaming path. |
-| `html2md_streaming` | medium | TBD | TBD | TBD | TBD | TBD |
-| `html2md_streaming` | large | TBD | TBD | TBD | TBD | TBD |
-| `html2md_streaming` | xlarge | TBD | TBD | TBD | TBD | Should stay substantially flatter than one-shot contenders. |
+| `marktide_streaming` | small | TBD | TBD | TBD | TBD | Expected bounded streaming path. |
+| `marktide_streaming` | medium | TBD | TBD | TBD | TBD | TBD |
+| `marktide_streaming` | large | TBD | TBD | TBD | TBD | TBD |
+| `marktide_streaming` | xlarge | TBD | TBD | TBD | TBD | Should stay substantially flatter than one-shot contenders. |
 
 ## Gate summary
 
@@ -162,7 +162,7 @@ The gate summary is deliberately strict: an adapter must pass every dimension to
 true replacement. This prevents a misleading "fastest library wins" narrative. The expected
 shape is that some Rust libraries win raw throughput, `html2text_rs` may look good on
 heartbeat behavior, and `markdownify` wins only as the incumbent oracle, but only
-`html2md_streaming` is expected to combine all required properties.
+`marktide_streaming` is expected to combine all required properties.
 
 | Adapter | Throughput pass | Async pass | RSS pass | Streaming TTFO/cadence pass | Conformance pass | Overall |
 |---|---|---|---|---|---|---|
@@ -170,8 +170,8 @@ heartbeat behavior, and `markdownify` wins only as the incumbent oracle, but onl
 | `html_to_markdown` | TBD | TBD | TBD | No | TBD | TBD |
 | `htmd_py` | TBD | TBD | TBD | No | TBD | TBD |
 | `html2text_rs` | TBD | TBD | TBD | No | TBD | TBD |
-| `html2md` | TBD | TBD | TBD | No | TBD | TBD |
-| `html2md_streaming` | TBD | TBD | TBD | TBD | TBD | TBD |
+| `marktide` | TBD | TBD | TBD | No | TBD | TBD |
+| `marktide_streaming` | TBD | TBD | TBD | TBD | TBD | TBD |
 | `lxml_naive` | TBD | TBD | TBD | No | TBD | TBD |
 
 ## Conformance / quality matrix
@@ -180,7 +180,7 @@ Populate from the phase-3 conformance run.
 
 Use this section to explain semantic risk in plain language. A lower fidelity score should
 be paired with examples of the kinds of Markdown differences observed (tables, escaping,
-links, whitespace, parser recovery, etc.). For `html2md`, list any remaining allowed
+links, whitespace, parser recovery, etc.). For `marktide`, list any remaining allowed
 divergences with links to their bead or report entry. For non-selected libraries, the
 quality matrix should make clear whether they fail because they are semantically different
 by design or because they lack option surfaces to emulate markdownify.
@@ -191,15 +191,15 @@ by design or because they lack option surfaces to emulate markdownify.
 | `html_to_markdown` | markdownify-default | TBD | TBD | TBD | TBD | TBD |
 | `htmd_py` | markdownify-default | TBD | TBD | TBD | TBD | TBD |
 | `html2text_rs` | markdownify-default | TBD | TBD | TBD | TBD | TBD |
-| `html2md` | markdownify-default | TBD | TBD | TBD | TBD | Expected ≥99%. |
-| `html2md_streaming` | markdownify-default | TBD | TBD | TBD | TBD | Should match `html2md` output hash/fidelity. |
+| `marktide` | markdownify-default | TBD | TBD | TBD | TBD | Expected ≥99%. |
+| `marktide_streaming` | markdownify-default | TBD | TBD | TBD | TBD | Should match `marktide` output hash/fidelity. |
 | `lxml_naive` | markdownify-default | TBD | TBD | TBD | TBD | Baseline only. |
 
 ## Key charts to generate
 
 - Throughput by fixture size: `adapter × MiB/s`.
 - Event-loop health: `adapter × max stall ms` and `adapter × missed beat %`.
-- Streaming latency: `html2md_streaming × TTFO/max gap` across sizes.
+- Streaming latency: `marktide_streaming × TTFO/max gap` across sizes.
 - Conformance: `adapter × fidelity %`.
 - Memory: `adapter × Peak RSS Δ MiB` on large/xlarge.
 
@@ -235,31 +235,31 @@ Python walk. It should not be described as a candidate replacement. If it is fas
 supports the architectural premise that lxml can be a viable substrate; if it is
 semantically poor, that is expected.
 
-### `html2md` and `html2md_streaming`: same semantics, different API surfaces
+### `marktide` and `marktide_streaming`: same semantics, different API surfaces
 
-The one-shot `html2md` row demonstrates the compatibility API path. The
-`html2md_streaming` row demonstrates the architecture's main advantage: early output,
+The one-shot `marktide` row demonstrates the compatibility API path. The
+`marktide_streaming` row demonstrates the architecture's main advantage: early output,
 measurable cadence, and bounded memory shape while preserving the same Markdown output.
-The final recommendation should prefer `html2md.convert_stream` for large documents and
-keep `html2md.convert` as the convenient small-document/drop-in API.
+The final recommendation should prefer `marktide.convert_stream` for large documents and
+keep `marktide.convert` as the convenient small-document/drop-in API.
 
 ## Headline narrative draft
 
 1. `markdownify` remains the semantic reference but is slow and event-loop-hostile on large inputs.
 2. Rust one-shot libraries are fast, but do not provide native streaming; several also diverge from markdownify semantics.
 3. `html2text_rs` is relatively async-friendly but fails the markdownify-fidelity requirement and is still one-shot.
-4. `html2md_streaming` is the only expected row that can pass the combined bar: fast enough, async-friendly, native streaming cadence, bounded memory behavior, and ≥99% markdownify fidelity.
-5. Therefore, the final recommendation should be: **adopt `html2md` as the replacement, with `html2md.convert_stream` as the preferred large-document API** if phase-3 measurements confirm the expected gate outcomes.
+4. `marktide_streaming` is the only expected row that can pass the combined bar: fast enough, async-friendly, native streaming cadence, bounded memory behavior, and ≥99% markdownify fidelity.
+5. Therefore, the final recommendation should be: **adopt `marktide` as the replacement, with `marktide.convert_stream` as the preferred large-document API** if phase-3 measurements confirm the expected gate outcomes.
 
 Suggested final summary paragraph once numbers are populated:
 
-> The phase-3 matrix confirms that `html2md_streaming` is the only contender that
+> The phase-3 matrix confirms that `marktide_streaming` is the only contender that
 > satisfies the full replacement contract. `markdownify` remains the semantic oracle but
 > fails the performance/async profile. The Rust candidates demonstrate strong one-shot
-> throughput but fail streaming and/or fidelity requirements. `html2md_streaming` combines
+> throughput but fail streaming and/or fidelity requirements. `marktide_streaming` combines
 > markdownify-compatible output with worker-thread async health, bounded memory scaling,
-> and native time-to-first-output. We should adopt `html2md` as the markdownify replacement
-> and route large-document call sites to `html2md.convert_stream`.
+> and native time-to-first-output. We should adopt `marktide` as the markdownify replacement
+> and route large-document call sites to `marktide.convert_stream`.
 
 ## Evidence links
 
@@ -275,7 +275,7 @@ Fill in exact command output after the ≥99% go-signal. Expected sequence:
 ```bash
 uv run python -m benchmarks.harness.runner \
   --sizes small medium large xlarge \
-  --adapters markdownify html_to_markdown htmd_py html2text_rs html2md html2md_streaming lxml_naive \
+  --adapters markdownify html_to_markdown htmd_py html2text_rs marktide marktide_streaming lxml_naive \
   --output benchmarks/results/phase3.json \
   --report benchmarks/results/report.md
 
@@ -287,7 +287,7 @@ uv run --group benchmark python benchmarks/charts.py benchmarks/results/phase3.j
 ## Open follow-ups after final run
 
 - Replace all `TBD` placeholders with measured values.
-- Verify `html2md` and `html2md_streaming` output hashes match for every fixture.
+- Verify `marktide` and `marktide_streaming` output hashes match for every fixture.
 - Include any known remaining fidelity divergences and their bead IDs.
 - Include exact commands used to generate `phase3.json`, charts, and conformance results.
 - Replace the suggested summary paragraph with measured numbers and chart links.

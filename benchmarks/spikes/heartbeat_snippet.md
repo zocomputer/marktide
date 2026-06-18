@@ -49,4 +49,4 @@ async def sample_threaded(fn, payload, duration_s=1.5):
   Prefer a Rust API that returns the finished Markdown STRING in one call, so the
   whole conversion stays inside allow_threads.
 
-Full harness: benchmarks/spikes/gil_probe.py in the html2md repo.
+Full harness: benchmarks/spikes/gil_probe.py in the marktide repo.

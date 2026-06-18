@@ -63,7 +63,7 @@ class AdapterSpec:
 def get_adapter_specs(include_lxml_naive: bool = True) -> list[AdapterSpec]:
     """Return phase-1 adapter factories in stable report order."""
 
-    from .html2md_adapter import Html2MdAdapter, Html2MdStreamingAdapter
+    from .marktide_adapter import Html2MdAdapter, Html2MdStreamingAdapter
     from .html2text_rs_adapter import Html2TextRsAdapter
     from .html_to_markdown_adapter import HtmlToMarkdownAdapter
     from .htmd_adapter import HtmdAdapter
@@ -75,8 +75,8 @@ def get_adapter_specs(include_lxml_naive: bool = True) -> list[AdapterSpec]:
         AdapterSpec("html_to_markdown", HtmlToMarkdownAdapter),
         AdapterSpec("htmd_py", HtmdAdapter),
         AdapterSpec("html2text_rs", Html2TextRsAdapter),
-        AdapterSpec("html2md", Html2MdAdapter),
-        AdapterSpec("html2md_streaming", Html2MdStreamingAdapter),
+        AdapterSpec("marktide", Html2MdAdapter),
+        AdapterSpec("marktide_streaming", Html2MdStreamingAdapter),
     ]
     if include_lxml_naive:
         from .lxml_naive_adapter import LxmlNaiveAdapter

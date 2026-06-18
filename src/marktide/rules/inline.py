@@ -7,7 +7,7 @@ absent here for now.
 
 ``em.content`` is already escaped by the emitter's text path, so handlers never re-escape;
 inside a ``_noformat`` ancestor (pre/code/kbd/samp) markdownify passes inline markup straight
-through, which :func:`~html2md.rules.blocks.in_noformat` detects.
+through, which :func:`~marktide.rules.blocks.in_noformat` detects.
 """
 
 from __future__ import annotations

@@ -5,9 +5,9 @@ from __future__ import annotations
 import pytest
 from markdownify import MarkdownConverter
 
-from html2md.options import Options, markdownify_compat
+from marktide.options import Options, markdownify_compat
 
-# markdownify options that html2md does not mirror as a field.
+# markdownify options that marktide does not mirror as a field.
 _MD_ONLY = {"bs4_options"}
 _ITERABLE_FIELDS = {"convert", "strip", "keep_inline_images_in", "bullets"}
 
@@ -30,7 +30,7 @@ def test_defaults_match_markdownify_field_for_field() -> None:
         assert _norm(getattr(opts, name)) == _norm(md_default), f"default mismatch: {name}"
 
 
-def test_html2md_specific_defaults() -> None:
+def test_marktide_specific_defaults() -> None:
     opts = Options()
     assert opts.chunk_size == 64 * 1024
     assert opts.default_encoding == "utf-8"

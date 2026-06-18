@@ -6,7 +6,7 @@ import asyncio
 
 import pytest
 
-from html2md import (
+from marktide import (
     Options,
     convert,
     convert_async,

@@ -19,11 +19,11 @@ DEFAULT_ADAPTERS = (
     "html_to_markdown",
     "htmd_py",
     "html2text_rs",
-    "html2md",
-    "html2md_streaming",
+    "marktide",
+    "marktide_streaming",
     "lxml_naive",
 )
-ASYNC_ADAPTERS = ("markdownify", "html2md_streaming")
+ASYNC_ADAPTERS = ("markdownify", "marktide_streaming")
 
 
 def _read_result(path: Path) -> dict[str, Any]:
@@ -57,18 +57,18 @@ def _print_async_starvation_summary(result: dict[str, Any], fixture: str) -> Non
             f"max_stall={gate['max_delay_ms']:.2f}ms "
             f"p99={gate['p99_delay_ms']:.2f}ms{ttfo_text}"
         )
-    print("Expected headline: html2md_streaming ~= 0% missed beats; markdownify is high on medium+.")
+    print("Expected headline: marktide_streaming ~= 0% missed beats; markdownify is high on medium+.")
 
 
 def _print_headline_summary(result: dict[str, Any], fixture: str) -> None:
     rows = _rows_by_adapter(result, fixture)
     markdownify = rows["markdownify"]
-    streaming = rows["html2md_streaming"]
+    streaming = rows["marktide_streaming"]
     speedup = markdownify["conversion_wall_s"] / streaming["conversion_wall_s"]
     print("")
     print("=== HEADLINE COMPARISON ===")
     print(
-        f"html2md_streaming {fixture}: {streaming['conversion_wall_s']:.3f}s, "
+        f"marktide_streaming {fixture}: {streaming['conversion_wall_s']:.3f}s, "
         f"{streaming['throughput_mib_s']:.2f} MiB/s"
     )
     print(
@@ -148,7 +148,7 @@ def verify(argv: list[str] | None = None) -> int:
 
 def async_starvation(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Run only the markdownify vs html2md_streaming heartbeat proof."
+        description="Run only the markdownify vs marktide_streaming heartbeat proof."
     )
     parser.add_argument("--fixture", choices=FULL_SIZES, default="medium")
     parser.add_argument("--output", type=Path, default=RESULTS_DIR / "async-starvation.json")

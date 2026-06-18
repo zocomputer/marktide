@@ -1,1 +1,1 @@
-"""Benchmark tooling package for html2md development."""
+"""Benchmark tooling package for marktide development."""

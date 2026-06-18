@@ -11,8 +11,8 @@ import threading
 
 import pytest
 
-from html2md._threaded import ChunkPump
-from html2md.options import Options
+from marktide._threaded import ChunkPump
+from marktide.options import Options
 
 
 class _BlockingDriver:

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from html2md.emitter import MarkdownEmitter
-from html2md.rules import TAG_HANDLERS, PrefixSuffixHandler, TransparentHandler
-from html2md.rules.base import TagHandler
+from marktide.emitter import MarkdownEmitter
+from marktide.rules import TAG_HANDLERS, PrefixSuffixHandler, TransparentHandler
+from marktide.rules.base import TagHandler
 
 
 def _run(handler_tag: str, children: str) -> str:

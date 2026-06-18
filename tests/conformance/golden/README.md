@@ -17,5 +17,5 @@ external corpora under `tests/conformance/fixtures/`.
   regression.
 
 These are pure data fixtures. They intentionally do not import or depend on the
-future `html2md` converter. Phase-2 wiring should load them into the conformance
+future `marktide` converter. Phase-2 wiring should load them into the conformance
 suite once the normalizer and converter modules exist.

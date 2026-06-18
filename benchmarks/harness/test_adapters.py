@@ -1,7 +1,7 @@
 import asyncio
 
 from .adapters.base import get_adapters, supports_streaming
-from .adapters.html2md_adapter import STREAM_INPUT_CHUNK_BYTES
+from .adapters.marktide_adapter import STREAM_INPUT_CHUNK_BYTES
 from .probe import probe_streaming_adapter
 
 HTML = b"<h1>hi</h1><p>Hello <strong>bold</strong></p>"
@@ -15,8 +15,8 @@ def test_all_phase1_adapters_convert_to_text():
         "html_to_markdown",
         "htmd_py",
         "html2text_rs",
-        "html2md",
-        "html2md_streaming",
+        "marktide",
+        "marktide_streaming",
         "lxml_naive",
     }
     for adapter in adapters:
@@ -26,11 +26,11 @@ def test_all_phase1_adapters_convert_to_text():
         assert adapter.option_map.targets, adapter.name
 
 
-def test_html2md_streaming_adapter_exposes_native_chunks():
+def test_marktide_streaming_adapter_exposes_native_chunks():
     adapter = next(
         a
         for a in get_adapters(include_lxml_naive=False)
-        if a.name == "html2md_streaming"
+        if a.name == "marktide_streaming"
     )
     assert supports_streaming(adapter)
     out = adapter.convert(HTML)
@@ -39,11 +39,11 @@ def test_html2md_streaming_adapter_exposes_native_chunks():
     assert "hi" in out.lower()
 
 
-def test_html2md_streaming_adapter_chunks_fixture_input_for_cadence():
+def test_marktide_streaming_adapter_chunks_fixture_input_for_cadence():
     adapter = next(
         a
         for a in get_adapters(include_lxml_naive=False)
-        if a.name == "html2md_streaming"
+        if a.name == "marktide_streaming"
     )
     paragraph = b"<p>streaming cadence block</p>"
     payload = paragraph * ((STREAM_INPUT_CHUNK_BYTES // len(paragraph)) + 1000)
@@ -58,12 +58,12 @@ def test_streaming_cadence_probe_measures_first_chunk_and_gaps():
     adapter = next(
         a
         for a in get_adapters(include_lxml_naive=False)
-        if a.name == "html2md_streaming"
+        if a.name == "marktide_streaming"
     )
 
     async def run():
         result = await probe_streaming_adapter(
-            "html2md_streaming:test", adapter.convert_stream_chunks, HTML
+            "marktide_streaming:test", adapter.convert_stream_chunks, HTML
         )
         assert result.chunk_count >= 1
         assert result.first_chunk_s is not None

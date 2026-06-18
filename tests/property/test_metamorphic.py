@@ -1,4 +1,4 @@
-"""AA#2 bounded metamorphic/property scaffolds for html2md.
+"""AA#2 bounded metamorphic/property scaffolds for marktide.
 
 The properties target the public API from docs/design.md §6.1 and skip until the
 converter foundation is importable. Runtime guardrails live in conftest.py and in
@@ -30,11 +30,11 @@ F = TypeVar("F", bound=Callable)
 FAST_SUITE_TIMEOUT_S = 10.0
 
 
-def _load_html2md_api():
+def _load_marktide_api():
     try:
-        module = importlib.import_module("html2md")
+        module = importlib.import_module("marktide")
     except ModuleNotFoundError:
-        pytest.skip("html2md public API is not implemented yet")
+        pytest.skip("marktide public API is not implemented yet")
     module_file = Path(getattr(module, "__file__", ""))
     if module_file:
         try:
@@ -43,10 +43,10 @@ def _load_html2md_api():
             rel = module_file
         tracked = subprocess.run(["git", "ls-files", "--error-unmatch", str(rel)], capture_output=True, text=True)
         if tracked.returncode != 0:
-            pytest.skip("html2md public API exists only as uncommitted foundation work; property suite lights up once tracked")
+            pytest.skip("marktide public API exists only as uncommitted foundation work; property suite lights up once tracked")
     missing = [name for name in ("Options", "convert", "convert_stream") if not hasattr(module, name)]
     if missing:
-        pytest.skip(f"html2md public API missing: {', '.join(missing)}")
+        pytest.skip(f"marktide public API missing: {', '.join(missing)}")
     return module.Options, module.convert, module.convert_stream
 
 
@@ -111,7 +111,7 @@ def _normalize_for_relation(markdown: str) -> str:
 @bounded_runtime()
 @given(block_html())
 def test_container_wrapping_invariance(fragment: str):
-    _Options, convert, _convert_stream = _load_html2md_api()
+    _Options, convert, _convert_stream = _load_marktide_api()
     baseline = _normalize_for_relation(convert(fragment))
 
     assert _normalize_for_relation(convert(f"<div>{fragment}</div>")) == baseline
@@ -121,7 +121,7 @@ def test_container_wrapping_invariance(fragment: str):
 @bounded_runtime()
 @given(html_fragment_pair())
 def test_concatenation_homomorphism(fragments: tuple[str, str]):
-    _Options, convert, _convert_stream = _load_html2md_api()
+    _Options, convert, _convert_stream = _load_marktide_api()
     left, right = fragments
     separate = _normalize_for_relation(convert(left) + "\n\n" + convert(right))
     combined = _normalize_for_relation(convert(left + right))
@@ -132,7 +132,7 @@ def test_concatenation_homomorphism(fragments: tuple[str, str]):
 @bounded_runtime()
 @given(html_document())
 def test_convert_stream_equivalent_to_convert_for_generated_html(document: str):
-    _Options, convert, convert_stream = _load_html2md_api()
+    _Options, convert, convert_stream = _load_marktide_api()
     payload = document.encode("utf-8")
     split = max(1, len(payload) // 3)
     chunks = [payload[:split], payload[split : 2 * split], payload[2 * split :]]
@@ -148,7 +148,7 @@ def _commonmark_round_trip(convert, parser, document: str, *, options=None) -> t
 
 
 def test_adjacent_code_spans_need_commonmark_roundtrip_stable_mode() -> None:
-    Options, convert, _convert_stream = _load_html2md_api()
+    Options, convert, _convert_stream = _load_marktide_api()
     markdown_it = pytest.importorskip("markdown_it")
     parser = markdown_it.MarkdownIt("commonmark")
     document = "<p><code>0</code><code>0</code></p>"
@@ -172,7 +172,7 @@ def test_adjacent_code_spans_need_commonmark_roundtrip_stable_mode() -> None:
 @bounded_runtime()
 @given(code_span_round_trip_document())
 def test_markdown_commonmark_round_trip_is_structurally_stable_default_xfail(document: str):
-    _Options, convert, _convert_stream = _load_html2md_api()
+    _Options, convert, _convert_stream = _load_marktide_api()
     markdown_it = pytest.importorskip("markdown_it")
     parser = markdown_it.MarkdownIt("commonmark")
 
@@ -191,7 +191,7 @@ def test_markdown_commonmark_round_trip_is_structurally_stable_default_xfail(doc
 @bounded_runtime()
 @given(code_span_round_trip_document())
 def test_markdown_commonmark_round_trip_passes_with_commonmark_stable_code_spans(document: str):
-    Options, convert, _convert_stream = _load_html2md_api()
+    Options, convert, _convert_stream = _load_marktide_api()
     markdown_it = pytest.importorskip("markdown_it")
     parser = markdown_it.MarkdownIt("commonmark")
 

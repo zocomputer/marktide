@@ -1,9 +1,9 @@
-"""html2md — fast streaming HTML → Markdown conversion built on lxml.
+"""marktide — fast streaming HTML → Markdown conversion built on lxml.
 
 Public API::
 
-    from html2md import convert, convert_async, convert_stream, convert_stream_async
-    from html2md import Options, markdownify_compat
+    from marktide import convert, convert_async, convert_stream, convert_stream_async
+    from marktide import Options, markdownify_compat
 
     md = convert("<h1>Hi</h1>")                       # one-shot, sync
     md = await convert_async(html_bytes)              # one-shot, off the event loop

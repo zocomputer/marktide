@@ -7,7 +7,7 @@ collapses adjacent separators at child boundaries (markdownify's ``process_tag``
 collapse) and ``strip_document`` trims the ends.
 
 List handlers are state-driven (``EmitterState.list_stack``), not tree-driven: the bullet
-char and ordered index come from the :class:`~html2md.state.ListContext` pushed at the
+char and ordered index come from the :class:`~marktide.state.ListContext` pushed at the
 ``ul``/``ol`` ``start``, so no parent/sibling navigation is needed.
 """
 
@@ -163,7 +163,7 @@ class _Pre:
             return
         code_language = em.options.code_language
         if em.options.code_language_callback is not None:
-            # markdownify passes the element; html2md hands the just-popped frame.
+            # markdownify passes the element; marktide hands the just-popped frame.
             code_language = em.options.code_language_callback(em.frame) or code_language
         if em.options.strip_pre == "strip":
             text = _strip_pre(text)

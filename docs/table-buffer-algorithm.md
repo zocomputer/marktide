@@ -2,7 +2,7 @@
 
 Date: 2026-06-17  
 Owner: coder-3-leaf  
-Target bead: `zo-1fp.13` (`src/html2md/rules/tables.py` + `src/html2md/state.py` table state)
+Target bead: `zo-1fp.13` (`src/marktide/rules/tables.py` + `src/marktide/state.py` table state)
 
 ## Source behavior to match
 
@@ -195,7 +195,7 @@ def render_row(cells):
 
 ## Implementation checklist for `zo-1fp.13`
 
-- Add `TableBuffer`, `TableRow`, `TableCell` to `src/html2md/state.py` once misc-leaf's foundation types land.
-- Add `src/html2md/rules/tables.py` handlers for `table`, `thead`, `tbody`, `tfoot`, `tr`, `td`, `th`.
+- Add `TableBuffer`, `TableRow`, `TableCell` to `src/marktide/state.py` once misc-leaf's foundation types land.
+- Add `src/marktide/rules/tables.py` handlers for `table`, `thead`, `tbody`, `tfoot`, `tr`, `td`, `th`.
 - Route inline fragments into `TableCell.text_parts` while `state.current_table_cell is not None`.
 - Add tests for the three table cases in `tests/conformance/golden/edge_cases.json` first; then add focused unit tests for invalid/huge `colspan`, `<thead><tr><td>`, multi-row `<thead>`, and ragged rows.

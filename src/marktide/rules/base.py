@@ -13,7 +13,7 @@ A handler is any object implementing :class:`TagHandler`::
         def start(self, em: MarkdownEmitter, attrs: Mapping[str, str]) -> None: ...
         def end(self, em: MarkdownEmitter) -> None: ...
 
-* ``start`` is called *after* the element's :class:`~html2md.state.Frame` is pushed,
+* ``start`` is called *after* the element's :class:`~marktide.state.Frame` is pushed,
   so ``em.state.top`` is this element. Use it to mutate state (e.g. ``pre_depth``, list
   context) or stash bookkeeping for ``end`` onto ``em.state.top.data``. ``start``
   normally emits nothing — output is produced at ``end`` from the rendered children.
@@ -22,7 +22,7 @@ A handler is any object implementing :class:`TagHandler`::
   inside ``end``:
     * ``em.content`` — the element's fully rendered child Markdown (markdownify's
       ``text`` argument).
-    * ``em.frame`` — the just-popped :class:`~html2md.state.Frame`, exposing this
+    * ``em.frame`` — the just-popped :class:`~marktide.state.Frame`, exposing this
       element's ``attrs`` and the ``data`` stashed at ``start``. Using ``em.frame``
       (not handler-instance state) is what makes nested same-tag elements correct:
       each ``end`` sees a distinct frame, so ``<a href=1><a href=2>…`` reads the right
@@ -40,7 +40,7 @@ A handler is any object implementing :class:`TagHandler`::
 Most tags are **local** — wrap the children in a fixed prefix/suffix — and use
 :class:`PrefixSuffixHandler`. Non-local constructs (links need the href, lists need
 nesting depth, tables buffer until ``</table>``) implement custom handlers that
-read/write :class:`~html2md.state.EmitterState`. They must honour the safe-flush
+read/write :class:`~marktide.state.EmitterState`. They must honour the safe-flush
 barriers in design §4.7 so streaming never yields output it would later rewrite.
 
 Registration

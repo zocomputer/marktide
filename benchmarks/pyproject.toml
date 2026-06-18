@@ -1,12 +1,12 @@
 [project]
-name = "html2md-benchmarks"
+name = "marktide-benchmarks"
 version = "0.0.1"
-description = "Self-contained reproducible benchmark harness for html2md."
+description = "Self-contained reproducible benchmark harness for marktide."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "beautifulsoup4>=4.12",
-    "html2md",
+    "marktide",
     "html-to-markdown==3.5.7",
     "html2text-rs>=0.2.5",
     "htmd-py>=0.1.2",
@@ -31,4 +31,4 @@ py-modules = ["bench", "charts"]
 packages = ["harness", "harness.adapters"]
 
 [tool.uv.sources]
-html2md = { path = "..", editable = true }
+marktide = { path = "..", editable = true }

@@ -32,7 +32,7 @@ revisit = "when code_language_callback/options are wired; keep default markdowni
 source = "markdownify_tests"
 case_id = "markdownify:test_conversions:182"
 diff_summary = "lxml/libxml2 auto-closes <h1> before nested <p>, while markdownify's BeautifulSoup html.parser fixture keeps <p> inside the heading"
-reason = "Intentional parser divergence on non-conforming HTML: html2md uses lxml/libxml2, whose HTML parser does not implement full HTML5 tree construction and auto-closes <h1> before the nested <p>. BeautifulSoup html.parser keeps the <p> inside the heading for this input, and coder-3's upstream check found html5lib agrees with that tree shape. Matching markdownify here would require a pre-lxml repair or a different parser contract, not a handler change."
+reason = "Intentional parser divergence on non-conforming HTML: marktide uses lxml/libxml2, whose HTML parser does not implement full HTML5 tree construction and auto-closes <h1> before the nested <p>. BeautifulSoup html.parser keeps the <p> inside the heading for this input, and coder-3's upstream check found html5lib agrees with that tree shape. Matching markdownify here would require a pre-lxml repair or a different parser contract, not a handler change."
 owner = "coder-1-leaf"
 revisit = "only if the project chooses BeautifulSoup/html5lib-style tree construction over the current lxml/libxml2 parser contract for invalid nested block-in-heading markup"
 
@@ -40,7 +40,7 @@ revisit = "only if the project chooses BeautifulSoup/html5lib-style tree constru
 source = "markdownify_tests"
 case_id = "markdownify:test_conversions:183"
 diff_summary = "lxml/libxml2 auto-closes <h1> before nested <p>, while markdownify's BeautifulSoup html.parser fixture keeps <p> inside the heading"
-reason = "Intentional parser divergence on the same non-conforming nested block-in-heading input as markdownify:test_conversions:182, but with heading_style=ATX. html2md preserves the lxml/libxml2 parser contract; coder-3's upstream check found this is a known libxml2 non-HTML5 tree-construction gap rather than browser-correct behavior."
+reason = "Intentional parser divergence on the same non-conforming nested block-in-heading input as markdownify:test_conversions:182, but with heading_style=ATX. marktide preserves the lxml/libxml2 parser contract; coder-3's upstream check found this is a known libxml2 non-HTML5 tree-construction gap rather than browser-correct behavior."
 owner = "coder-1-leaf"
 revisit = "only if the project chooses BeautifulSoup/html5lib-style tree construction over the current lxml/libxml2 parser contract for invalid nested block-in-heading markup"
 
@@ -48,6 +48,6 @@ revisit = "only if the project chooses BeautifulSoup/html5lib-style tree constru
 source = "commonmark_expected_html"
 case_id = "commonmark:0630"
 diff_summary = "lxml treats a CDATA section containing '>' as malformed comment text and does not expose the original CDATA content in parser events"
-reason = "Intentional parser divergence: the CommonMark HTML fixture contains CDATA text with angle brackets (`foo <![CDATA[>&<]]>`). lxml/libxml2 recovers it as malformed comment data (`&<]]>`) rather than surfacing the original `>&<` text, so html2md cannot reconstruct markdownify/BeautifulSoup's output from the event stream. Plain CDATA without this malformed angle-bracket recovery path is preserved."
+reason = "Intentional parser divergence: the CommonMark HTML fixture contains CDATA text with angle brackets (`foo <![CDATA[>&<]]>`). lxml/libxml2 recovers it as malformed comment data (`&<]]>`) rather than surfacing the original `>&<` text, so marktide cannot reconstruct markdownify/BeautifulSoup's output from the event stream. Plain CDATA without this malformed angle-bracket recovery path is preserved."
 owner = "coder-1-leaf"
 revisit = "only if the parser layer gains a pre-scan/rewrite for malformed CDATA sections before lxml feed; otherwise this remains unrecoverable from lxml events"

@@ -1,4 +1,4 @@
-# html2md developer task targets.
+# marktide developer task targets.
 #
 # CI runs exactly two: `make lint` and `make test`. Everything else is a
 # convenience subset or a utility. `make test` is the full gate (unit, component,
@@ -53,8 +53,8 @@ typecheck:  ## ty type check only
 	uvx ty check src
 
 ##@ Utilities
-cov:  ## Coverage report for the html2md package
-	uv run --group benchmark --with pytest-cov pytest --cov=html2md --cov-report=term-missing tests/unit tests/component
+cov:  ## Coverage report for the marktide package
+	uv run --group benchmark --with pytest-cov pytest --cov=marktide --cov-report=term-missing tests/unit tests/component
 
 bench:  ## Run the benchmark harness -> benchmarks/results/phase1.{json,md}
 	uv run --group benchmark python -m benchmarks.harness.runner

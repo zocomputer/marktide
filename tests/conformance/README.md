@@ -76,8 +76,8 @@ make verify-fidelity
 The command runs `tests/conformance/verify_fidelity.py` against the same layered
 corpus as the differential harness, applies `tests/conformance/allowed_divergences.toml`,
 and exits non-zero if the primary markdownify-oracle gate falls below 99%, if any
-primary unallowed failures remain, or if `html2md_streaming` differs from one-shot
-`html2md` on any corpus case.
+primary unallowed failures remain, or if `marktide_streaming` differs from one-shot
+`marktide` on any corpus case.
 
 The command leads with the primary drop-in contract. This is the fidelity claim
 used by the README and release report:

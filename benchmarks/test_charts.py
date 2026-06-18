@@ -91,7 +91,7 @@ def test_generate_charts_from_synthetic_phase3_json(tmp_path, monkeypatch):
                         "async_gate": {"max_delay_ms": 20, "missed_beat_pct": 50},
                     },
                     {
-                        "adapter": "html2md_streaming",
+                        "adapter": "marktide_streaming",
                         "fixture": "small",
                         "status": "ok",
                         "throughput_mib_s": 50.0,

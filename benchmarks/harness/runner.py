@@ -1,7 +1,7 @@
 """Phase-1 benchmark matrix runner.
 
 This runner intentionally produces the final phase-1 artifacts only; it does not
-implement the phase-3 html2md comparison runner yet.
+implement the phase-3 marktide comparison runner yet.
 """
 
 from __future__ import annotations
@@ -28,8 +28,8 @@ DEFAULT_ADAPTERS = (
     "html_to_markdown",
     "htmd_py",
     "html2text_rs",
-    "html2md",
-    "html2md_streaming",
+    "marktide",
+    "marktide_streaming",
     "lxml_naive",
 )
 GATE_VERSION = "v1"
@@ -197,8 +197,8 @@ def _evaluate_gate(rows: list[dict[str, Any]]) -> dict[str, Any]:
         fidelity_pass = adapter in {
             "html_to_markdown",
             "htmd_py",
-            "html2md",
-            "html2md_streaming",
+            "marktide",
+            "marktide_streaming",
         }  # preliminary; conformance harness owns exact score.
         passes_all = (
             throughput_pass

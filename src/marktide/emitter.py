@@ -1,8 +1,8 @@
 """``MarkdownEmitter`` — the lxml target object and Markdown transducer.
 
 It receives SAX callbacks from the incremental parser (``start``/``end``/``data``/
-``comment``/``close``), maintains :class:`~html2md.state.EmitterState`, and dispatches
-per-tag to the handlers in :data:`~html2md.rules.TAG_HANDLERS`. It is a deterministic
+``comment``/``close``), maintains :class:`~marktide.state.EmitterState`, and dispatches
+per-tag to the handlers in :data:`~marktide.rules.TAG_HANDLERS`. It is a deterministic
 pushdown transducer: output depends only on the event stream and the stack, never on
 how bytes were split into feed chunks — that is what guarantees chunk-invariance
 (design §4.3, §9).
@@ -216,7 +216,7 @@ class MarkdownEmitter:
     @property
     def frame(self) -> Frame | None:
         """The element being ended — its own ``attrs`` and ``data``. Valid only inside
-        a handler's ``end``. This is the just-popped :class:`~html2md.state.Frame`, so a
+        a handler's ``end``. This is the just-popped :class:`~marktide.state.Frame`, so a
         handler reads *its own* per-element attributes/bookkeeping even when the same
         tag is nested (``<a><a></a></a>``); ``em.state.top`` at ``end`` is the parent."""
         return self._frame

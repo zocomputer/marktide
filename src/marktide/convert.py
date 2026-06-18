@@ -4,7 +4,7 @@ Sync entry points drive the feed loop to completion and return/yield Markdown. A
 entry points run the (GIL-holding) emit work on a worker thread; the event loop stays
 responsive because the target parser releases the GIL at element granularity within
 ``feed()`` and the worker yields between chunks (design §4.2, validated by the GIL
-spikes). The streaming variants are backed by :class:`~html2md._threaded.ChunkPump`.
+spikes). The streaming variants are backed by :class:`~marktide._threaded.ChunkPump`.
 """
 
 from __future__ import annotations
@@ -63,7 +63,7 @@ async def convert_stream_async(
 ) -> AsyncIterator[str]:
     """Convert an async stream of HTML byte chunks to an async stream of Markdown.
 
-    Backed by :class:`~html2md._threaded.ChunkPump`: each input chunk's feed+emit runs
+    Backed by :class:`~marktide._threaded.ChunkPump`: each input chunk's feed+emit runs
     on a worker thread with the event loop awaited between chunks (the loop-alive
     configuration validated by the GIL spikes), and Markdown is delivered over a bounded
     queue for back-pressure. Foundation behavior matches ``convert_stream`` (final

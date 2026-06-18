@@ -1,6 +1,6 @@
-# html2md — Usage & Migration Guide
+# marktide — Usage & Migration Guide
 
-`html2md` converts HTML to Markdown with `markdownify==1.2.2`-compatible output, on top of
+`marktide` converts HTML to Markdown with `markdownify==1.2.2`-compatible output, on top of
 lxml's streaming C parser. This guide covers the public API, the full options surface, and
 how to migrate from `markdownify`.
 
@@ -15,15 +15,15 @@ how to migrate from `markdownify`.
 ## Install
 
 ```bash
-pip install html2md
+pip install marktide
 ```
 
 Requires Python 3.11+. The only runtime dependency is `lxml` (>= 5).
 
 ```python
-import html2md
-from html2md import convert, convert_async, convert_stream, convert_stream_async
-from html2md import Options, markdownify_compat
+import marktide
+from marktide import convert, convert_async, convert_stream, convert_stream_async
+from marktide import Options, markdownify_compat
 ```
 
 ## The four public functions
@@ -104,7 +104,7 @@ like).
 ## Options
 
 `Options` is an immutable dataclass whose field names and defaults are **identical to
-`markdownify==1.2.2`**, plus html2md-specific fields. Construct one and pass it as
+`markdownify==1.2.2`**, plus marktide-specific fields. Construct one and pass it as
 `options=`.
 
 | Option | Default | Meaning |
@@ -128,12 +128,12 @@ like).
 | `strip_pre` | `"strip"` | Trim newlines around `<pre>`: `"strip"`, `"strip_one"`, or `None`. |
 | `table_infer_header` | `False` | Treat a header-less first row as the table header. |
 | `wrap` / `wrap_width` | `False` / `80` | Hard-wrap paragraph text at `wrap_width` columns. |
-| **`chunk_size`** | `65536` | *(html2md)* Feed granularity for the streaming/async paths. |
-| **`default_encoding`** | `"utf-8"` | *(html2md)* Encoding used when encoding `str` input. |
-| **`commonmark_roundtrip_stable`** | `False` | *(html2md)* Optional canonical code-span delimiter policy for CommonMark render→convert text stability. Default `False` preserves markdownify fidelity. |
+| **`chunk_size`** | `65536` | *(marktide)* Feed granularity for the streaming/async paths. |
+| **`default_encoding`** | `"utf-8"` | *(marktide)* Encoding used when encoding `str` input. |
+| **`commonmark_roundtrip_stable`** | `False` | *(marktide)* Optional canonical code-span delimiter policy for CommonMark render→convert text stability. Default `False` preserves markdownify fidelity. |
 
 ```python
-from html2md import convert, Options
+from marktide import convert, Options
 
 convert("<h1>Hi</h1>", options=Options(heading_style="atx"))                # '# Hi'
 convert("<p>a<br>b</p>", options=Options(newline_style="backslash"))       # 'a\\\nb'
@@ -151,26 +151,26 @@ If you already call `markdownify(html, **kwargs)`, pass the same keyword argumen
 `markdownify_compat` to get an equivalent `Options`:
 
 ```python
-from html2md import convert, markdownify_compat
+from marktide import convert, markdownify_compat
 
 # was: markdownify(html, heading_style="atx", strong_em_symbol="_")
 convert(html, options=markdownify_compat(heading_style="atx", strong_em_symbol="_"))
 ```
 
 It accepts every `markdownify==1.2.2` keyword under its identical name. It raises `ValueError`
-for the two things html2md cannot honour:
+for the two things marktide cannot honour:
 
-- **`bs4_options`** — html2md drives lxml, not BeautifulSoup, so this option is meaningless.
+- **`bs4_options`** — marktide drives lxml, not BeautifulSoup, so this option is meaningless.
 - **`strip` + `convert` together** — mutually exclusive (same as markdownify).
 
 ```python
 markdownify_compat(bs4_options="html.parser")
-# ValueError: bs4_options is not supported: html2md uses lxml, not BeautifulSoup; remove this kwarg
+# ValueError: bs4_options is not supported: marktide uses lxml, not BeautifulSoup; remove this kwarg
 ```
 
 ## Migrating from markdownify
 
-`html2md` is designed as a near drop-in replacement (see [Documented
+`marktide` is designed as a near drop-in replacement (see [Documented
 divergences](#documented-divergences) for the exceptions). In most code the change is:
 
 ```python
@@ -179,7 +179,7 @@ from markdownify import markdownify
 md = markdownify(html, heading_style="atx")
 
 # after
-from html2md import convert, markdownify_compat
+from marktide import convert, markdownify_compat
 md = convert(html, options=markdownify_compat(heading_style="atx"))
 ```
 
@@ -198,7 +198,7 @@ Conformance is high but not yet 100%; the known intentional differences are:
 
 - **Invalid nested block-in-heading** (e.g. `<p>` inside `<h1>`, which is non-conforming —
   headings permit phrasing content only). lxml/libxml2 uses a custom, documented non-HTML5
-  tree builder that auto-closes the `<h1>` before the `<p>`, so html2md sees a heading plus a
+  tree builder that auto-closes the `<h1>` before the `<p>`, so marktide sees a heading plus a
   sibling paragraph. The HTML5 algorithm keeps the `<p>` nested, and markdownify's
   BeautifulSoup `html.parser` matches `html5lib` there — so on this case lxml is the one that
   diverges from HTML5. Valid HTML never triggers it.
@@ -207,7 +207,7 @@ Conformance is high but not yet 100%; the known intentional differences are:
   re-tokenized rather than preserved. markdownify's `html.parser` keeps the raw source text
   instead. (Guardrail-layer only.)
 - **Lossy tables** (`colspan`, ragged rows, header-less first rows). Markdown pipe tables
-  cannot encode these faithfully; html2md's handling of such tables may differ from
+  cannot encode these faithfully; marktide's handling of such tables may differ from
   markdownify's synthetic-cell output. Prefer explicit, valid table markup.
 
 The reviewed intentional divergences are tracked in
@@ -224,7 +224,7 @@ conformance work.
 ## Why lxml / streaming
 
 `markdownify` is BeautifulSoup-based: slow on large inputs and it holds the GIL, so a
-conversion inside an async server stalls every other coroutine. `html2md` drives lxml's
+conversion inside an async server stalls every other coroutine. `marktide` drives lxml's
 incremental **target parser** (SAX-like, no DOM) on a worker thread. lxml releases the GIL
 while it tokenizes each fed chunk, and the Markdown emitter runs as a deterministic
 transducer over the event stream, so:

@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from html2md.emitter import MarkdownEmitter
-from html2md.rules import TAG_HANDLERS
+from marktide.emitter import MarkdownEmitter
+from marktide.rules import TAG_HANDLERS
 
 
 class _LinkLike:

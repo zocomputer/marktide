@@ -1,4 +1,4 @@
-# html2md — Design Doc
+# marktide — Design Doc
 
 > Fast, streaming HTML → Markdown conversion for Python, built on **lxml** (C, releases
 > the GIL) instead of BeautifulSoup. Drop-in replacement for `markdownify` that parses
@@ -29,12 +29,12 @@ This project replaces it in three phases:
   thread. This phase *empirically decides whether phase 2 is even necessary.*
 
 - **Phase 2 — Build (conditional).** If no existing library is both fast *and*
-  event-loop-friendly, build `html2md`: a streaming converter driven by lxml's
+  event-loop-friendly, build `marktide`: a streaming converter driven by lxml's
   incremental **target parser**, structured so the longest contiguous GIL-hold is bounded
   by a chunk, not by the document. Public sync + async APIs, validated against a layered
   HTML→Markdown conformance corpus.
 
-- **Phase 3 — Compare.** Re-run the phase-1 harness with `html2md` added as a fourth
+- **Phase 3 — Compare.** Re-run the phase-1 harness with `marktide` added as a fourth
   contender and a conformance/quality comparison against every prior implementation.
   Acceptance gates decide whether we ship.
 
@@ -72,7 +72,7 @@ This project replaces it in three phases:
 
 ```mermaid
 flowchart TB
-  subgraph public["Public API — src/html2md/__init__.py"]
+  subgraph public["Public API — src/marktide/__init__.py"]
     convert["convert() / convert_async()"]
     stream["convert_stream() / convert_stream_async()"]
   end
@@ -116,7 +116,7 @@ flowchart LR
     a2["html-to-markdown (Rust)"]
     a3["htmd-py (Rust)"]
     a4["lxml-naive baseline"]
-    a5["html2md (added in phase 3)"]
+    a5["marktide (added in phase 3)"]
   end
   probe["asyncio heartbeat probe\n(main-thread + worker-thread)"]
   meters["meters: wall time · MB/s · peak RSS"]
@@ -134,7 +134,7 @@ flowchart LR
 ## 3. Phase 1 — Benchmark harness & GIL/async probe
 
 The harness lives in `benchmarks/` and is a standalone tool, **not** part of the shipped
-`html2md` package (it must run even before phase 2 exists). It is the instrument that
+`marktide` package (it must run even before phase 2 exists). It is the instrument that
 decides whether phase 2 is built.
 
 ### 3.1 Libraries under test
@@ -156,7 +156,7 @@ coder-1-leaf's research (`docs/research.md`). All candidates install via the
 All adapters take/return the same `bytes → str` contract; the adapter is responsible for any
 decode and for extracting the string from a wrapper type (e.g. `ConversionResult.content`).
 
-`fast-html2md==0.2.0` is **excluded as a core engine**: coder-1-leaf found it is a Python
+`fast-marktide==0.2.0` is **excluded as a core engine**: coder-1-leaf found it is a Python
 wrapper around BS4/tiktoken, not a native converter. It may be recorded as a footnote but
 is not a contender. Per rubric pt 10, `docs/research.md` records for each candidate: license,
 maintained-wheel availability (abi3/platform coverage), source pin, and whether it exposes
@@ -307,7 +307,7 @@ lxml releases the GIL **only during the C tokenizer scan**. The Python-side work
 follows — iterating the event stream and emitting Markdown — *reacquires* it. Benchmarking
 "lxml parse" in isolation would prove the parser is async-friendly while saying nothing
 about the whole library, which is the actual deliverable. The probe therefore measures the
-`lxml_naive` and (in phase 3) `html2md` paths in **three separately instrumented stages**,
+`lxml_naive` and (in phase 3) `marktide` paths in **three separately instrumented stages**,
 each run under the heartbeat:
 
 | Stage | What runs | Expected GIL behavior |
@@ -590,7 +590,7 @@ buffering, and that buffer is bounded. This locality is what makes chunk-invaria
 ### 4.4 Module structure & import flow
 
 ```
-src/html2md/
+src/marktide/
   __init__.py        # public API: convert, convert_async, convert_stream, convert_stream_async, Options
   convert.py         # orchestration; ties driver + emitter + options together
   parser.py          # IncrementalDriver — wraps etree.HTMLParser(target=…), feed loop, close/cleanup
@@ -693,10 +693,10 @@ streaming-specific complement to the chunk-invariance property (§9.1).
 
 The deliverable is a **drop-in replacement for `markdownify`**, so the **single primary
 correctness oracle is markdownify itself** (pinned `markdownify==1.2.2`). "Correct" means:
-for a given `Options`, `html2md.convert(html)` equals `markdownify(html, **equivalent_kwargs)`
+for a given `Options`, `marktide.convert(html)` equals `markdownify(html, **equivalent_kwargs)`
 after a defined normalization (§5.3), except for entries in an explicit divergence ledger.
 
-This means `html2md`'s **defaults track markdownify's defaults**, not generic Markdown
+This means `marktide`'s **defaults track markdownify's defaults**, not generic Markdown
 fashion. From `markdownify.MarkdownConverter.DefaultOptions`
 (`.venv/lib/python3.12/site-packages/markdownify/__init__.py:176`):
 
@@ -821,7 +821,7 @@ structure, catching emitter bugs that yield ill-formed Markdown.
 
 ## 6. Public interfaces
 
-### 6.1 Functions (`src/html2md/__init__.py`)
+### 6.1 Functions (`src/marktide/__init__.py`)
 
 ```python
 def convert(html: str | bytes, *, options: Options | None = None) -> str: ...
@@ -849,11 +849,11 @@ async def convert_stream_async(
 markdownify's drop-in contract. We do **not** ship a `ConversionResult` / `convert_detailed`
 API — there is no consumer for it in this project, and leaving it as an implementation-time
 choice would add public-API uncertainty. Recovered-HTML warnings (from `recover=True`) are
-surfaced via the standard `logging` module under the `html2md` logger, not a return value.
+surfaced via the standard `logging` module under the `marktide` logger, not a return value.
 If a structured result is ever needed it will be its own reviewed design; it is out of scope
 here.
 
-### 6.3 `Options` (`src/html2md/options.py`)
+### 6.3 `Options` (`src/marktide/options.py`)
 
 `Options` is a **faithful typed representation of every `markdownify==1.2.2` option, with
 identical names and defaults** (verified against `MarkdownConverter.DefaultOptions`,
@@ -886,7 +886,7 @@ class Options:
     table_infer_header: bool = False
     wrap: bool = False
     wrap_width: int = 80
-    # --- html2md-specific (no markdownify equivalent) ---
+    # --- marktide-specific (no markdownify equivalent) ---
     chunk_size: int = 64 * 1024             # feed granularity; empirical default (§4.2, zo-1fp.6)
     default_encoding: str = "utf-8"
 ```
@@ -899,13 +899,13 @@ Notes on the differences reviewer-leaf flagged:
 - `strip` and `convert` are the markdownify tag-filter semantics and are **mutually
   exclusive** (constructing `Options` with both non-`None` raises `ValueError`, matching
   `MarkdownConverter.__init__`). There is no `strip_tags`/`drop_tags` pair.
-- `markdownify`'s `bs4_options` is BS4-specific and has **no html2md equivalent** (we drive
+- `markdownify`'s `bs4_options` is BS4-specific and has **no marktide equivalent** (we drive
   lxml); it is intentionally absent.
 
 **`markdownify_compat(**md_kwargs) -> Options`** is the migration contract: it accepts **every**
 `markdownify==1.2.2` keyword and maps it onto the identical `Options` field. It raises
 `ValueError` with an explicit, actionable message in two cases:
-- `bs4_options` → `"bs4_options is not supported: html2md uses lxml, not BeautifulSoup; remove
+- `bs4_options` → `"bs4_options is not supported: marktide uses lxml, not BeautifulSoup; remove
   this kwarg"` (the parser backend differs, so the option is meaningless here);
 - `strip` and `convert` both non-`None` → `"strip and convert are mutually exclusive (matching
   markdownify); pass at most one"`.
@@ -981,28 +981,28 @@ conformance headline. Subset targets (`make unit`/`conformance`/`property`/`e2e`
 
 ## 8. Phase 3 — Comparison methodology
 
-Phase 3 reuses the phase-1 harness verbatim, adding an `html2md` adapter (and its streaming
+Phase 3 reuses the phase-1 harness verbatim, adding an `marktide` adapter (and its streaming
 entry points), and adds a quality dimension:
 
 1. **Performance & GIL re-run.** Same fixtures, meters, and probe as §3, now five adapters.
    Primary plots: throughput vs size; **worker-thread p99 scheduling delay vs size** (the
-   headline — html2md should stay flat where markdownify blows up); peak-RSS curve vs size
-   (html2md streaming should stay flat where DOM parsers grow linearly); and
-   **time-to-first-output + inter-chunk cadence vs size** (html2md streaming emits early;
+   headline — marktide should stay flat where markdownify blows up); peak-RSS curve vs size
+   (marktide streaming should stay flat where DOM parsers grow linearly); and
+   **time-to-first-output + inter-chunk cadence vs size** (marktide streaming emits early;
    one-shot libs structurally cannot).
 2. **Conformance/quality comparison.** Run every adapter over the §5 corpus; score each
    against the normalized oracle. Report a per-adapter compatibility matrix and a diff
    gallery for the worst cases.
-3. **Acceptance gates — the concrete §3.5 `v1` thresholds applied to html2md** (not a fresh
+3. **Acceptance gates — the concrete §3.5 `v1` thresholds applied to marktide** (not a fresh
    placeholder set): throughput (crit 1), worker-thread full-convert p99 ≤ 2 ms (crit 2),
    streaming peak RSS ≤ 256 MiB on `xlarge` ≈ O(chunk·depth) (crit 3), **TTFO ≤ 50 ms / max
    inter-chunk gap ≤ 100 ms on `large`/`xlarge`** (crit 4), and ≥ 99% conformance with every
-   divergence enumerated (crit 5). **html2md ships iff it passes all five**; if it fails
+   divergence enumerated (crit 5). **marktide ships iff it passes all five**; if it fails
    fidelity but a Rust candidate also fails on memory/TTFO, the recommendation is explicit
    rather than a judgement call. Phase 2 was justified precisely because no candidate met the
    combined quality + memory + TTFO bar even though one (html2text_rs) is loop-friendly.
 4. **Output:** `benchmarks/results/phase3.json` + `docs/phase3-report.md` with the
-   recommendation (ship html2md / adopt Rust candidate / stay on markdownify).
+   recommendation (ship marktide / adopt Rust candidate / stay on markdownify).
 
 ---
 
@@ -1151,7 +1151,7 @@ surrounding document length.
 ### 11.3 Runtime invariant — the memory bound is measured, not assumed
 
 The bounded-memory theorem is enforced by a runtime invariant test
-(`tests/unit/html2md/test_memory_invariant.py`, `make test`): it streams documents of
+(`tests/unit/marktide/test_memory_invariant.py`, `make test`): it streams documents of
 increasing size and asserts the **live register footprint** (open-frame buffers + the O(1)
 scalar registers + table reservoir, excluding drained output) does **not** scale with
 input length — 4× the input must not 4× the footprint — and that depth, a single giant

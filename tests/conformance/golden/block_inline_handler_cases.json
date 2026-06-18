@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "purpose": "Exhaustive per-handler block + inline golden fixtures for the html2md handlers (zo-1fp.12). Same schema as edge_cases.json; complements its cross-cutting docs/design.md §5.3.4 behavior-table set.",
+  "purpose": "Exhaustive per-handler block + inline golden fixtures for the marktide handlers (zo-1fp.12). Same schema as edge_cases.json; complements its cross-cutting docs/design.md §5.3.4 behavior-table set.",
   "oracle": {
     "package": "markdownify",
     "version": "1.2.2",

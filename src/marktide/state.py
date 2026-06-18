@@ -114,7 +114,7 @@ class TableBuffer:
 
 
 class EmitterState:
-    """Mutable conversion state. Owned by :class:`~html2md.emitter.MarkdownEmitter`;
+    """Mutable conversion state. Owned by :class:`~marktide.emitter.MarkdownEmitter`;
     rule handlers read and mutate it through the emitter context."""
 
     __slots__ = (

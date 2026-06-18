@@ -2,7 +2,7 @@
 
 Tables are the one construct that buffers: Markdown needs the header row and every
 cell width before any row can be emitted (column count + alignment), so a ``<table>``
-accumulates into a bounded :class:`~html2md.state.TableBuffer` and flushes the grid at
+accumulates into a bounded :class:`~marktide.state.TableBuffer` and flushes the grid at
 ``</table>`` (design §4.3, §4.7). The buffer is bounded by table dimensions, never by
 document size.
 """

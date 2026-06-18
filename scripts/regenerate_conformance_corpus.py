@@ -188,7 +188,7 @@ def main() -> None:
 
     fixture_root, lock_path, sources = load_manifest()
     fixture_root.mkdir(parents=True, exist_ok=True)
-    tmp_ctx = tempfile.TemporaryDirectory(prefix="html2md-conformance-")
+    tmp_ctx = tempfile.TemporaryDirectory(prefix="marktide-conformance-")
     tmp = Path(tmp_ctx.name)
     try:
         copied_by_source: dict[str, list[str]] = {}

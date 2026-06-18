@@ -23,7 +23,7 @@ from lxml import etree  # ty: ignore[unresolved-import]  # lxml ships no type st
 from .emitter import MarkdownEmitter
 from .options import Options
 
-logger = logging.getLogger("html2md")
+logger = logging.getLogger("marktide")
 
 
 class IncrementalDriver:
@@ -87,7 +87,7 @@ class IncrementalDriver:
     def _log_recovery(self) -> None:
         error_log = getattr(self._parser, "error_log", None)
         if error_log:
-            logger.warning("html2md recovered from %d HTML parse issue(s)", len(error_log))
+            logger.warning("marktide recovered from %d HTML parse issue(s)", len(error_log))
 
     def __enter__(self) -> IncrementalDriver:
         return self

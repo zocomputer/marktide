@@ -25,7 +25,7 @@ import lxml.etree as etree  # noqa: E402  # ty: ignore[unresolved-import]
 import lxml.html as lxml_html  # noqa: E402
 
 from benchmarks.harness.adapters.base import Adapter, OptionMap, get_adapters  # noqa: E402
-from html2md.options import markdownify_compat  # noqa: E402
+from marktide.options import markdownify_compat  # noqa: E402
 
 DEFAULT_FIXTURE_ROOT = REPO_ROOT / "tests" / "conformance" / "fixtures"
 DEFAULT_REPORT_DIR = REPO_ROOT / "tests" / "conformance" / "reports"
@@ -34,26 +34,26 @@ PRIMARY_MARKDOWNIFY_LAYERS = frozenset({"golden", "markdownify_tests"})
 
 @dataclass(frozen=True)
 class Html2mdAdapter:
-    """Local correctness adapter for the in-repo html2md converter.
+    """Local correctness adapter for the in-repo marktide converter.
 
     Kept in tests/conformance so the shared benchmark adapter interface remains
     owned by coder-3 while phase-2 correctness wiring can start immediately.
     """
 
-    name: str = "html2md"
-    package: str = "html2md local"
+    name: str = "marktide"
+    package: str = "marktide local"
     engine: str = "lxml target parser + Python emitter"
     option_map: OptionMap = field(default_factory=OptionMap)
 
     def convert(self, html_bytes: bytes) -> str:
-        import html2md
+        import marktide
 
-        return html2md.convert(html_bytes)
+        return marktide.convert(html_bytes)
 
 
-def _html2md_is_available() -> bool:
+def _marktide_is_available() -> bool:
     try:
-        import html2md  # noqa: F401
+        import marktide  # noqa: F401
     except ModuleNotFoundError:
         return False
     return True
@@ -476,15 +476,15 @@ def _oracle_output(case: Case, oracle: Adapter, html_bytes: bytes) -> str:
 
 
 def _candidate_output(case: Case, adapter: Adapter, html_bytes: bytes) -> str:
-    if case.layer == "markdownify_tests" and adapter.name in {"html2md", "html2md_streaming"}:
-        import html2md
+    if case.layer == "markdownify_tests" and adapter.name in {"marktide", "marktide_streaming"}:
+        import marktide
 
         raw_options = case.metadata.get("markdownify_options", {})
         md_options = cast(dict[str, Any], raw_options if isinstance(raw_options, dict) else {})
         options = markdownify_compat(**md_options)
-        if adapter.name == "html2md_streaming":
-            return "".join(html2md.convert_stream([html_bytes], options=options))
-        return html2md.convert(html_bytes, options=options)
+        if adapter.name == "marktide_streaming":
+            return "".join(marktide.convert_stream([html_bytes], options=options))
+        return marktide.convert(html_bytes, options=options)
     return adapter.convert(html_bytes)
 
 
@@ -592,7 +592,7 @@ def main() -> None:
     if args.max_cases is not None:
         cases = cases[: args.max_cases]
     adapters = get_adapters(include_lxml_naive=args.include_lxml_naive)
-    if _html2md_is_available() and all(adapter.name != "html2md" for adapter in adapters):
+    if _marktide_is_available() and all(adapter.name != "marktide" for adapter in adapters):
         adapters.append(Html2mdAdapter())
     results = run_differential(cases, adapters, max_diff_chars=args.max_diff_chars)
     json_path, md_path = write_reports(results, args.report_dir)

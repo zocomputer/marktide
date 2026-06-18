@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from html2md import convert
+from marktide import convert
 
 _CORPUS = (
     Path(__file__).resolve().parents[3]
@@ -65,7 +65,7 @@ def test_code_span_backtick_fence_grows_and_pads() -> None:
 
 
 def test_code_span_commonmark_roundtrip_stable_mode_uses_canonical_delimiters() -> None:
-    from html2md import Options
+    from marktide import Options
 
     opts = Options(commonmark_roundtrip_stable=True)
     assert convert("<p><code>a`b</code></p>", options=opts) == "``a`b``"
@@ -105,21 +105,21 @@ def test_span_is_transparent() -> None:
 # --- markdownify Options fidelity (review findings) -----------------------------
 
 def test_paragraph_honours_wrap_width() -> None:
-    from html2md import Options
+    from marktide import Options
 
     md = convert("<p>123456789 123456789</p>", options=Options(wrap=True, wrap_width=10))
     assert md == "123456789\n123456789"
 
 
 def test_pre_honours_code_language_callback() -> None:
-    from html2md import Options
+    from marktide import Options
 
     opts = Options(code_language_callback=lambda frame: "python")
     assert convert("<pre>x = 1</pre>", options=opts) == "```python\nx = 1\n```"
 
 
 def test_strip_pre_strip_one_removes_single_newline() -> None:
-    from html2md import Options
+    from marktide import Options
 
     one = convert("<pre>\n\nfoo\n\n</pre>", options=Options(strip_pre="strip_one"))
     full = convert("<pre>\n\nfoo\n\n</pre>", options=Options(strip_pre="strip"))
@@ -164,7 +164,7 @@ def test_video_src_poster_and_source_child() -> None:
 
 
 def test_strikethrough_and_sub_sup_symbols() -> None:
-    from html2md import Options
+    from marktide import Options
 
     assert convert("<p><del>x</del></p>") == "~~x~~"
     assert convert("<p><s>x</s></p>") == "~~x~~"

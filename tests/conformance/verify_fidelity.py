@@ -1,4 +1,4 @@
-"""One-command fidelity verifier for the html2md markdownify-compatibility claim.
+"""One-command fidelity verifier for the marktide markdownify-compatibility claim.
 
 Run from the repository root with:
 
@@ -111,7 +111,7 @@ def _print_layer_summary(
         layer_results = [case for case in results if case.layer == layer]
         if not layer_results:
             continue
-        counts = _counts(layer_results, adapter="html2md", allowed=allowed_ids)
+        counts = _counts(layer_results, adapter="marktide", allowed=allowed_ids)
         print(f"{layer:24} {_fmt_counts(counts)}")
 
 
@@ -123,13 +123,13 @@ def main() -> int:
     results = run_differential(cases, adapters, max_diff_chars=300)
 
     primary = [case for case in results if case.layer in PRIMARY_LAYERS]
-    primary_counts = _counts(primary, adapter="html2md", allowed=allowed_ids)
-    primary_stream_counts = _counts(primary, adapter="html2md_streaming", allowed=allowed_ids)
+    primary_counts = _counts(primary, adapter="marktide", allowed=allowed_ids)
+    primary_stream_counts = _counts(primary, adapter="marktide_streaming", allowed=allowed_ids)
 
     stream_mismatches = []
     for case in results:
-        direct = _candidate(case, "html2md")
-        streaming = _candidate(case, "html2md_streaming")
+        direct = _candidate(case, "marktide")
+        streaming = _candidate(case, "marktide_streaming")
         if (
             direct.passed,
             direct.error,
@@ -141,7 +141,7 @@ def main() -> int:
         ):
             stream_mismatches.append(case.id)
 
-    print("html2md PRIMARY fidelity verification")
+    print("marktide PRIMARY fidelity verification")
     print("======================================")
     print("PRIMARY DROP-IN CONTRACT: golden + corrected markdownify_tests")
     print("This is the README fidelity claim. Guardrail/triangulation rows below are diagnostics.")
@@ -157,7 +157,7 @@ def main() -> int:
         "Primary allowed parser divergences counted as effective passes: "
         f"{primary_counts.allowed_failures}"
     )
-    print(f"html2md_streaming primary check: {_fmt_counts(primary_stream_counts)}")
+    print(f"marktide_streaming primary check: {_fmt_counts(primary_stream_counts)}")
     print()
     _print_layer_summary(
         heading="Primary drop-in oracle breakdown (part of the 100% effective claim)",
@@ -174,13 +174,13 @@ def main() -> int:
         "They are intentionally not expected to be 100% and do not change the primary result."
     )
     _print_layer_summary(
-        heading="Guardrail layer breakdown (html2md)",
+        heading="Guardrail layer breakdown (marktide)",
         underline="----------------------------------",
         layers=GUARDRAIL_LAYER_ORDER,
         results=results,
         allowed_ids=allowed_ids,
     )
-    all_counts = _counts(results, adapter="html2md", allowed=allowed_ids)
+    all_counts = _counts(results, adapter="marktide", allowed=allowed_ids)
     print(
         f"{'all_layers_diagnostic':24} {_fmt_counts(all_counts)} "
         "(diagnostic aggregate only; not the drop-in fidelity claim)"
@@ -188,21 +188,21 @@ def main() -> int:
     print()
     print("Streaming parity")
     print("----------------")
-    print(f"html2md vs html2md_streaming mismatches: {len(stream_mismatches)}/{len(results)}")
+    print(f"marktide vs marktide_streaming mismatches: {len(stream_mismatches)}/{len(results)}")
     print()
     print("Documented divergences that are active failures in this run")
     print("----------------------------------------------------------")
     active_primary_allowed = sorted(
         case.id
         for case in primary
-        if case.id in allowed_ids and not _candidate(case, "html2md").passed
+        if case.id in allowed_ids and not _candidate(case, "marktide").passed
     )
     active_guardrail_allowed = sorted(
         case.id
         for case in results
         if case.layer not in PRIMARY_LAYERS
         and case.id in allowed_ids
-        and not _candidate(case, "html2md").passed
+        and not _candidate(case, "marktide").passed
     )
     if active_primary_allowed:
         print("Primary allowed divergences counted in the 100% effective claim:")

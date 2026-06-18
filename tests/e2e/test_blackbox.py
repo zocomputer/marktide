@@ -25,7 +25,7 @@ from pathlib import Path
 
 import pytest
 
-from html2md import convert, convert_async, convert_stream, convert_stream_async
+from marktide import convert, convert_async, convert_stream, convert_stream_async
 
 _FIXTURES = Path(__file__).resolve().parents[2] / "benchmarks" / "fixtures"
 

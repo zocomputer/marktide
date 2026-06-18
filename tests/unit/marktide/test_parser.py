@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from html2md.options import Options
-from html2md.parser import IncrementalDriver
+from marktide.options import Options
+from marktide.parser import IncrementalDriver
 
 
 def test_feed_all_then_close_returns_markdown() -> None:

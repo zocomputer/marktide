@@ -22,7 +22,7 @@ if str(REPO_ROOT) not in sys.path:
 if str(REPO_ROOT / "tests" / "conformance") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "tests" / "conformance"))
 
-from benchmarks.harness.adapters.html2md_adapter import Html2MdAdapter  # noqa: E402
+from benchmarks.harness.adapters.marktide_adapter import Html2MdAdapter  # noqa: E402
 from benchmarks.harness.adapters.html_to_markdown_adapter import HtmlToMarkdownAdapter  # noqa: E402
 from benchmarks.harness.adapters.markdownify_adapter import MarkdownifyAdapter  # noqa: E402
 from differential import _canonical_html_fragment  # noqa: E402
@@ -72,7 +72,7 @@ def main() -> int:
         return 1
 
     conversions = [
-        Conversion("html2md", ours),
+        Conversion("marktide", ours),
         Conversion("markdownify", MarkdownifyAdapter().convert(html)),
         Conversion("html_to_markdown (Rust)", HtmlToMarkdownAdapter().convert(html)),
     ]

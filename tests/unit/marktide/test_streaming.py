@@ -7,8 +7,8 @@ import asyncio
 
 import pytest
 
-from html2md import convert, convert_stream, convert_stream_async
-from html2md.parser import IncrementalDriver
+from marktide import convert, convert_stream, convert_stream_async
+from marktide.parser import IncrementalDriver
 
 DOC = "<p>alpha</p><p>beta</p><p>gamma</p>"
 # Many blocks: lxml's push parser holds the final element pending lookahead, but with
@@ -84,7 +84,7 @@ def test_chunk_invariance_structural_boundaries(html: bytes, chunk_size: int) ->
     # The §9.1 guarantee: convert_stream output is byte-identical to convert no matter
     # how the bytes are split — including across structural/whitespace boundaries where
     # lxml delivers text nodes in feed-dependent pieces (text coalescing restores it).
-    from html2md import convert, convert_stream
+    from marktide import convert, convert_stream
     chunks = [html[i:i + chunk_size] for i in range(0, len(html), chunk_size)]
     assert "".join(convert_stream(chunks)) == convert(html)
 

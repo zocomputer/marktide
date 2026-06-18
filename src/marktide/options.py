@@ -3,12 +3,12 @@
 Every field name and default here is identical to
 ``markdownify.MarkdownConverter.DefaultOptions`` (verified against
 ``.venv/lib/python3.12/site-packages/markdownify/__init__.py``), which is what makes
-the drop-in claim real and the conformance oracle exact. Two html2md-specific fields
+the drop-in claim real and the conformance oracle exact. Two marktide-specific fields
 (``chunk_size``, ``default_encoding``, and ``commonmark_roundtrip_stable``) have no markdownify equivalent.
 
 ``markdownify_compat(**md_kwargs)`` is the migration contract: it accepts every
 markdownify keyword and maps it onto the identical field, rejecting the two things
-html2md cannot honour (``bs4_options`` — we drive lxml, not BeautifulSoup) and the
+marktide cannot honour (``bs4_options`` — we drive lxml, not BeautifulSoup) and the
 markdownify ``strip``/``convert`` mutual-exclusion.
 """
 
@@ -32,8 +32,8 @@ class Options:
     autolinks: bool = True
     bullets: str = "*+-"  # iterable of markers; nested <ul> picks by depth
     code_language: str = ""
-    # markdownify passes a bs4 Tag; html2md has no bs4 dependency, so the callback
-    # receives html2md's own element view. Typed loosely to avoid a bs4 import.
+    # markdownify passes a bs4 Tag; marktide has no bs4 dependency, so the callback
+    # receives marktide's own element view. Typed loosely to avoid a bs4 import.
     code_language_callback: Callable[[Any], str] | None = None
     convert: tuple[str, ...] | None = None  # allowlist of tags to convert;
     strip: tuple[str, ...] | None = None    #   mutually exclusive with `convert`
@@ -53,7 +53,7 @@ class Options:
     wrap: bool = False
     wrap_width: int = 80
 
-    # --- html2md-specific (no markdownify equivalent) ---
+    # --- marktide-specific (no markdownify equivalent) ---
     chunk_size: int = 64 * 1024  # feed granularity; empirical default (design §4.2)
     default_encoding: str = "utf-8"
     # Optional Markdown-canonical code-span emission. Default stays markdownify-compatible.
@@ -68,10 +68,10 @@ class Options:
             )
 
 
-# markdownify keywords that html2md deliberately does not support.
+# markdownify keywords that marktide deliberately does not support.
 _UNSUPPORTED = {
     "bs4_options": (
-        "bs4_options is not supported: html2md uses lxml, not BeautifulSoup; "
+        "bs4_options is not supported: marktide uses lxml, not BeautifulSoup; "
         "remove this kwarg"
     ),
 }

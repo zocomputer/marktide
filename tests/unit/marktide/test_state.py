@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from html2md.state import (
+from marktide.state import (
     EmitterState,
     Frame,
     ListContext,

@@ -4,7 +4,7 @@ Design invariant: for every input byte string, every partition must satisfy
 ``"".join(convert_stream(partition)) == convert(whole)`` byte-for-byte.
 
 These tests intentionally import the future public API described in docs/design.md
-§6.1 and skip until ``src/html2md`` exists. The split-point machinery is live now
+§6.1 and skip until ``src/marktide`` exists. The split-point machinery is live now
 and reuses the staged conformance corpus from ``tests.conformance.differential``.
 """
 
@@ -30,14 +30,14 @@ FIXED_CHUNK_SIZES = (1, 7, 64, 4096)
 MAX_ADVERSARIAL_OFFSETS_PER_CASE = 96
 
 
-def _load_html2md_api():
+def _load_marktide_api():
     try:
-        module = importlib.import_module("html2md")
+        module = importlib.import_module("marktide")
     except ModuleNotFoundError:
-        pytest.skip("html2md public API is not implemented yet")
+        pytest.skip("marktide public API is not implemented yet")
     missing = [name for name in ("convert", "convert_stream") if not hasattr(module, name)]
     if missing:
-        pytest.skip(f"html2md public API missing: {', '.join(missing)}")
+        pytest.skip(f"marktide public API missing: {', '.join(missing)}")
     return module.convert, module.convert_stream
 
 
@@ -78,7 +78,7 @@ STRUCTURAL_BOUNDARY_CONTROL_CASES = (
 
 
 def _assert_stream_matches_convert_for_offsets(payload: bytes, offsets: Iterable[int]):
-    convert, convert_stream = _load_html2md_api()
+    convert, convert_stream = _load_marktide_api()
     chunks = split_bytes(payload, offsets)
 
     assert "".join(convert_stream(chunks)) == convert(payload)
@@ -172,8 +172,8 @@ def _dedupe_cap(offsets: Iterable[int], payload_len: int, cap: int) -> list[int]
 
 
 def conformance_cases() -> list[Case]:
-    if importlib.util.find_spec("html2md") is None:
-        return [Case(id="html2md-api-not-implemented", layer="scaffold", source_path="inline", html="<p>skip</p>")]
+    if importlib.util.find_spec("marktide") is None:
+        return [Case(id="marktide-api-not-implemented", layer="scaffold", source_path="inline", html="<p>skip</p>")]
     fixture_root = CONFORMANCE_DIR / "fixtures"
     if not fixture_root.exists():
         return [
@@ -192,7 +192,7 @@ def conformance_cases() -> list[Case]:
 def test_convert_stream_matches_convert_for_adversarial_splits(case: Case):
     if skip_reason := case.metadata.get("skip_reason"):
         pytest.skip(str(skip_reason))
-    convert, convert_stream = _load_html2md_api()
+    convert, convert_stream = _load_marktide_api()
     payload = case.html.encode("utf-8", errors="replace")
     offsets = adversarial_split_offsets(payload)
     chunks = split_bytes(payload, offsets)
@@ -202,7 +202,7 @@ def test_convert_stream_matches_convert_for_adversarial_splits(case: Case):
 
 @pytest.mark.parametrize("chunk_size", FIXED_CHUNK_SIZES)
 def test_convert_stream_matches_convert_for_fixed_chunk_sweep(chunk_size: int):
-    convert, convert_stream = _load_html2md_api()
+    convert, convert_stream = _load_marktide_api()
     # A compact synthetic fixture exercises the constructs called out in the
     # design without making the fixed 1-byte sweep expensive in every PR.
     payload = SYNTHETIC_ADVERSARIAL_HTML

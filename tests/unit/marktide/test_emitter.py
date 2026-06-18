@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 
-from html2md.emitter import MarkdownEmitter
-from html2md.options import Options
+from marktide.emitter import MarkdownEmitter
+from marktide.options import Options
 
 
 def _emit(html_events) -> str:
