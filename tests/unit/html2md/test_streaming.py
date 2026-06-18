@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import asyncio
 
+import pytest
+
 from html2md import convert, convert_stream, convert_stream_async
 from html2md.parser import IncrementalDriver
 
@@ -64,6 +66,27 @@ def test_stream_async_matches_convert() -> None:
 
     pieces = asyncio.run(run())
     assert "".join(pieces) == convert(DOC)
+
+
+@pytest.mark.parametrize("html", [
+    b"<title>T</title>\n<h1>H</h1>",            # text in <head> + structural boundary
+    b"<title>T</title>\n<p>x</p>",
+    b"<head><title>T</title></head>\n<h1>H</h1>",
+    b"<textarea>\n\n*foo*\n\n_bar_\n\n</textarea>",  # lxml splits textarea text by feed
+    b"<p>a</p>\n<p>b</p>",
+    b"<p><a href='/url'>foo</a></p>\n<blockquote>q</blockquote>",
+    b"<ul><li>a</li>\n<li>b</li></ul>",
+    b"foo<ul><li>bar</li></ul>baz",
+    b"<div><p>x</p>  <p>y</p></div>",
+])
+@pytest.mark.parametrize("chunk_size", [1, 2, 3, 7, 64])
+def test_chunk_invariance_structural_boundaries(html: bytes, chunk_size: int) -> None:
+    # The §9.1 guarantee: convert_stream output is byte-identical to convert no matter
+    # how the bytes are split — including across structural/whitespace boundaries where
+    # lxml delivers text nodes in feed-dependent pieces (text coalescing restores it).
+    from html2md import convert, convert_stream
+    chunks = [html[i:i + chunk_size] for i in range(0, len(html), chunk_size)]
+    assert "".join(convert_stream(chunks)) == convert(html)
 
 
 def test_drain_holds_back_trailing_whitespace() -> None:

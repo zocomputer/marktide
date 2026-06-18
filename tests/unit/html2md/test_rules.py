@@ -28,7 +28,8 @@ def test_prefix_suffix_wraps_rendered_children() -> None:
     em = MarkdownEmitter()
     em.start("x", {})            # unregistered tag → frame pushed, no handler
     em.state.top.buffering = True  # force buffering so children accumulate in the frame
-    em.data("body")             # accumulates into the frame buffer
+    em.data("body")             # buffered as a coalesced text node
+    em._flush_text()            # finalise it into the frame buffer (end() would do this)
     frame = em.state.pop()
     em._content = "".join(frame.content)
     h.end(em)                   # emits prefix + content + suffix to the (root) parent

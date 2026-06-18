@@ -71,7 +71,7 @@ class MarkdownEmitter:
 
     __slots__ = (
         "options", "state", "root", "_handlers", "_filter", "_content", "_frame",
-        "_started", "_pending_tail",
+        "_started", "_carry", "_tail", "_text_buf",
     )
 
     def __init__(self, options: Options | None = None) -> None:
@@ -83,7 +83,14 @@ class MarkdownEmitter:
         self._content = ""                 # rendered children of element being ended
         self._frame: Frame | None = None   # the element being ended (its own attrs/data)
         self._started = False              # have we emitted leading (post-lstrip) output?
-        self._pending_tail = ""            # trailing whitespace held back across drains
+        self._carry = ""                   # collapse-fold carry: last root child's
+        #                                    trailing newlines (markdownify merge quirk)
+        self._tail = ""                    # trailing newlines of emitted output, held
+        #                                    back for the document rstrip (O(1))
+        self._text_buf: list[str] = []     # consecutive data() coalesced into one text
+        #                                    node (lxml splits special-element text by
+        #                                    feed boundary; coalescing makes it
+        #                                    chunk-invariant before normalisation)
 
     # --- handler-facing context API ------------------------------------------
 
@@ -208,6 +215,7 @@ class MarkdownEmitter:
     # --- lxml target protocol (SAX callbacks) --------------------------------
 
     def start(self, tag: str, attrs: dict[str, str]) -> None:
+        self._flush_text()  # finalise the preceding text node before this child
         tag = tag.lower()
         # Resolve the parent's deferred text whitespace now that the next sibling (this
         # element) is known: drop it before a block, keep it before an inline element.
@@ -232,6 +240,7 @@ class MarkdownEmitter:
             handler.start(self, frame.attrs)
 
     def end(self, tag: str) -> None:
+        self._flush_text()  # finalise this element's trailing text before it closes
         tag = tag.lower()
         frame = self.state.pop()
         if frame is None:
@@ -264,9 +273,20 @@ class MarkdownEmitter:
             self.emit(content)
 
     def data(self, data: str) -> None:
-        self.emit_text(data)
+        # Coalesce: lxml may split one text node across several data() callbacks at feed
+        # boundaries. Buffer and process the whole run on the next non-data event so
+        # whitespace normalisation sees the complete text node (chunk-invariance).
+        if data:
+            self._text_buf.append(data)
+
+    def _flush_text(self) -> None:
+        if self._text_buf:
+            text = "".join(self._text_buf)
+            self._text_buf.clear()
+            self.emit_text(text)
 
     def comment(self, text: str) -> None:
+        self._flush_text()
         # lxml surfaces an HTML CDATA section as a comment "[CDATA[...]]"; markdownify
         # emits the CDATA content as text. Ordinary comments are dropped.
         if text.startswith("[CDATA[") and text.endswith("]]"):
@@ -281,24 +301,28 @@ class MarkdownEmitter:
         boundary — and the leading ``strip_document`` is applied once, so a drained
         prefix is never rewritten by later events. Top-level output only reaches the
         buffer when an element fully closes, so what is drained is already complete."""
-        s = self._collapse_join(self.root, prefix=self._pending_tail)
+        s = self._tail + self._fold_children(self.root)
         self.root.clear()
-        self._pending_tail = ""
         if not self._started and self.options.strip_document in ("strip", "lstrip"):
             s = s.lstrip("\n")
         if s and not self._started:
             self._started = True
+        # Hold back trailing newlines: they may be document-trailing (rstripped at
+        # close) — emitting them now would leak a trailing separator a later close can
+        # no longer remove. Re-prepended to the next drain when more content follows.
         body = s.rstrip("\n")
-        self._pending_tail = s[len(body):]  # held-back trailing separator newlines
+        self._tail = s[len(body):]
         return body
 
     def close(self) -> str:
         """Flush all buffered output with the document-level strip applied (markdownify
         ``convert__document_`` strips separator newlines only). Works whether or not
         ``drain`` was called first (one-shot ``convert`` vs streaming)."""
-        s = self._collapse_join(self.root, prefix=self._pending_tail)
+        self._flush_text()  # finalise any trailing text node
+        s = self._tail + self._fold_children(self.root) + self._carry  # flush all held
         self.root.clear()
-        self._pending_tail = ""
+        self._carry = ""
+        self._tail = ""
         mode = self.options.strip_document
         if not self._started and mode in ("strip", "lstrip"):
             s = s.lstrip("\n")
@@ -306,6 +330,32 @@ class MarkdownEmitter:
             s = s.rstrip("\n")
         self._started = True
         return s
+
+    def _fold_children(self, children: list[str]) -> str:
+        """Resumable child-boundary newline collapse over the streamed root children
+        (markdownify ``process_tag``), carrying the unstable trailing-newline state in
+        ``self._carry`` so the result is identical no matter where drains split the
+        stream — the chunk-invariance guarantee (§9.1). Returns the now-stable output;
+        the new carry (the last child's trailing newlines, which a future child could
+        still collapse against) is withheld until ``close`` or the next child."""
+        out: list[str] = []
+        carry = self._carry
+        for child in children:
+            if not child:
+                continue
+            leading, content, trailing = _RE_EXTRACT_NEWLINES.match(child).groups()
+            if carry and leading:
+                # previous child's trailing newlines collapse with this leading (≤2)
+                out.append("\n" * min(2, max(len(carry), len(leading))))
+            else:
+                # carry did not collapse (e.g. a pure-newline child broke the run) —
+                # emit it verbatim, then this leading, exactly as the whole-doc fold does
+                out.append(carry)
+                out.append(leading)
+            out.append(content)
+            carry = trailing
+        self._carry = carry
+        return "".join(out)
 
 
 class _TagFilter:
