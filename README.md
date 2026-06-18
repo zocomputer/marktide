@@ -111,7 +111,13 @@ hand-authored (oracle-generated) under `tests/conformance/golden/`. Reproduce lo
 ```bash
 make verify-fidelity   # primary drop-in fidelity: raw/effective counts, parity, divergences
 make conformance       # the full 1107-case differential suite
+make verify-canonical  # semantic equivalence on examples/canonical.html/.md
 ```
+
+For a small human-readable smoke example, see [examples/canonical.html](examples/canonical.html)
+and the committed html2md output [examples/canonical.md](examples/canonical.md).
+`make verify-canonical` render-normalizes that example across html2md, markdownify,
+html-to-markdown, and pandoc when installed.
 
 Separately, the e2e suite and benchmarks run on **real-world HTML fixtures up to ~110 MiB**
 (Wikipedia / RFC / gov pages, pinned in `benchmarks/fixtures.lock.json`) to exercise the
@@ -230,6 +236,7 @@ canonical results are `benchmarks/results/phase3.json` and `benchmarks/results/r
 - **[docs/usage.md](docs/usage.md)** — full usage & migration guide
 - **[docs/design.md](docs/design.md)** — architecture, the GIL/streaming story, test strategy
 - **[docs/test-plan.md](docs/test-plan.md)** — the test harness
+- **[examples/README.md](examples/README.md)** — examples including [examples/canonical.html](examples/canonical.html) and the committed html2md output [examples/canonical.md](examples/canonical.md)
 
 Early but functional. The conversion handlers match `markdownify` across the bulk of its own
 test suite (a few edge cases — e.g. lossy tables, CDATA, invalid nested markup — are
