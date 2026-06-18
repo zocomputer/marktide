@@ -82,15 +82,67 @@ chunked p99 1.8 ms / 0 % missed / TTFO 1.4 ms.)
    - **emit in C/Cython** → reduces total GIL-held time (less contention overall,
      higher throughput).
 
+## Target-parser confirmation (design §4.1 — the chosen API)
+
+The above used `HTMLPullParser` (which builds a tree; I called `el.clear()` to bound
+memory). The design picks the **target parser** (`etree.HTMLParser(target=...)`):
+callback-based, no DOM, O(depth) memory. Two variants added to confirm the result
+carries to the real API, and to answer "does lxml release the GIL *between* target
+callbacks mid-`feed()`?" (50 MB, 64 KiB feed; numbers stable across runs):
+
+| variant            | total  | TTFO   | p99      | max    | missed >2 ms | total stall |
+|--------------------|--------|--------|----------|--------|--------------|-------------|
+| pull-parser chunked| 1.90 s | 1.6 ms | 2.5 ms   | 11 ms  | 1.4 %        | 1083 ms     |
+| **target_chunked** | 1.51 s | **0.1 ms** | **0.49 ms** | 18 ms | **0.1 %** | 313 ms |
+| **target_1feed**¹  | 1.46 s | 3.0 ms | **0.53 ms** | 20 ms | **0.1 %** | 388 ms |
+
+¹ `target_1feed` = the **whole 50 MB doc in ONE `feed()` call**, zero chunking.
+
+**Findings:**
+
+6. **The target parser is strictly better than the pull-parser on every axis** —
+   p99 0.49 ms vs 2.5 ms, TTFO 0.1 ms vs 1.6 ms, total stall 313 ms vs 1083 ms (3.5×
+   less GIL work, because it builds no DOM), and faster wall than monolithic. So the
+   pull-parser numbers in §4.2 are a **genuine conservative lower bound** — the chosen
+   API beats them ~5× on p99.
+
+7. **lxml releases the GIL between target callbacks mid-`feed()` — confirmed (YES).**
+   The whole 50 MB doc in a *single* `feed()` (no chunking at all) still keeps the loop
+   alive: p99 0.53 ms, 0.1 % missed beats. If the GIL were held continuously, the 5 ms
+   involuntary switch interval alone would put p99 in the ~5–13 ms range (as monolithic
+   shows). Sub-millisecond p99 is only possible if `feed()` *voluntarily* releases the
+   GIL many times — around the C tokenization between each Python callback. This matches
+   lxml's documented "releases the GIL during parsing" behavior, with the target
+   reacquiring it for each brief callback.
+
+   > **Consequence: feed-chunk size is NOT the responsiveness knob for the target
+   > parser.** Responsiveness is intrinsic (libxml2's fine-grained GIL release at
+   > element granularity, far finer than 64 KiB). Chunking the feed is for **TTFO
+   > cadence, memory/backpressure, and cancellation points** — not heartbeat jitter.
+   > The criterion-2 p99 ≤ 2 ms gate is met with ~4× margin even with NO chunking.
+
+8. **Caveat — the ~18–21 ms `max` spikes** (1 beat per ~1000) are an artifact of this
+   prototype accumulating all output in a list and `"".join`-ing 30 MB at `close()`
+   (one big allocation/GC). The real streaming emitter **flushes output incrementally**
+   instead of accumulating, which removes that end-of-parse spike. Worth a regression
+   check that sustained conversion holds `max` under the gate.
+
 ## Implications for phase-2 design (→ coder-2-leaf)
 
-- **The threading architecture is validated:** incremental `HTMLPullParser` feed +
-  emit, driven with `await`s between bounded chunks via `to_thread`, is async-safe.
-  Build on it. The monolithic "parse then walk" is ruled out — it freezes the loop.
-- **Two independent knobs, spec both:** (a) chunk size for the responsiveness SLO
-  (heartbeat p99 / missed-beats), (b) a C/Cython emitter as the throughput lever. A
-  pure-Python emitter already meets a 2 ms SLO at 64 KiB; a C emitter is an
-  optimization, not a requirement for async-friendliness.
+- **The threading architecture is validated:** incremental target-parser `feed` +
+  callback emit, driven via `to_thread`, is async-safe. The monolithic "parse whole
+  doc then walk the DOM" is ruled out — it freezes the loop.
+- **With the target parser, the responsiveness SLO is essentially FREE** (finding 7):
+  libxml2 releases the GIL between callbacks, so even an unchunked `feed()` holds p99
+  at ~0.5 ms. So feed-chunk size is **not** the responsiveness knob — tune it for
+  **TTFO cadence / memory / cancellation** instead. (This relaxes the responsiveness
+  constraint coder-2 hoped to relax: larger feed chunks are fine for jitter; the limit
+  is memory/backpressure, not heartbeat.)
+- **The remaining lever is throughput, not responsiveness:** a C/Cython emitter cuts
+  total GIL work ~4× (findings 5–6). Pure-Python callback emit already passes the 2 ms
+  gate with margin, so C emit is an optimization, not a correctness requirement.
+- **Flush output incrementally, don't accumulate** (finding 8) — accumulating the full
+  output string reintroduces a large end-of-parse GC/alloc spike.
 - **Recommend the async-yield acceptance gate be missed-beat % (and max), not just
   p99** — percentiles under-weight GIL-held windows. Suggested gate: **< ~2 % beats
   later than 2 ms, max < ~15 ms**, measured across the FULL convert.

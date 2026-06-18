@@ -108,6 +108,54 @@ class IncrementalEmitter:
         return "".join(self.parts)
 
 
+# ---- target-parser emitter (the design's §4.1 choice) -----------------------
+
+class MarkdownTarget:
+    """lxml target-parser callback emitter: start/data/end fire DURING feed(),
+    interleaved with the C parse — no DOM is built (O(depth) memory, just the tag
+    stack). The contiguous GIL-held span is a single callback, not a whole chunk's
+    drain (vs HTMLPullParser). close() returns the joined markdown."""
+
+    def __init__(self):
+        self.parts: list[str] = []
+        self.first_output_perf: float | None = None
+        self._href = ""
+
+    def _append(self, s: str) -> None:
+        if self.first_output_perf is None:
+            self.first_output_perf = time.perf_counter()
+        self.parts.append(s)
+
+    def start(self, tag, attrib):
+        if tag == "a":
+            self._href = attrib.get("href", "")
+            self._append("[")
+        else:
+            pre = _PREFIX.get(tag)
+            if pre:
+                self._append(pre)
+
+    def data(self, text):
+        if text:
+            self._append(text.translate(_ESCAPE))
+
+    def end(self, tag):
+        if tag == "a":
+            self._append(f"]({self._href})")
+        suf = _SUFFIX.get(tag)
+        if suf:
+            self._append(suf)
+
+    def close(self):
+        return "".join(self.parts)
+
+
+def _make_target_parser() -> tuple:
+    target = MarkdownTarget()
+    parser = etree.HTMLParser(target=target, huge_tree=True)
+    return parser, target
+
+
 # ---- monolithic baseline ----------------------------------------------------
 
 class _MonoState:
@@ -181,6 +229,47 @@ async def run_chunked(data: bytes, feed_size: int, c_emit: bool = False) -> dict
     return _summary(name, jitter, total, ttfo, len(md.encode()))
 
 
+async def run_target_chunked(data: bytes, feed_size: int) -> dict:
+    """Target parser (design §4.1), fed feed_size/chunk, await between chunks —
+    apples-to-apples vs the pull-parser 'chunked' variant."""
+    parser, target = _make_target_parser()
+    jitter: list[float] = []
+    done = asyncio.Event()
+    sampler = asyncio.create_task(_sample(done, jitter))
+    t0 = time.perf_counter()
+    for i in range(0, len(data), feed_size):
+        await asyncio.to_thread(parser.feed, data[i:i + feed_size])
+    md = await asyncio.to_thread(parser.close)
+    total = time.perf_counter() - t0
+    done.set()
+    await sampler
+    ttfo = (target.first_output_perf - t0) * 1000.0 if target.first_output_perf else None
+    return _summary("target_chunked", jitter, total, ttfo, len(md.encode()))
+
+
+async def run_target_single_feed(data: bytes) -> dict:
+    """Target parser, WHOLE doc in ONE feed() call on a worker thread (no chunking).
+    Discriminating test: if the heartbeat stays alive here, lxml releases the GIL
+    BETWEEN target callbacks mid-feed() (→ larger feed chunks justified). If it's
+    pinned ~13ms like the monolithic walk, it does NOT (→ chunking is mandatory)."""
+    parser, target = _make_target_parser()
+
+    def run_whole():
+        parser.feed(data)
+        return parser.close()
+
+    jitter: list[float] = []
+    done = asyncio.Event()
+    sampler = asyncio.create_task(_sample(done, jitter))
+    t0 = time.perf_counter()
+    md = await asyncio.to_thread(run_whole)
+    total = time.perf_counter() - t0
+    done.set()
+    await sampler
+    ttfo = (target.first_output_perf - t0) * 1000.0 if target.first_output_perf else None
+    return _summary("target_1feed", jitter, total, ttfo, len(md.encode()))
+
+
 async def run_monolithic(data: bytes) -> dict:
     state = _MonoState()
     jitter: list[float] = []
@@ -225,6 +314,8 @@ async def main() -> None:
         await run_monolithic(data),
         await run_chunked(data, feed),
         await run_chunked(data, feed, c_emit=True),
+        await run_target_chunked(data, feed),
+        await run_target_single_feed(data),
     ]
     print("Heartbeat jitter + throughput + time-to-first-output:\n")
     for r in results:
@@ -255,6 +346,23 @@ async def main() -> None:
           f"({mono['stall_ms']/cem['stall_ms']:.1f}x less than Python emit) and "
           f"{cem['total_s']/mono['total_s']:.2f}x wall — 'push emit into C' is the lever "
           f"that cuts TOTAL GIL work, chunking is the lever that bounds per-stall latency.")
+
+    tchunk, t1feed = results[3], results[4]
+    print("\nTarget parser (design §4.1) confirmation:")
+    print(f"  target_chunked (feed/chunk + await between): p99 {tchunk['p99']:.2f}ms, "
+          f"missed {tchunk['miss_pct']:.1f}%, ttfo {tchunk['ttfo_ms']:.1f}ms — "
+          f"{'<=' if tchunk['p99'] <= chunk['p99'] else '>'} pull-parser p99 {chunk['p99']:.2f}ms.")
+    feeds_alive = t1feed["miss_pct"] < 5.0 and t1feed["p99"] < 0.5 * mono["p99"]
+    print(f"  target_1feed (WHOLE doc in ONE feed, no chunking): p99 {t1feed['p99']:.2f}ms, "
+          f"missed {t1feed['miss_pct']:.1f}%, max {t1feed['max']:.0f}ms.")
+    print(f"  => mid-feed GIL release between callbacks: "
+          f"{'YES' if feeds_alive else 'NO'} — "
+          + ("the loop stays alive even with the whole doc in one feed(), so lxml "
+             "releases the GIL between target callbacks; the feed-chunk default could "
+             "be relaxed (responsiveness comes from libxml2, not just our chunking)."
+             if feeds_alive else
+             "one big feed() pins the loop like the monolithic walk, so chunking the "
+             "FEED is mandatory for responsiveness — keep the 64KiB feed default."))
 
 
 if __name__ == "__main__":
