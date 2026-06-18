@@ -2,15 +2,15 @@
 
 Full per-fixture JSON: `tests/conformance/reports/latest.json`
 
-Case count: `1051`
+Case count: `1115`
 
 ## Totals by adapter
 
 | Adapter | Passed | Failed | Errors |
 | --- | ---: | ---: | ---: |
-| `htmd_py` | 516 | 535 | 0 |
-| `html2text_rs` | 372 | 679 | 0 |
-| `html_to_markdown` | 565 | 486 | 0 |
+| `htmd_py` | 547 | 568 | 0 |
+| `html2text_rs` | 402 | 713 | 0 |
+| `html_to_markdown` | 601 | 514 | 0 |
 
 ## Totals by layer
 
@@ -21,6 +21,14 @@ Case count: `1051`
 | `htmd_py` | 307 | 347 | 0 |
 | `html2text_rs` | 213 | 441 | 0 |
 | `html_to_markdown` | 306 | 348 | 0 |
+
+### `golden`
+
+| Adapter | Passed | Failed | Errors |
+| --- | ---: | ---: | ---: |
+| `htmd_py` | 31 | 33 | 0 |
+| `html2text_rs` | 30 | 34 | 0 |
+| `html_to_markdown` | 36 | 28 | 0 |
 
 ### `markdownify_tests`
 

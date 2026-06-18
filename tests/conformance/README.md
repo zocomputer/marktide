@@ -32,6 +32,17 @@ drift between duplicated script constants and the manifest. The future phase-2
 harness should also consume `sources.toml` as the authoritative manifest and
 treat the generated fixture files as disposable cache data.
 
+## Golden fixtures
+
+Hand-authored golden files live in `tests/conformance/golden/*.json`. The
+differential harness auto-discovers every JSON file whose `cases[]` entries have
+`input_html` and `expected_markdown`, so agents can add sibling golden corpora
+without editing a central registry. Normalizer-negative fixtures intentionally use
+`left_markdown` / `right_markdown` and are not loaded as oracle cases.
+
+Canonical oracle-case fields are: `id`, `behavior`, `markdownify_ref`,
+`description`, `input_html`, and `expected_markdown`.
+
 ## Differential harness
 
 Run the correctness/fidelity differential harness from repo root after generating

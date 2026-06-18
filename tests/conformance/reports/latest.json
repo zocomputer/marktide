@@ -1,6 +1,2566 @@
 {
   "cases": [
     {
+      "id": "golden:block_inline_handler_cases:heading_h1_setext",
+      "input_bytes": 18,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "headings",
+        "description": "h1 renders as a setext underline of '=' matching the text length.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_hn"
+      },
+      "normalized_oracle_sha256": "48aedff2c1f1fc51152e3f95339071e6327628276f4c6de39150056e01cc4836",
+      "oracle_sha256": "afdb95d42f3676292fb8969e11197bd9ec2cb9b90cf04f2081c516f7f4ec9d00",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-Title One\n-=========\n+# Title One\n",
+          "error": null,
+          "normalized_output_sha256": "7179f3d3a63dc21e1426a9347619b1461dd1578826580f27242e870ae7e9f13c",
+          "output_sha256": "7179f3d3a63dc21e1426a9347619b1461dd1578826580f27242e870ae7e9f13c",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-Title One\n-=========\n+# Title One\n",
+          "error": null,
+          "normalized_output_sha256": "7179f3d3a63dc21e1426a9347619b1461dd1578826580f27242e870ae7e9f13c",
+          "output_sha256": "e05c5f335baa80b60e46948982b8f95ae8c503d293b7a86525d052fa3456883f",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-Title One\n-=========\n+# Title One\n",
+          "error": null,
+          "normalized_output_sha256": "7179f3d3a63dc21e1426a9347619b1461dd1578826580f27242e870ae7e9f13c",
+          "output_sha256": "7179f3d3a63dc21e1426a9347619b1461dd1578826580f27242e870ae7e9f13c",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:heading_h2_setext",
+      "input_bytes": 18,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "headings",
+        "description": "h2 renders as a setext underline of '-' matching the text length.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_hn"
+      },
+      "normalized_oracle_sha256": "0d1dca32dbbb0ca9a0f606d43f372a5dac280edc53b41e09a0c480ca8335119b",
+      "oracle_sha256": "58fb87137ebd38fa1e016b02f9e5f38a780beb9ee25a58933fcd0e56e82082dc",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-Title Two\n----------\n+## Title Two\n",
+          "error": null,
+          "normalized_output_sha256": "f8e43713758c9a47edc81d13f8b1be9b90b954db117473952e4ff8687d186d90",
+          "output_sha256": "f8e43713758c9a47edc81d13f8b1be9b90b954db117473952e4ff8687d186d90",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-Title Two\n----------\n+## Title Two\n",
+          "error": null,
+          "normalized_output_sha256": "f8e43713758c9a47edc81d13f8b1be9b90b954db117473952e4ff8687d186d90",
+          "output_sha256": "a3356e99ac6ffbad457a70d1a77355eb893868e707da5d683efabd9804fc15a8",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-Title Two\n----------\n+## Title Two\n",
+          "error": null,
+          "normalized_output_sha256": "f8e43713758c9a47edc81d13f8b1be9b90b954db117473952e4ff8687d186d90",
+          "output_sha256": "f8e43713758c9a47edc81d13f8b1be9b90b954db117473952e4ff8687d186d90",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:heading_h3_atx",
+      "input_bytes": 20,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "headings",
+        "description": "h3 uses ATX '###'.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_hn"
+      },
+      "normalized_oracle_sha256": "78a2e93207b63d53a5387a7c38074e042d6286acbc685414fd02f03f802dd252",
+      "oracle_sha256": "ecf02c95226e3d239bd606e62743325a0ac39cbcccee3a54476d6d96043af45b",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "78a2e93207b63d53a5387a7c38074e042d6286acbc685414fd02f03f802dd252",
+          "output_sha256": "78a2e93207b63d53a5387a7c38074e042d6286acbc685414fd02f03f802dd252",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "78a2e93207b63d53a5387a7c38074e042d6286acbc685414fd02f03f802dd252",
+          "output_sha256": "ecf02c95226e3d239bd606e62743325a0ac39cbcccee3a54476d6d96043af45b",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "78a2e93207b63d53a5387a7c38074e042d6286acbc685414fd02f03f802dd252",
+          "output_sha256": "78a2e93207b63d53a5387a7c38074e042d6286acbc685414fd02f03f802dd252",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:heading_h4_atx",
+      "input_bytes": 19,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "headings",
+        "description": "h4 uses ATX '####'.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_hn"
+      },
+      "normalized_oracle_sha256": "6662a443d36dcb80bb6c38f3c1fb7aca12998a6af2add5302583f4bdba8f5917",
+      "oracle_sha256": "ac33f87a810531392b080c7a8d3d7f7e2ccd5ad57d8ea9ca033872a9f48290eb",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "6662a443d36dcb80bb6c38f3c1fb7aca12998a6af2add5302583f4bdba8f5917",
+          "output_sha256": "6662a443d36dcb80bb6c38f3c1fb7aca12998a6af2add5302583f4bdba8f5917",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "6662a443d36dcb80bb6c38f3c1fb7aca12998a6af2add5302583f4bdba8f5917",
+          "output_sha256": "ac33f87a810531392b080c7a8d3d7f7e2ccd5ad57d8ea9ca033872a9f48290eb",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "6662a443d36dcb80bb6c38f3c1fb7aca12998a6af2add5302583f4bdba8f5917",
+          "output_sha256": "6662a443d36dcb80bb6c38f3c1fb7aca12998a6af2add5302583f4bdba8f5917",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:heading_h5_atx",
+      "input_bytes": 19,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "headings",
+        "description": "h5 uses ATX '#####'.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_hn"
+      },
+      "normalized_oracle_sha256": "3290507198ee4ec67c0d4b4ae2c377aed8d0ca06238de610bb26cdbaab734038",
+      "oracle_sha256": "9d4dcc22799c88969e0af199d62aa635a7891920027c574681c09fa8d1996679",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "3290507198ee4ec67c0d4b4ae2c377aed8d0ca06238de610bb26cdbaab734038",
+          "output_sha256": "3290507198ee4ec67c0d4b4ae2c377aed8d0ca06238de610bb26cdbaab734038",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "3290507198ee4ec67c0d4b4ae2c377aed8d0ca06238de610bb26cdbaab734038",
+          "output_sha256": "9d4dcc22799c88969e0af199d62aa635a7891920027c574681c09fa8d1996679",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "3290507198ee4ec67c0d4b4ae2c377aed8d0ca06238de610bb26cdbaab734038",
+          "output_sha256": "3290507198ee4ec67c0d4b4ae2c377aed8d0ca06238de610bb26cdbaab734038",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:heading_h6_atx",
+      "input_bytes": 18,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "headings",
+        "description": "h6 uses ATX '######'.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_hn"
+      },
+      "normalized_oracle_sha256": "72eabf7fa9e54581ffce4d84dd73ffaf8f607eaa3f57601b880b63b4c7a2348c",
+      "oracle_sha256": "33614edde930271ea957203007bd544387d3bb8af62d269801a526eac2433ff0",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "72eabf7fa9e54581ffce4d84dd73ffaf8f607eaa3f57601b880b63b4c7a2348c",
+          "output_sha256": "72eabf7fa9e54581ffce4d84dd73ffaf8f607eaa3f57601b880b63b4c7a2348c",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "72eabf7fa9e54581ffce4d84dd73ffaf8f607eaa3f57601b880b63b4c7a2348c",
+          "output_sha256": "33614edde930271ea957203007bd544387d3bb8af62d269801a526eac2433ff0",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "72eabf7fa9e54581ffce4d84dd73ffaf8f607eaa3f57601b880b63b4c7a2348c",
+          "output_sha256": "72eabf7fa9e54581ffce4d84dd73ffaf8f607eaa3f57601b880b63b4c7a2348c",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:heading_h1_inline_underline_len",
+      "input_bytes": 42,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "headings",
+        "description": "Setext underline length counts the RENDERED text (incl. inline markup chars).",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_hn"
+      },
+      "normalized_oracle_sha256": "9299b9fc1c611a939f6658a56eb46271be96b8750de8a20bd6344c9db1ac1e14",
+      "oracle_sha256": "0fd6302d11d1712ad43f09c8a47b8710c59a376be5fb1089a2e24752ba902607",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-Big **bold** and *italic*\n-=========================\n+# Big **bold** and *italic*\n",
+          "error": null,
+          "normalized_output_sha256": "83a6af1eb0fa9d3da26a4f9a30695eada8b7e6521c8c6c35a1772e6eaa848a3a",
+          "output_sha256": "83a6af1eb0fa9d3da26a4f9a30695eada8b7e6521c8c6c35a1772e6eaa848a3a",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-Big **bold** and *italic*\n-=========================\n+# Big **bold** and *italic*\n",
+          "error": null,
+          "normalized_output_sha256": "83a6af1eb0fa9d3da26a4f9a30695eada8b7e6521c8c6c35a1772e6eaa848a3a",
+          "output_sha256": "bc2852cb785752da0aa758a16b7b2bb78313a4417b11702fc581b62682092df7",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-Big **bold** and *italic*\n-=========================\n+# Big bold and italic\n",
+          "error": null,
+          "normalized_output_sha256": "36cd451c2f17394a70055ba140fa35e33d1c2d918aacf8654fec4cb7c86395b7",
+          "output_sha256": "36cd451c2f17394a70055ba140fa35e33d1c2d918aacf8654fec4cb7c86395b7",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:heading_h2_unicode_codepoints",
+      "input_bytes": 25,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "headings",
+        "description": "Setext underline counts Unicode code points, not bytes.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_hn"
+      },
+      "normalized_oracle_sha256": "a1f195c7cdbff5de409eb8f370248b933cf4e079dc9ebe86591737bf27580400",
+      "oracle_sha256": "f2019ce5697e4ac30290d53b18aed85f5629f4e47fbf3a03d384dc9a6586cccd",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-Caf\u00e9 \u2014 na\u00efve\n-------------\n+## Caf\u00e9 \u2014 na\u00efve\n",
+          "error": null,
+          "normalized_output_sha256": "db9694db2d23d4d1be10b2c22c737708f4f4c5d86d8088b4645fdadd8a490e9f",
+          "output_sha256": "db9694db2d23d4d1be10b2c22c737708f4f4c5d86d8088b4645fdadd8a490e9f",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-Caf\u00e9 \u2014 na\u00efve\n-------------\n+## Caf\u00e9 \u2014 na\u00efve\n",
+          "error": null,
+          "normalized_output_sha256": "db9694db2d23d4d1be10b2c22c737708f4f4c5d86d8088b4645fdadd8a490e9f",
+          "output_sha256": "037a91b6c70b3488ad211e097cf6c4da4007bef59ee2671d6dd1d97474944bcc",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-Caf\u00e9 \u2014 na\u00efve\n-------------\n+## Caf\u00e9 \u2014 na\u00efve\n",
+          "error": null,
+          "normalized_output_sha256": "db9694db2d23d4d1be10b2c22c737708f4f4c5d86d8088b4645fdadd8a490e9f",
+          "output_sha256": "db9694db2d23d4d1be10b2c22c737708f4f4c5d86d8088b4645fdadd8a490e9f",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:heading_h1_leading_trailing_ws",
+      "input_bytes": 21,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "headings",
+        "description": "Leading/trailing whitespace in a heading is trimmed.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_hn"
+      },
+      "normalized_oracle_sha256": "1bc816ad43766e289cd2f87a01de71fcb6f967aecdcc953d5c3000ff8df3ffcb",
+      "oracle_sha256": "829426279e3c4fc17f482f90ff149681e45f74e46c05b1593ba98c125b5a1a5e",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-spaced\n-======\n+# spaced\n",
+          "error": null,
+          "normalized_output_sha256": "a3dd8e42e263588442b1ac457bdb0c0ae695f3493fc4f2d04f9edd9fbccc220f",
+          "output_sha256": "a3dd8e42e263588442b1ac457bdb0c0ae695f3493fc4f2d04f9edd9fbccc220f",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-spaced\n-======\n+# spaced\n",
+          "error": null,
+          "normalized_output_sha256": "a3dd8e42e263588442b1ac457bdb0c0ae695f3493fc4f2d04f9edd9fbccc220f",
+          "output_sha256": "00f02440942c1f377b97b8997656e05733a84afd99bdae678626db7c0b0173ff",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-spaced\n-======\n+# spaced\n",
+          "error": null,
+          "normalized_output_sha256": "a3dd8e42e263588442b1ac457bdb0c0ae695f3493fc4f2d04f9edd9fbccc220f",
+          "output_sha256": "a3dd8e42e263588442b1ac457bdb0c0ae695f3493fc4f2d04f9edd9fbccc220f",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:heading_h3_with_code",
+      "input_bytes": 40,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "headings",
+        "description": "ATX heading containing an inline code span.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_hn"
+      },
+      "normalized_oracle_sha256": "0df83205fa1cdf6d1fc197547a2fb316bfce23c958600d0954ae8a057f25c61c",
+      "oracle_sha256": "7a46fa76c1aa93c80c45c6bcfece6c12d443d3d7504d52811a3a3e7590e78106",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "0df83205fa1cdf6d1fc197547a2fb316bfce23c958600d0954ae8a057f25c61c",
+          "output_sha256": "0df83205fa1cdf6d1fc197547a2fb316bfce23c958600d0954ae8a057f25c61c",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "0df83205fa1cdf6d1fc197547a2fb316bfce23c958600d0954ae8a057f25c61c",
+          "output_sha256": "7a46fa76c1aa93c80c45c6bcfece6c12d443d3d7504d52811a3a3e7590e78106",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "0df83205fa1cdf6d1fc197547a2fb316bfce23c958600d0954ae8a057f25c61c",
+          "output_sha256": "0df83205fa1cdf6d1fc197547a2fb316bfce23c958600d0954ae8a057f25c61c",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:paragraph_simple",
+      "input_bytes": 23,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "paragraphs",
+        "description": "A single paragraph.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_p"
+      },
+      "normalized_oracle_sha256": "c556ad9aedce520e695983012148cbbcc1a10575df9d69d1635f0480d03d2d49",
+      "oracle_sha256": "6bf2aea95b1b3929cfc9904d2d14c0357a4eedca9902689393e30ac71d6710e9",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "c556ad9aedce520e695983012148cbbcc1a10575df9d69d1635f0480d03d2d49",
+          "output_sha256": "c556ad9aedce520e695983012148cbbcc1a10575df9d69d1635f0480d03d2d49",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "c556ad9aedce520e695983012148cbbcc1a10575df9d69d1635f0480d03d2d49",
+          "output_sha256": "6bf2aea95b1b3929cfc9904d2d14c0357a4eedca9902689393e30ac71d6710e9",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "c556ad9aedce520e695983012148cbbcc1a10575df9d69d1635f0480d03d2d49",
+          "output_sha256": "c556ad9aedce520e695983012148cbbcc1a10575df9d69d1635f0480d03d2d49",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:paragraph_two_blank_line",
+      "input_bytes": 27,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "paragraphs",
+        "description": "Two paragraphs separated by one blank line.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_p"
+      },
+      "normalized_oracle_sha256": "70cadc75512bc1b5f2748dc1563bfd189314d6e571cd8f9a760977b42477c901",
+      "oracle_sha256": "197e2cd7cd5c33b48f327bc6a3bd3712c0bd5bbebc11a2cf439009e40cc201c7",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "70cadc75512bc1b5f2748dc1563bfd189314d6e571cd8f9a760977b42477c901",
+          "output_sha256": "70cadc75512bc1b5f2748dc1563bfd189314d6e571cd8f9a760977b42477c901",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "70cadc75512bc1b5f2748dc1563bfd189314d6e571cd8f9a760977b42477c901",
+          "output_sha256": "197e2cd7cd5c33b48f327bc6a3bd3712c0bd5bbebc11a2cf439009e40cc201c7",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "70cadc75512bc1b5f2748dc1563bfd189314d6e571cd8f9a760977b42477c901",
+          "output_sha256": "70cadc75512bc1b5f2748dc1563bfd189314d6e571cd8f9a760977b42477c901",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:paragraph_inline_formatting",
+      "input_bytes": 52,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "paragraphs",
+        "description": "Paragraph with bold and emphasis.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_p"
+      },
+      "normalized_oracle_sha256": "81ab2dd93a6059331c158f3ccc5132529ab51d1d47026b2a9b41a5f099d31520",
+      "oracle_sha256": "a681b2420a363c76a977f65a6132aaa54f75eba3322ef61bfbde56ad0f1e3f17",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "81ab2dd93a6059331c158f3ccc5132529ab51d1d47026b2a9b41a5f099d31520",
+          "output_sha256": "81ab2dd93a6059331c158f3ccc5132529ab51d1d47026b2a9b41a5f099d31520",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "81ab2dd93a6059331c158f3ccc5132529ab51d1d47026b2a9b41a5f099d31520",
+          "output_sha256": "a681b2420a363c76a977f65a6132aaa54f75eba3322ef61bfbde56ad0f1e3f17",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "81ab2dd93a6059331c158f3ccc5132529ab51d1d47026b2a9b41a5f099d31520",
+          "output_sha256": "81ab2dd93a6059331c158f3ccc5132529ab51d1d47026b2a9b41a5f099d31520",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:paragraph_internal_whitespace_run",
+      "input_bytes": 36,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "paragraphs",
+        "description": "Internal whitespace runs collapse to a single space.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "process_text"
+      },
+      "normalized_oracle_sha256": "4e0c52a017c167b1ceb61e630fbb8e396a3a5034c45180f6e723b4d16f3660dd",
+      "oracle_sha256": "46f8252ee501c10c32e1f3e642eeb1cea52579e1a0ca94f26b0b8ace243b832f",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "4e0c52a017c167b1ceb61e630fbb8e396a3a5034c45180f6e723b4d16f3660dd",
+          "output_sha256": "4e0c52a017c167b1ceb61e630fbb8e396a3a5034c45180f6e723b4d16f3660dd",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "4e0c52a017c167b1ceb61e630fbb8e396a3a5034c45180f6e723b4d16f3660dd",
+          "output_sha256": "46f8252ee501c10c32e1f3e642eeb1cea52579e1a0ca94f26b0b8ace243b832f",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "4e0c52a017c167b1ceb61e630fbb8e396a3a5034c45180f6e723b4d16f3660dd",
+          "output_sha256": "4e0c52a017c167b1ceb61e630fbb8e396a3a5034c45180f6e723b4d16f3660dd",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:paragraph_leading_trailing_ws",
+      "input_bytes": 20,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "paragraphs",
+        "description": "Leading/trailing whitespace is trimmed at the paragraph boundary.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "process_text"
+      },
+      "normalized_oracle_sha256": "5d43af499cc27cf06228df7f9c22b1183c2f75e2c5cd60d8e36f4108e7a6dc07",
+      "oracle_sha256": "151b5556e179b83385c46f805f4c1644c213b387c471004a662cfdb596ba82b5",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "5d43af499cc27cf06228df7f9c22b1183c2f75e2c5cd60d8e36f4108e7a6dc07",
+          "output_sha256": "d1c1db3b73256e66593ce925f4d9a3a52ac13e15a5855456617ec62c69541cf9",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "5d43af499cc27cf06228df7f9c22b1183c2f75e2c5cd60d8e36f4108e7a6dc07",
+          "output_sha256": "151b5556e179b83385c46f805f4c1644c213b387c471004a662cfdb596ba82b5",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "5d43af499cc27cf06228df7f9c22b1183c2f75e2c5cd60d8e36f4108e7a6dc07",
+          "output_sha256": "5d43af499cc27cf06228df7f9c22b1183c2f75e2c5cd60d8e36f4108e7a6dc07",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:paragraph_source_newlines",
+      "input_bytes": 43,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "paragraphs",
+        "description": "Source newlines + indentation collapse to single spaces.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "process_text"
+      },
+      "normalized_oracle_sha256": "bce2aeea9e6fc31f09b164dbaf832b013ee75fbd323262cbee9d42b8b51077b1",
+      "oracle_sha256": "26a5cd654e540e91433a2f237e2709743fc4753e764deb74ed37299c2f338ece",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n line one\n-line two\n-line three\n+ line two\n+ line three\n",
+          "error": null,
+          "normalized_output_sha256": "23d4208f2fe97e64a39d6ad83f3c814a592c10fb15430d53d9c5decd3778479b",
+          "output_sha256": "23d4208f2fe97e64a39d6ad83f3c814a592c10fb15430d53d9c5decd3778479b",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1 @@\n-line one\n-line two\n-line three\n+line one line two line three\n",
+          "error": null,
+          "normalized_output_sha256": "3d73f0b63c10a9918cf1b6cdd5d05de4ef3a5ca995b350943a4971fe4fbc5417",
+          "output_sha256": "8a115870185ad8163e11668ffdbb8e0348852842f654d84ed578e7ca561d6134",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1 @@\n-line one\n-line two\n-line three\n+line one line two line three\n",
+          "error": null,
+          "normalized_output_sha256": "3d73f0b63c10a9918cf1b6cdd5d05de4ef3a5ca995b350943a4971fe4fbc5417",
+          "output_sha256": "3d73f0b63c10a9918cf1b6cdd5d05de4ef3a5ca995b350943a4971fe4fbc5417",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:blockquote_simple",
+      "input_bytes": 37,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "blockquote",
+        "description": "A simple blockquote.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_blockquote"
+      },
+      "normalized_oracle_sha256": "c591d011af940604d5f07cedf1b0e78eb5956689c91e36118b4a6d0c8ec6b353",
+      "oracle_sha256": "22a20a9b207122b253061465bbecba081fbc36f0c2cdbda3f36cd6d9bdcec1e1",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "c591d011af940604d5f07cedf1b0e78eb5956689c91e36118b4a6d0c8ec6b353",
+          "output_sha256": "c591d011af940604d5f07cedf1b0e78eb5956689c91e36118b4a6d0c8ec6b353",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "c591d011af940604d5f07cedf1b0e78eb5956689c91e36118b4a6d0c8ec6b353",
+          "output_sha256": "22a20a9b207122b253061465bbecba081fbc36f0c2cdbda3f36cd6d9bdcec1e1",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "c591d011af940604d5f07cedf1b0e78eb5956689c91e36118b4a6d0c8ec6b353",
+          "output_sha256": "c591d011af940604d5f07cedf1b0e78eb5956689c91e36118b4a6d0c8ec6b353",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:blockquote_two_paragraphs",
+      "input_bytes": 57,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "blockquote",
+        "description": "Blockquote with two paragraphs.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_blockquote"
+      },
+      "normalized_oracle_sha256": "79b046ec57b038a4f665f9e189498b94c8481e910dbe8beee89f7e5da28cecf2",
+      "oracle_sha256": "36cc2836ff5a14018d963259e61377acfa79782bf50842a112db792cca157535",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "79b046ec57b038a4f665f9e189498b94c8481e910dbe8beee89f7e5da28cecf2",
+          "output_sha256": "79b046ec57b038a4f665f9e189498b94c8481e910dbe8beee89f7e5da28cecf2",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "79b046ec57b038a4f665f9e189498b94c8481e910dbe8beee89f7e5da28cecf2",
+          "output_sha256": "1dad82d448f67243e3b1aecd6d110a40d03a13fa0a9f1adca521bc83cd6724b4",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "79b046ec57b038a4f665f9e189498b94c8481e910dbe8beee89f7e5da28cecf2",
+          "output_sha256": "4b8233d8d792926677f5e6b09f2a6e4dbe9e16cb0c4dc987890f9e83bf48c7a4",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:blockquote_nested",
+      "input_bytes": 61,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "blockquote",
+        "description": "Nested blockquote.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_blockquote"
+      },
+      "normalized_oracle_sha256": "dd3afe252e4bfb3856a9287e4e6b1436ab23fd4aed20d68157b32af8cf13aa22",
+      "oracle_sha256": "1a7a0dfe727b3ab30f4407b18e142f637a11df2d65eb25f0594e20dca5df3ede",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1,4 @@\n > Outer\n+>\n+>\n > > Inner\n",
+          "error": null,
+          "normalized_output_sha256": "6cf0ce298d5b19d89783450e07a8df9bcb43a715a232ef5da2fa18e8663d4f1c",
+          "output_sha256": "6cf0ce298d5b19d89783450e07a8df9bcb43a715a232ef5da2fa18e8663d4f1c",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1,3 @@\n > Outer\n+>\n > > Inner\n",
+          "error": null,
+          "normalized_output_sha256": "74f197f60700b24cfc2a4aaca48db9d9e47ca2a74ed59b9bafce7f8e2b9e419d",
+          "output_sha256": "d81232712e5b25d1eab2a0da38b7b8f8f82664fbf471c42c51968244da4149b5",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1,3 @@\n > Outer\n+>\n > > Inner\n",
+          "error": null,
+          "normalized_output_sha256": "74f197f60700b24cfc2a4aaca48db9d9e47ca2a74ed59b9bafce7f8e2b9e419d",
+          "output_sha256": "a93110376f96014ad8bc4ebcd6ef8fc96d2bef2dc008e59e0f4f3b794de65e41",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:blockquote_with_list",
+      "input_bytes": 58,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "blockquote",
+        "description": "Blockquote containing a list (each line gets the '> ' prefix).",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_blockquote"
+      },
+      "normalized_oracle_sha256": "564b67d8be66f7a0e3f6b47c34bc32478ac291fe1cb6d78425dcfc9f79088acb",
+      "oracle_sha256": "18178b9ad77923788bbb763d76a57e783e1cfd297b3a2f1385b46885c91c31e3",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1,2 @@\n-> * one\n-> * two\n+> - one\n+> - two\n",
+          "error": null,
+          "normalized_output_sha256": "ffd91b47bbfa3420114a20ef941b8b049e989060734fca8d149cead1142da50b",
+          "output_sha256": "ffd91b47bbfa3420114a20ef941b8b049e989060734fca8d149cead1142da50b",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1,2 @@\n-> * one\n-> * two\n+> *   one\n+> *   two\n",
+          "error": null,
+          "normalized_output_sha256": "1502d37f24bdedcdef8692924910a7179094c966ed99a53cfee71002d7ebbc13",
+          "output_sha256": "82b486a749e7ca500cfea3162fb7fc558fb7d1dd88fbd1e55a80bc5f9492d6b8",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "564b67d8be66f7a0e3f6b47c34bc32478ac291fe1cb6d78425dcfc9f79088acb",
+          "output_sha256": "564b67d8be66f7a0e3f6b47c34bc32478ac291fe1cb6d78425dcfc9f79088acb",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:blockquote_with_inline",
+      "input_bytes": 48,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "blockquote",
+        "description": "Blockquote with inline formatting.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_blockquote"
+      },
+      "normalized_oracle_sha256": "354e4ff2e875dcc9baa20b2ef2824c81856f434c03cda6e4d5a59c989c2dc1bf",
+      "oracle_sha256": "f989dacdd2f3bbe04cb087f748d585950c67edd09ad2c94962bc9d7d3403247c",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "354e4ff2e875dcc9baa20b2ef2824c81856f434c03cda6e4d5a59c989c2dc1bf",
+          "output_sha256": "354e4ff2e875dcc9baa20b2ef2824c81856f434c03cda6e4d5a59c989c2dc1bf",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "354e4ff2e875dcc9baa20b2ef2824c81856f434c03cda6e4d5a59c989c2dc1bf",
+          "output_sha256": "f989dacdd2f3bbe04cb087f748d585950c67edd09ad2c94962bc9d7d3403247c",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-> Quote with **bold**.\n+> Quote with bold.\n",
+          "error": null,
+          "normalized_output_sha256": "9077e6682f8262c90b0fb0bef643b6375c8275cf9da56c92a3ebab3d4ed76771",
+          "output_sha256": "9077e6682f8262c90b0fb0bef643b6375c8275cf9da56c92a3ebab3d4ed76771",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:hr_between_paragraphs",
+      "input_bytes": 30,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "hr",
+        "description": "hr between two paragraphs.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_hr"
+      },
+      "normalized_oracle_sha256": "743467305b4a2e51886668c17427b282a40dc0a5c13d496b24ebb3bfc6fcbd1e",
+      "oracle_sha256": "01bb586bfdb9050aa85951fafc064b4bf3b3b4ca00c50148773a124bad1aa88c",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "743467305b4a2e51886668c17427b282a40dc0a5c13d496b24ebb3bfc6fcbd1e",
+          "output_sha256": "cfdcbf2bb1936537d7a5208f193b2973696c5b5d50e5f1b9098289afb42a0c6d",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,5 +1,5 @@\n Above.\n \n----\n+* * *\n \n Below.\n",
+          "error": null,
+          "normalized_output_sha256": "75f3e25211a2127c139d6e25ea43327de0df3b2dbb6c074dc433654a3a0ba64f",
+          "output_sha256": "94bf54a7fcbb6bc2625563e6ae413b84743784cb5b1987d0d7d30dd1cc79365c",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,5 +1,3 @@\n Above.\n \n----\n-\n Below.\n",
+          "error": null,
+          "normalized_output_sha256": "6ce2aae1c4c1d12887e822d0911e650378851b1a2b3dccbe6a1fc50a4f812be0",
+          "output_sha256": "6ce2aae1c4c1d12887e822d0911e650378851b1a2b3dccbe6a1fc50a4f812be0",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:hr_lone",
+      "input_bytes": 4,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "hr",
+        "description": "A lone hr.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_hr"
+      },
+      "normalized_oracle_sha256": "f52d711103d50a437830c6fbcd04fb4bab49a0f82f6d26d1c791c6e8488dd090",
+      "oracle_sha256": "cb3f91d54eee30e53e35b2b99905f70f169ed549fd78909d3dac2defc9ed8d3b",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "f52d711103d50a437830c6fbcd04fb4bab49a0f82f6d26d1c791c6e8488dd090",
+          "output_sha256": "f52d711103d50a437830c6fbcd04fb4bab49a0f82f6d26d1c791c6e8488dd090",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n----\n+* * *\n",
+          "error": null,
+          "normalized_output_sha256": "f0996e6f1424e6442ac1ad4d244653ff7a75a49b8dc9690bff78589846525c8b",
+          "output_sha256": "109510644bb4c21f8eb3bdf0be4db1175a5311a1f6ce66b3f05a8bacae47a8b4",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +0,0 @@\n----\n",
+          "error": null,
+          "normalized_output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:list_ul_flat",
+      "input_bytes": 50,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "lists",
+        "description": "Flat unordered list.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_li"
+      },
+      "normalized_oracle_sha256": "ed4d1a6c68356c765ac706a6fa41cfd37d1c49dd195b325c1b2146eda4446280",
+      "oracle_sha256": "ecb89eed1d07b93c7ac3455fba068f0ed40e8144251a7cd574bed62e825dc9aa",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n-* alpha\n-* beta\n-* gamma\n+- alpha\n+- beta\n+- gamma\n",
+          "error": null,
+          "normalized_output_sha256": "251c6ab004dae0715b2f5ac8f65fb1d488bce8f372c62b4521b284ebf4a979c8",
+          "output_sha256": "251c6ab004dae0715b2f5ac8f65fb1d488bce8f372c62b4521b284ebf4a979c8",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n-* alpha\n-* beta\n-* gamma\n+*   alpha\n+*   beta\n+*   gamma\n",
+          "error": null,
+          "normalized_output_sha256": "06dc632cf917edf267b344643f83593c63bce6e0fc0b912fc67d7568ecee1f42",
+          "output_sha256": "830342858a243582bfce4d21cfb5fc6636dfcfd56a2a5305ece68f4270b8d747",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "ed4d1a6c68356c765ac706a6fa41cfd37d1c49dd195b325c1b2146eda4446280",
+          "output_sha256": "ed4d1a6c68356c765ac706a6fa41cfd37d1c49dd195b325c1b2146eda4446280",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:list_ol_flat",
+      "input_bytes": 47,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "lists",
+        "description": "Flat ordered list.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_li"
+      },
+      "normalized_oracle_sha256": "6f2d41296f59f272bf45c860942bf1772c1ac9a2c50343f2a5f7b343e54fd956",
+      "oracle_sha256": "53d9b0249db25d698987c88b7389f2727327bed3f15e56d443e7c9b41d21cde1",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "6f2d41296f59f272bf45c860942bf1772c1ac9a2c50343f2a5f7b343e54fd956",
+          "output_sha256": "6f2d41296f59f272bf45c860942bf1772c1ac9a2c50343f2a5f7b343e54fd956",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n-1. one\n-2. two\n-3. three\n+1.  one\n+2.  two\n+3.  three\n",
+          "error": null,
+          "normalized_output_sha256": "5fd95b97d16c68ff72a19789ddc3d403cb74b4b181dde0483b4e9ef9e90594cd",
+          "output_sha256": "5e2f00940752f2e49f00666fb3a66cbe6888bf979728cb56f33c3966179ffece",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "6f2d41296f59f272bf45c860942bf1772c1ac9a2c50343f2a5f7b343e54fd956",
+          "output_sha256": "6f2d41296f59f272bf45c860942bf1772c1ac9a2c50343f2a5f7b343e54fd956",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:list_ul_nested_three_levels",
+      "input_bytes": 68,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "lists",
+        "description": "Nested unordered list: bullets cycle '*','+','-' by depth with 2-space indents.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_li"
+      },
+      "normalized_oracle_sha256": "e4ddf034452576203828ac5c9a124ea01463c93244709359e4cb91d3649090cb",
+      "oracle_sha256": "a73b576d7eaba36e8ceb33cbf056018a93b432b034618864bd257e30025245cf",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n-* top\n-  + second\n-    - third\n+- top\n+  * second\n+    + third\n",
+          "error": null,
+          "normalized_output_sha256": "2b0fe1a8d533e66f686d9db11aaf8660657f6125bd17430cc15477feda2fafce",
+          "output_sha256": "2b0fe1a8d533e66f686d9db11aaf8660657f6125bd17430cc15477feda2fafce",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n-* top\n-  + second\n-    - third\n+*   top\n+    *   second\n+        *   third\n",
+          "error": null,
+          "normalized_output_sha256": "7c17fb661eb2649501e96c5e05a6c7792750cbdf02b0b5a75bb1c84b61393b50",
+          "output_sha256": "b4052f507692071f61bafdcbe65a1b65794fad00dd0cc06f32f1e7a10be875b2",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n * top\n-  + second\n-    - third\n+  * second\n+    * third\n",
+          "error": null,
+          "normalized_output_sha256": "938add18cef215274a9e2717cef11ffcb1995d5cd3803d5c9ac003b7d4440b31",
+          "output_sha256": "938add18cef215274a9e2717cef11ffcb1995d5cd3803d5c9ac003b7d4440b31",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:list_ol_nested",
+      "input_bytes": 62,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "lists",
+        "description": "Nested ordered list.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_li"
+      },
+      "normalized_oracle_sha256": "83e0ebf67575d92e11c999544dba3575695783905a9546ae03c723ec194a2756",
+      "oracle_sha256": "c3b7fb698798597e1e98148ca1ecc166753910b9a0d0281953da00301153390f",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,4 +1,4 @@\n 1. a\n-   1. a.1\n-   2. a.2\n+  1. a.1\n+  2. a.2\n 2. b\n",
+          "error": null,
+          "normalized_output_sha256": "6426edaa18e8f912799cf1cb6757a8890a29d123577bc8f22b2639a126549e6e",
+          "output_sha256": "6426edaa18e8f912799cf1cb6757a8890a29d123577bc8f22b2639a126549e6e",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,4 +1,4 @@\n-1. a\n-   1. a.1\n-   2. a.2\n-2. b\n+1.  a\n+    1.  a.1\n+    2.  a.2\n+2.  b\n",
+          "error": null,
+          "normalized_output_sha256": "48254b371883faee1ea2f3dfd9e0520949bb8bbdb9dcdf7927fda2a90d21d85a",
+          "output_sha256": "c5f0585a243162b4ca8b11095de81dbd564821d8c68ef4ae45ac82b6e89c34f0",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "83e0ebf67575d92e11c999544dba3575695783905a9546ae03c723ec194a2756",
+          "output_sha256": "83e0ebf67575d92e11c999544dba3575695783905a9546ae03c723ec194a2756",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:list_mixed_ul_ol",
+      "input_bytes": 65,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "lists",
+        "description": "Ordered list nested under an unordered item.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_li"
+      },
+      "normalized_oracle_sha256": "b4d7446a456910917432d17361547f52103d1e24afd39f7e22dc0e603a4f5869",
+      "oracle_sha256": "4325eb29991820147163846246339ebd43d8b5efeb809b93b675456763406fe8",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n-* bullet\n+- bullet\n   1. num one\n   2. num two\n",
+          "error": null,
+          "normalized_output_sha256": "db3051dc6501d4fc7c7d8db5dcc777bac3225e9754ddde8cf9945beadfc577c5",
+          "output_sha256": "db3051dc6501d4fc7c7d8db5dcc777bac3225e9754ddde8cf9945beadfc577c5",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n-* bullet\n-  1. num one\n-  2. num two\n+*   bullet\n+    1.  num one\n+    2.  num two\n",
+          "error": null,
+          "normalized_output_sha256": "0e0c6de95742283c093e98a4ffdd2d987507a80894ab0f75fd70f6ebd9b4ecb0",
+          "output_sha256": "24efe6311f64708590ef0f8e85adf05dc19be588f9600211869f7249aadfb9d9",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "b4d7446a456910917432d17361547f52103d1e24afd39f7e22dc0e603a4f5869",
+          "output_sha256": "b4d7446a456910917432d17361547f52103d1e24afd39f7e22dc0e603a4f5869",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:list_li_inline_formatting",
+      "input_bytes": 58,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "lists",
+        "description": "List items with inline formatting.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_li"
+      },
+      "normalized_oracle_sha256": "d640b6cb87ca89c920ba81f48c3b850be7ec47c8c701655e50dbe3c50aa8bdd0",
+      "oracle_sha256": "2b30f43b4e640285847c849c16b22920c2edea48878fd90b9833d3b8f5310b0d",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1,2 @@\n-* plain\n-* **bold item**\n+- plain\n+- **bold item**\n",
+          "error": null,
+          "normalized_output_sha256": "de7c661fefa0ebe5901efeed91c91493191f03eac9fed3348220310a28a8361c",
+          "output_sha256": "de7c661fefa0ebe5901efeed91c91493191f03eac9fed3348220310a28a8361c",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1,2 @@\n-* plain\n-* **bold item**\n+*   plain\n+*   **bold item**\n",
+          "error": null,
+          "normalized_output_sha256": "3b655cc6519da29a04555c7f79680dae43a44b6666d846aeead7f300a78e99b6",
+          "output_sha256": "15b09166d79bede4910bd8cbfb8818f6032610bfc1e6ee3087e302a062bd75c7",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "d640b6cb87ca89c920ba81f48c3b850be7ec47c8c701655e50dbe3c50aa8bdd0",
+          "output_sha256": "d640b6cb87ca89c920ba81f48c3b850be7ec47c8c701655e50dbe3c50aa8bdd0",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:list_ol_start_attr",
+      "input_bytes": 46,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "lists",
+        "description": "Ordered list honoring the start attribute.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_li"
+      },
+      "normalized_oracle_sha256": "31857a2076bbabaf06f441c7babad33024ee8f80a2e684f721e2b32c49d35e27",
+      "oracle_sha256": "bc72be53f27cacff0721a8468d9037ffcdf4900232b806ca0509f7ec1edca78b",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "31857a2076bbabaf06f441c7babad33024ee8f80a2e684f721e2b32c49d35e27",
+          "output_sha256": "31857a2076bbabaf06f441c7babad33024ee8f80a2e684f721e2b32c49d35e27",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1,2 @@\n-3. three\n-4. four\n+3.  three\n+4.  four\n",
+          "error": null,
+          "normalized_output_sha256": "e57f94c94652165666f19ed67e6af26031799b3af33a253ee6f473cb289a6a02",
+          "output_sha256": "00065ce8259c5960d275f884e908f3d168492b479589b60f6b3b13bfd7790f5b",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "31857a2076bbabaf06f441c7babad33024ee8f80a2e684f721e2b32c49d35e27",
+          "output_sha256": "31857a2076bbabaf06f441c7babad33024ee8f80a2e684f721e2b32c49d35e27",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:list_ul_multiblock_item",
+      "input_bytes": 49,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "lists",
+        "description": "List item with a second paragraph (continuation indented under the marker).",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_li"
+      },
+      "normalized_oracle_sha256": "fbaa8dc763376b20cd3a249dbcc5ccaa9beff3854030e15ac26e4640ea3d2bae",
+      "oracle_sha256": "86efa08bf5ba4048e3a9d0331b7629627ae4c1f25376f54dcb1ae9454a5dfe6a",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1 @@\n-* first\n-\n-  second para in item\n+- first     second para in item\n",
+          "error": null,
+          "normalized_output_sha256": "5a62b78185f968461b06ba4c3de7c9bd4e47dc1cd07e39eb846d010c18a3a8a3",
+          "output_sha256": "5a62b78185f968461b06ba4c3de7c9bd4e47dc1cd07e39eb846d010c18a3a8a3",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n-* first\n+*   first\n \n-  second para in item\n+    second para in item\n",
+          "error": null,
+          "normalized_output_sha256": "822396636bf02f54bc4eab06961003f20d47b3f357bd01c322011c3dcf9410fe",
+          "output_sha256": "13260ed0551c1d842e7e691775eb5f0707eb6e34fe98f870814266ed1de03cc5",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "fbaa8dc763376b20cd3a249dbcc5ccaa9beff3854030e15ac26e4640ea3d2bae",
+          "output_sha256": "4337629d86e84ecc81065133b032ecab2414360deab37b60ee454af0d5dd33c1",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:emphasis_strong_tag",
+      "input_bytes": 30,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "emphasis",
+        "description": "strong -> **.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_strong"
+      },
+      "normalized_oracle_sha256": "98d8df712816d8d6e6ff81764ed0caa368f7283c375e764b15c8a83ae39961a8",
+      "oracle_sha256": "cb3a941cc09940c43277906ec168b4b5093f9faee2510c8c31643ecc2e4a328d",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "98d8df712816d8d6e6ff81764ed0caa368f7283c375e764b15c8a83ae39961a8",
+          "output_sha256": "98d8df712816d8d6e6ff81764ed0caa368f7283c375e764b15c8a83ae39961a8",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "98d8df712816d8d6e6ff81764ed0caa368f7283c375e764b15c8a83ae39961a8",
+          "output_sha256": "cb3a941cc09940c43277906ec168b4b5093f9faee2510c8c31643ecc2e4a328d",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "98d8df712816d8d6e6ff81764ed0caa368f7283c375e764b15c8a83ae39961a8",
+          "output_sha256": "98d8df712816d8d6e6ff81764ed0caa368f7283c375e764b15c8a83ae39961a8",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:emphasis_b_tag",
+      "input_bytes": 18,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "emphasis",
+        "description": "b -> **.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_b"
+      },
+      "normalized_oracle_sha256": "dadde03225e23d9b3db1a3a87a3b04d3f8d6fdf10ce82cd299e8e95ebeaa75fe",
+      "oracle_sha256": "39fdfa8c72e80eaecb45da0f44db15df4d7f3f57339e764e6ae8f74289a7f36f",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "dadde03225e23d9b3db1a3a87a3b04d3f8d6fdf10ce82cd299e8e95ebeaa75fe",
+          "output_sha256": "dadde03225e23d9b3db1a3a87a3b04d3f8d6fdf10ce82cd299e8e95ebeaa75fe",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "dadde03225e23d9b3db1a3a87a3b04d3f8d6fdf10ce82cd299e8e95ebeaa75fe",
+          "output_sha256": "39fdfa8c72e80eaecb45da0f44db15df4d7f3f57339e764e6ae8f74289a7f36f",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-**bold**\n+bold\n",
+          "error": null,
+          "normalized_output_sha256": "b104b85f28874a0ab61deae542dd250b57b3cbec5881f1ea9e98d84f5d236439",
+          "output_sha256": "b104b85f28874a0ab61deae542dd250b57b3cbec5881f1ea9e98d84f5d236439",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:emphasis_em_tag",
+      "input_bytes": 24,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "emphasis",
+        "description": "em -> *.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_em"
+      },
+      "normalized_oracle_sha256": "d9bc624a27e28200c92d85de705a636690484bf4c7f3862a877160229a4dbe0e",
+      "oracle_sha256": "6b0b53ed7a72d011077aa8b933adc6694afae75d64396e99fdd4f2eb2fc892b1",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "d9bc624a27e28200c92d85de705a636690484bf4c7f3862a877160229a4dbe0e",
+          "output_sha256": "d9bc624a27e28200c92d85de705a636690484bf4c7f3862a877160229a4dbe0e",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "d9bc624a27e28200c92d85de705a636690484bf4c7f3862a877160229a4dbe0e",
+          "output_sha256": "6b0b53ed7a72d011077aa8b933adc6694afae75d64396e99fdd4f2eb2fc892b1",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "d9bc624a27e28200c92d85de705a636690484bf4c7f3862a877160229a4dbe0e",
+          "output_sha256": "d9bc624a27e28200c92d85de705a636690484bf4c7f3862a877160229a4dbe0e",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:emphasis_i_tag",
+      "input_bytes": 20,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "emphasis",
+        "description": "i -> *.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_i"
+      },
+      "normalized_oracle_sha256": "7fde92c3f404a486a3555ee704d511bf171871bd7c1a3dfdbbabc50d574c9bff",
+      "oracle_sha256": "33443aba490afeb836e74ab5f604ee50a49ca558b682701444f54dc14b0e32b8",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "7fde92c3f404a486a3555ee704d511bf171871bd7c1a3dfdbbabc50d574c9bff",
+          "output_sha256": "7fde92c3f404a486a3555ee704d511bf171871bd7c1a3dfdbbabc50d574c9bff",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "7fde92c3f404a486a3555ee704d511bf171871bd7c1a3dfdbbabc50d574c9bff",
+          "output_sha256": "33443aba490afeb836e74ab5f604ee50a49ca558b682701444f54dc14b0e32b8",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-*italic*\n+italic\n",
+          "error": null,
+          "normalized_output_sha256": "1f14acf3294d69e8d536b663d172e4323714e3f34f7dce53235ceecda34a09ca",
+          "output_sha256": "1f14acf3294d69e8d536b663d172e4323714e3f34f7dce53235ceecda34a09ca",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:emphasis_nested_strong_em",
+      "input_bytes": 48,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "emphasis",
+        "description": "Nested strong/em.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_strong"
+      },
+      "normalized_oracle_sha256": "0b7645b3efb49672ab43c0e68aacd1bb6ef553422bba6b59751a0ce1369648e5",
+      "oracle_sha256": "119f3e2f0f07f90e9e9818b15713ee070e0fdf567d02a14d7b6ad5cb1c58a504",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "0b7645b3efb49672ab43c0e68aacd1bb6ef553422bba6b59751a0ce1369648e5",
+          "output_sha256": "0b7645b3efb49672ab43c0e68aacd1bb6ef553422bba6b59751a0ce1369648e5",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "0b7645b3efb49672ab43c0e68aacd1bb6ef553422bba6b59751a0ce1369648e5",
+          "output_sha256": "119f3e2f0f07f90e9e9818b15713ee070e0fdf567d02a14d7b6ad5cb1c58a504",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "0b7645b3efb49672ab43c0e68aacd1bb6ef553422bba6b59751a0ce1369648e5",
+          "output_sha256": "0b7645b3efb49672ab43c0e68aacd1bb6ef553422bba6b59751a0ce1369648e5",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:emphasis_adjacent",
+      "input_bytes": 31,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "emphasis",
+        "description": "Two adjacent emphasis spans.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_em"
+      },
+      "normalized_oracle_sha256": "c9d9eba430a308df96bde82059a16e19b99fbf53ce7c90a38be43d121cebd967",
+      "oracle_sha256": "1669c48cef336d5601587bf3b5f2d6b51a6cc7b589bdded5fa49bc4f9e3ee817",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "c9d9eba430a308df96bde82059a16e19b99fbf53ce7c90a38be43d121cebd967",
+          "output_sha256": "c9d9eba430a308df96bde82059a16e19b99fbf53ce7c90a38be43d121cebd967",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-*one**two*\n+*onetwo*\n",
+          "error": null,
+          "normalized_output_sha256": "95f5084bbd81e68c998bb119c6aea4e340ea04ca4e9873c64e07c7a4c790e4a4",
+          "output_sha256": "f1f9735ffe5fd1353abfb26e41f4bae035062d9a3a7ddeb65cca8c06b786ce69",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "c9d9eba430a308df96bde82059a16e19b99fbf53ce7c90a38be43d121cebd967",
+          "output_sha256": "c9d9eba430a308df96bde82059a16e19b99fbf53ce7c90a38be43d121cebd967",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:emphasis_empty_strong_suppressed",
+      "input_bytes": 35,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "emphasis",
+        "description": "An empty inline emphasis element produces no markup.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_strong"
+      },
+      "normalized_oracle_sha256": "356bc663f44669ba057e6631c819a397608a4666ee221864f73384a3f36baad2",
+      "oracle_sha256": "31c2400e49aa9f4e10264dc2a73542ad7ce327c1ee55b29af1164b2acbc01b42",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "356bc663f44669ba057e6631c819a397608a4666ee221864f73384a3f36baad2",
+          "output_sha256": "356bc663f44669ba057e6631c819a397608a4666ee221864f73384a3f36baad2",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "356bc663f44669ba057e6631c819a397608a4666ee221864f73384a3f36baad2",
+          "output_sha256": "31c2400e49aa9f4e10264dc2a73542ad7ce327c1ee55b29af1164b2acbc01b42",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-beforeafter\n+before****after\n",
+          "error": null,
+          "normalized_output_sha256": "c590883d78a9151c75e3c4ddfa759d45148040b2e15f5a4a81ec411126e1e1f2",
+          "output_sha256": "c590883d78a9151c75e3c4ddfa759d45148040b2e15f5a4a81ec411126e1e1f2",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:emphasis_literal_chars_escaped",
+      "input_bytes": 16,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "emphasis",
+        "description": "Literal '*' and '_' are escaped (escape_asterisks/escape_underscores default on).",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "process_text"
+      },
+      "normalized_oracle_sha256": "26ea0927e7848bef2f1c09d46ff217b7bbc86d7497df4b1eceffa44be2c5f5ad",
+      "oracle_sha256": "4477458e467a9efbc739bd08e44706cdde26873da57d29ce495e67824752bb11",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-a \\* b \\_ c\n+a * b _ c\n",
+          "error": null,
+          "normalized_output_sha256": "471f6f4a9abf17c22f6b453a16e4a2b182c6012318ca6b73d0976a7033482dff",
+          "output_sha256": "471f6f4a9abf17c22f6b453a16e4a2b182c6012318ca6b73d0976a7033482dff",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "26ea0927e7848bef2f1c09d46ff217b7bbc86d7497df4b1eceffa44be2c5f5ad",
+          "output_sha256": "4477458e467a9efbc739bd08e44706cdde26873da57d29ce495e67824752bb11",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-a \\* b \\_ c\n+a * b _ c\n",
+          "error": null,
+          "normalized_output_sha256": "471f6f4a9abf17c22f6b453a16e4a2b182c6012318ca6b73d0976a7033482dff",
+          "output_sha256": "471f6f4a9abf17c22f6b453a16e4a2b182c6012318ca6b73d0976a7033482dff",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:code_simple",
+      "input_bytes": 30,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "code",
+        "description": "A simple inline code span.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_code"
+      },
+      "normalized_oracle_sha256": "edcd6fb736c7b938aa311437306a3f570e5b9629df1e9932bbb46fa40d375a96",
+      "oracle_sha256": "e633942dadb1b79f0d2441f73a64c1e16fd5b21ceb8c447b48c63133c051a44a",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "edcd6fb736c7b938aa311437306a3f570e5b9629df1e9932bbb46fa40d375a96",
+          "output_sha256": "edcd6fb736c7b938aa311437306a3f570e5b9629df1e9932bbb46fa40d375a96",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "edcd6fb736c7b938aa311437306a3f570e5b9629df1e9932bbb46fa40d375a96",
+          "output_sha256": "e633942dadb1b79f0d2441f73a64c1e16fd5b21ceb8c447b48c63133c051a44a",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "edcd6fb736c7b938aa311437306a3f570e5b9629df1e9932bbb46fa40d375a96",
+          "output_sha256": "edcd6fb736c7b938aa311437306a3f570e5b9629df1e9932bbb46fa40d375a96",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:code_contains_one_backtick",
+      "input_bytes": 23,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "code",
+        "description": "Content with one backtick -> fence grows to '``' with padding spaces.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_code"
+      },
+      "normalized_oracle_sha256": "50367c338605cca1cc9a494ed9292e222b69cd67cbfa8e23a15681faa848cc5a",
+      "oracle_sha256": "62399e9c3b7131f238d5ac50de0773a60cf4d37eef7adbdad8a2671ec8f15e5a",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-`` a`b ``\n+``a`b``\n",
+          "error": null,
+          "normalized_output_sha256": "ec6214ae9181ea5f2fc0ddb81817912e2b6713e782e18f5476455535cc950a74",
+          "output_sha256": "ec6214ae9181ea5f2fc0ddb81817912e2b6713e782e18f5476455535cc950a74",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-`` a`b ``\n+``a`b``\n",
+          "error": null,
+          "normalized_output_sha256": "ec6214ae9181ea5f2fc0ddb81817912e2b6713e782e18f5476455535cc950a74",
+          "output_sha256": "7f764c44008f974744cd9c0a1e54acddcb73468b5e8e6d2fcc89a16135493afc",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-`` a`b ``\n+`a`b`\n",
+          "error": null,
+          "normalized_output_sha256": "0106d33c83fc7a2085a8020db16d1dd028d3e0775cab0bd6b4d7f0f027e1c60a",
+          "output_sha256": "0106d33c83fc7a2085a8020db16d1dd028d3e0775cab0bd6b4d7f0f027e1c60a",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:code_contains_two_backticks",
+      "input_bytes": 24,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "code",
+        "description": "Content with a double-backtick run -> fence grows past it.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_code"
+      },
+      "normalized_oracle_sha256": "e974d805887d8c393cf86e606d821c0b9c5d2baa76faa7e60d22ee3aa1b20143",
+      "oracle_sha256": "83c32a868128d9862280877e076aecb0a0ea60fa4aea2d1facb1c6a280dcaa67",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-``` a``b ```\n+`a``b`\n",
+          "error": null,
+          "normalized_output_sha256": "51338190ee88dbe2aead9e7fadb0f80efa5cc245a21dc7b0c141e3b18baba076",
+          "output_sha256": "51338190ee88dbe2aead9e7fadb0f80efa5cc245a21dc7b0c141e3b18baba076",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-``` a``b ```\n+`a``b`\n",
+          "error": null,
+          "normalized_output_sha256": "51338190ee88dbe2aead9e7fadb0f80efa5cc245a21dc7b0c141e3b18baba076",
+          "output_sha256": "de88d1a37419318cf365153dd7e33115f5c2639d06f8d66d64013f38c8293da1",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-``` a``b ```\n+`a``b`\n",
+          "error": null,
+          "normalized_output_sha256": "51338190ee88dbe2aead9e7fadb0f80efa5cc245a21dc7b0c141e3b18baba076",
+          "output_sha256": "51338190ee88dbe2aead9e7fadb0f80efa5cc245a21dc7b0c141e3b18baba076",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:code_leading_backtick",
+      "input_bytes": 25,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "code",
+        "description": "Leading backtick -> a padding space is added.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_code"
+      },
+      "normalized_oracle_sha256": "5cc8acf9e2653293cdcb47f8577736aef649f8fd17130275b11b31f9b050445a",
+      "oracle_sha256": "ca4edc132520ecab298dd523072a36f2cd16cb2334a4d0ed6ac2db5cd00640b3",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "5cc8acf9e2653293cdcb47f8577736aef649f8fd17130275b11b31f9b050445a",
+          "output_sha256": "5cc8acf9e2653293cdcb47f8577736aef649f8fd17130275b11b31f9b050445a",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "5cc8acf9e2653293cdcb47f8577736aef649f8fd17130275b11b31f9b050445a",
+          "output_sha256": "ca4edc132520ecab298dd523072a36f2cd16cb2334a4d0ed6ac2db5cd00640b3",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-`` `lead ``\n+``lead`\n",
+          "error": null,
+          "normalized_output_sha256": "e21bc57c53fd04c66957ac31eab46cfcabdcf2472b777e578a3d1d7253373763",
+          "output_sha256": "e21bc57c53fd04c66957ac31eab46cfcabdcf2472b777e578a3d1d7253373763",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:code_trailing_backtick",
+      "input_bytes": 26,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "code",
+        "description": "Trailing backtick -> a padding space is added.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_code"
+      },
+      "normalized_oracle_sha256": "14667ddcfee3d19c9dfa2445f624c877af2993d7aaea6860d7802181c52233ed",
+      "oracle_sha256": "9f155e84ad0d2047829b7a20d50caf13df56f36549b7aefaffad31b1dc55b29b",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "14667ddcfee3d19c9dfa2445f624c877af2993d7aaea6860d7802181c52233ed",
+          "output_sha256": "14667ddcfee3d19c9dfa2445f624c877af2993d7aaea6860d7802181c52233ed",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-`` trail` ``\n+``trail```\n",
+          "error": null,
+          "normalized_output_sha256": "2fa9bbe563e9a82ed7e5ebd80656b067974748418ae477db5cbdb3ce3506ccd4",
+          "output_sha256": "a0e011496b95f1243453b2c24ee17db3d2219ad0b4bca9ed6c9bd90ea060cac1",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-`` trail` ``\n+`trail``\n",
+          "error": null,
+          "normalized_output_sha256": "6d1102b198c1aa5ce4ea9903179db908bf5ccc8b52556ed2830f41e38a2d6b6e",
+          "output_sha256": "6d1102b198c1aa5ce4ea9903179db908bf5ccc8b52556ed2830f41e38a2d6b6e",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:code_only_backtick",
+      "input_bytes": 21,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "code",
+        "description": "Content is a single backtick.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_code"
+      },
+      "normalized_oracle_sha256": "8218003b352fb17a3fca317cd06da5c6203c08b4b09f72d18c29a13fd416988a",
+      "oracle_sha256": "d71a36e241ce629ce928cd66d758ccde3289fb5aa041fb0bf471a73d2dd726dc",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "8218003b352fb17a3fca317cd06da5c6203c08b4b09f72d18c29a13fd416988a",
+          "output_sha256": "8218003b352fb17a3fca317cd06da5c6203c08b4b09f72d18c29a13fd416988a",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "8218003b352fb17a3fca317cd06da5c6203c08b4b09f72d18c29a13fd416988a",
+          "output_sha256": "d71a36e241ce629ce928cd66d758ccde3289fb5aa041fb0bf471a73d2dd726dc",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-`` ` ``\n+```\n",
+          "error": null,
+          "normalized_output_sha256": "47c06c561d5c327343685268a46b3391f3998eee890d2be51f0d21cc4a53ae6d",
+          "output_sha256": "47c06c561d5c327343685268a46b3391f3998eee890d2be51f0d21cc4a53ae6d",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:code_no_escape_inside",
+      "input_bytes": 34,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "code",
+        "description": "Markdown metacharacters inside code are NOT escaped.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_code"
+      },
+      "normalized_oracle_sha256": "f2c315abeb9318c25193c0119066cc9ca2b251962cabd1221fe236f292de7f76",
+      "oracle_sha256": "6b815a9123269e3c86deafa103d651d8214fb9aea271d371b5b49ee494038edb",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "f2c315abeb9318c25193c0119066cc9ca2b251962cabd1221fe236f292de7f76",
+          "output_sha256": "f2c315abeb9318c25193c0119066cc9ca2b251962cabd1221fe236f292de7f76",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "f2c315abeb9318c25193c0119066cc9ca2b251962cabd1221fe236f292de7f76",
+          "output_sha256": "6b815a9123269e3c86deafa103d651d8214fb9aea271d371b5b49ee494038edb",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "f2c315abeb9318c25193c0119066cc9ca2b251962cabd1221fe236f292de7f76",
+          "output_sha256": "f2c315abeb9318c25193c0119066cc9ca2b251962cabd1221fe236f292de7f76",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:br_in_paragraph",
+      "input_bytes": 27,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "br",
+        "description": "br -> two trailing spaces + newline.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_br"
+      },
+      "normalized_oracle_sha256": "e9024f1a07d29d52ad3aa5e1a18e94db1f3a9fd32b89e39d47c472cd99071e13",
+      "oracle_sha256": "d2534f287a978b5e63ea1fa82e22f3936bc25b2b09bc191249b030cf7ec96306",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "e9024f1a07d29d52ad3aa5e1a18e94db1f3a9fd32b89e39d47c472cd99071e13",
+          "output_sha256": "87f1d7bd7e2790e9eceb827502a7acfe552a45af1c2339c28f0f5a7ab11bbf0d",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "e9024f1a07d29d52ad3aa5e1a18e94db1f3a9fd32b89e39d47c472cd99071e13",
+          "output_sha256": "d2534f287a978b5e63ea1fa82e22f3936bc25b2b09bc191249b030cf7ec96306",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "e9024f1a07d29d52ad3aa5e1a18e94db1f3a9fd32b89e39d47c472cd99071e13",
+          "output_sha256": "e9024f1a07d29d52ad3aa5e1a18e94db1f3a9fd32b89e39d47c472cd99071e13",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:br_multiple",
+      "input_bytes": 18,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "br",
+        "description": "Multiple hard breaks.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_br"
+      },
+      "normalized_oracle_sha256": "880553fca8fcea94e325ee2cfb48e5a985cc797f39a14cc6d3cedecfeb2ae4d2",
+      "oracle_sha256": "898bcd66b696c6e49ff2645c3f95c5cbec10c5ab0beda178c38eaefb4ad7291c",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "880553fca8fcea94e325ee2cfb48e5a985cc797f39a14cc6d3cedecfeb2ae4d2",
+          "output_sha256": "9238ad0d87cd48dc81440ace638319e8ce1257708514dc93d257b27e98a4b9b6",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "880553fca8fcea94e325ee2cfb48e5a985cc797f39a14cc6d3cedecfeb2ae4d2",
+          "output_sha256": "898bcd66b696c6e49ff2645c3f95c5cbec10c5ab0beda178c38eaefb4ad7291c",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "880553fca8fcea94e325ee2cfb48e5a985cc797f39a14cc6d3cedecfeb2ae4d2",
+          "output_sha256": "880553fca8fcea94e325ee2cfb48e5a985cc797f39a14cc6d3cedecfeb2ae4d2",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:br_then_whitespace",
+      "input_bytes": 22,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "br",
+        "description": "Hard break followed by whitespace then text.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "convert_br"
+      },
+      "normalized_oracle_sha256": "4bca0ac86e41db8f8400109f749ae018847b2be8bc4911f5cdf2de2db6703634",
+      "oracle_sha256": "4d9512d94aec9282ae37521bd7a454f43da2b371125cb8f1b0cb8514734c3890",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1,2 @@\n start\n- end\n+end\n",
+          "error": null,
+          "normalized_output_sha256": "3123d4bfcae6821ca59dafb8e875993bb6fe0729a62b738ed2198b25dac74c06",
+          "output_sha256": "d85d20a8beecaa9e7137b4110b3190bb23585a5470e1b9f5b927f26e488292ae",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "4bca0ac86e41db8f8400109f749ae018847b2be8bc4911f5cdf2de2db6703634",
+          "output_sha256": "4d9512d94aec9282ae37521bd7a454f43da2b371125cb8f1b0cb8514734c3890",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1,2 @@\n start\n- end\n+end\n",
+          "error": null,
+          "normalized_output_sha256": "3123d4bfcae6821ca59dafb8e875993bb6fe0729a62b738ed2198b25dac74c06",
+          "output_sha256": "3123d4bfcae6821ca59dafb8e875993bb6fe0729a62b738ed2198b25dac74c06",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:span_plain",
+      "input_bytes": 29,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "span",
+        "description": "A span is transparent: only its text remains.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "process_tag"
+      },
+      "normalized_oracle_sha256": "e6c4d6609612f4b790faec9068ae5d1f1c22632945ce047b71da32bdb5bb0ed3",
+      "oracle_sha256": "7f5dde76c8464594732baeae1e0171af7955005e488790245ed52949a2c7841c",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "e6c4d6609612f4b790faec9068ae5d1f1c22632945ce047b71da32bdb5bb0ed3",
+          "output_sha256": "e6c4d6609612f4b790faec9068ae5d1f1c22632945ce047b71da32bdb5bb0ed3",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "e6c4d6609612f4b790faec9068ae5d1f1c22632945ce047b71da32bdb5bb0ed3",
+          "output_sha256": "7f5dde76c8464594732baeae1e0171af7955005e488790245ed52949a2c7841c",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "e6c4d6609612f4b790faec9068ae5d1f1c22632945ce047b71da32bdb5bb0ed3",
+          "output_sha256": "e6c4d6609612f4b790faec9068ae5d1f1c22632945ce047b71da32bdb5bb0ed3",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:span_with_inline_child",
+      "input_bytes": 41,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "span",
+        "description": "Span wrapping inline formatting.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "process_tag"
+      },
+      "normalized_oracle_sha256": "49f85302c2114e1a3863ee68c7a9a0f9e93cd7d30aa7cf07e817c1f69af2e974",
+      "oracle_sha256": "d441394075457940a2f90ac60c0048b61fa555a27fe9709bd07dfb78abae06ea",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "49f85302c2114e1a3863ee68c7a9a0f9e93cd7d30aa7cf07e817c1f69af2e974",
+          "output_sha256": "49f85302c2114e1a3863ee68c7a9a0f9e93cd7d30aa7cf07e817c1f69af2e974",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "49f85302c2114e1a3863ee68c7a9a0f9e93cd7d30aa7cf07e817c1f69af2e974",
+          "output_sha256": "d441394075457940a2f90ac60c0048b61fa555a27fe9709bd07dfb78abae06ea",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-wrap **bold** here\n+wrap bold here\n",
+          "error": null,
+          "normalized_output_sha256": "78eb298aeea0d9cdb122072cd1c435946cfbab419337ebd9e00bda11681bd884",
+          "output_sha256": "78eb298aeea0d9cdb122072cd1c435946cfbab419337ebd9e00bda11681bd884",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:block_inline_handler_cases:span_adjacent",
+      "input_bytes": 35,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "span",
+        "description": "Adjacent spans.",
+        "golden_file": "block_inline_handler_cases.json",
+        "markdownify_ref": "process_tag"
+      },
+      "normalized_oracle_sha256": "a63d8014dba891345b30174df2b2a57efbb65b4f9f09b98f245d1b3192277ece",
+      "oracle_sha256": "fb8e20fc2e4c3f248c60c39bd652f3c1347298bb977b8b4d5903b85055620603",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "a63d8014dba891345b30174df2b2a57efbb65b4f9f09b98f245d1b3192277ece",
+          "output_sha256": "a63d8014dba891345b30174df2b2a57efbb65b4f9f09b98f245d1b3192277ece",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "a63d8014dba891345b30174df2b2a57efbb65b4f9f09b98f245d1b3192277ece",
+          "output_sha256": "fb8e20fc2e4c3f248c60c39bd652f3c1347298bb977b8b4d5903b85055620603",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "a63d8014dba891345b30174df2b2a57efbb65b4f9f09b98f245d1b3192277ece",
+          "output_sha256": "a63d8014dba891345b30174df2b2a57efbb65b4f9f09b98f245d1b3192277ece",
+          "passed": true
+        }
+      ],
+      "source_path": "tests/conformance/golden/block_inline_handler_cases.json"
+    },
+    {
+      "id": "golden:edge_cases:whitespace_boundary_trim_runs",
+      "input_bytes": 50,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "whitespace collapse / boundary trim",
+        "description": "Leading/trailing/inter-element whitespace, including a preserved two-space run before an inline child and newline collapse.",
+        "golden_file": "edge_cases.json",
+        "markdownify_ref": "process_tag/process_text"
+      },
+      "normalized_oracle_sha256": "3b9bb734b844d7c274951c97da2e6d3171ee7d511a86a7b1250e1aaaebea9418",
+      "oracle_sha256": "227fdcf4af5e853a3aba2d8e053cf22026da487963364a03f626c73df3e2136a",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-alpha  beta\n-gamma\n+alpha beta  gamma\n",
+          "error": null,
+          "normalized_output_sha256": "73fdb2c1537c73c984f63f765053ae402f97164290c8a70e828524845130fe5c",
+          "output_sha256": "9f20e3e8ef8ee8025415fec2597b9e56d53daa16c3463dd036ccade5d65137b1",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-alpha  beta\n-gamma\n+alpha beta gamma\n",
+          "error": null,
+          "normalized_output_sha256": "adf7157c8a5bbb4b099d39ba5ef34b73a3787f5e9326b3eb24ac8b86fd03ff96",
+          "output_sha256": "64989ccbf3efa9c84e2afe7cee9bc5828bf0fcb91e44f8c1e591638a2c2e90e3",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,2 +1 @@\n-alpha  beta\n-gamma\n+alpha beta gamma\n",
+          "error": null,
+          "normalized_output_sha256": "adf7157c8a5bbb4b099d39ba5ef34b73a3787f5e9326b3eb24ac8b86fd03ff96",
+          "output_sha256": "adf7157c8a5bbb4b099d39ba5ef34b73a3787f5e9326b3eb24ac8b86fd03ff96",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/edge_cases.json"
+    },
+    {
+      "id": "golden:edge_cases:link_with_title_and_parenthesized_href",
+      "input_bytes": 81,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "links / titles / parenthesized href",
+        "description": "Inline link whose text, href, and title contain Markdown-sensitive brackets/parentheses.",
+        "golden_file": "edge_cases.json",
+        "markdownify_ref": "convert_a"
+      },
+      "normalized_oracle_sha256": "3b9c9886df181974ac653b643a10122a87e18796f3de6c71f293534999887482",
+      "oracle_sha256": "89fe618c4351dc9cab6dca7d0d3124794b91a1b8aeb80e9a0e7ca027f72f3435",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "3b9c9886df181974ac653b643a10122a87e18796f3de6c71f293534999887482",
+          "output_sha256": "3b9c9886df181974ac653b643a10122a87e18796f3de6c71f293534999887482",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-[click [here]](https://example.com/a_(b)?q=1 \"Title (x)\")\n+[click \\[here\\]](https://example.com/a_\\(b\\)?q=1 \"Title (x)\")\n",
+          "error": null,
+          "normalized_output_sha256": "d69e7dc660de640e27e214845aa7283fe803c373dfd5ca37e75c7a085daea028",
+          "output_sha256": "1678e3c9ee056da8080fcdc01726c54eec9dd53f2643375b304616b91da52419",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1,3 @@\n-[click [here]](https://example.com/a_(b)?q=1 \"Title (x)\")\n+[click [here]][1]\n+\n+[1]: https://example.com/a_(b)?q=1\n",
+          "error": null,
+          "normalized_output_sha256": "7f300d3a1428bec727622074d1d8f123424ac03b6fb8496b712a62238a727e24",
+          "output_sha256": "7f300d3a1428bec727622074d1d8f123424ac03b6fb8496b712a62238a727e24",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/edge_cases.json"
+    },
+    {
+      "id": "golden:edge_cases:autolink_when_text_equals_href",
+      "input_bytes": 70,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "links / autolinks",
+        "description": "Link text exactly equals href and should become markdownify's autolink form.",
+        "golden_file": "edge_cases.json",
+        "markdownify_ref": "convert_a"
+      },
+      "normalized_oracle_sha256": "de9774b6c589b1aa99b11ea25342dbd5b5944e03aa709385f7b1e8a89c4b2309",
+      "oracle_sha256": "2e28137997b5616957c2c63a7e244d6169311544da047ccc49371919a2941109",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "de9774b6c589b1aa99b11ea25342dbd5b5944e03aa709385f7b1e8a89c4b2309",
+          "output_sha256": "de9774b6c589b1aa99b11ea25342dbd5b5944e03aa709385f7b1e8a89c4b2309",
+          "passed": true
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-<https://example.com/path>\n+[https://example.com/path](https://example.com/path)\n",
+          "error": null,
+          "normalized_output_sha256": "75b33e1cab33f99c9f750644d387cf63941fc2e893fe7a865d79e440400d0622",
+          "output_sha256": "dffc7ab65cfde7f0c0a1475e61c70a621cf6a21efc21902aca6679b3ae077617",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1,3 @@\n-<https://example.com/path>\n+[https://example.com/path][1]\n+\n+[1]: https://example.com/path\n",
+          "error": null,
+          "normalized_output_sha256": "47adccb273c9138e897a3118ce0925d240a3815e0bbf6128b708906981281344",
+          "output_sha256": "47adccb273c9138e897a3118ce0925d240a3815e0bbf6128b708906981281344",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/edge_cases.json"
+    },
+    {
+      "id": "golden:edge_cases:code_span_contains_single_backtick",
+      "input_bytes": 23,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "code-span backtick delimiter selection",
+        "description": "Inline code contains one backtick, requiring a longer delimiter and padding spaces.",
+        "golden_file": "edge_cases.json",
+        "markdownify_ref": "convert_code"
+      },
+      "normalized_oracle_sha256": "50367c338605cca1cc9a494ed9292e222b69cd67cbfa8e23a15681faa848cc5a",
+      "oracle_sha256": "62399e9c3b7131f238d5ac50de0773a60cf4d37eef7adbdad8a2671ec8f15e5a",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-`` a`b ``\n+``a`b``\n",
+          "error": null,
+          "normalized_output_sha256": "ec6214ae9181ea5f2fc0ddb81817912e2b6713e782e18f5476455535cc950a74",
+          "output_sha256": "ec6214ae9181ea5f2fc0ddb81817912e2b6713e782e18f5476455535cc950a74",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-`` a`b ``\n+``a`b``\n",
+          "error": null,
+          "normalized_output_sha256": "ec6214ae9181ea5f2fc0ddb81817912e2b6713e782e18f5476455535cc950a74",
+          "output_sha256": "7f764c44008f974744cd9c0a1e54acddcb73468b5e8e6d2fcc89a16135493afc",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-`` a`b ``\n+`a`b`\n",
+          "error": null,
+          "normalized_output_sha256": "0106d33c83fc7a2085a8020db16d1dd028d3e0775cab0bd6b4d7f0f027e1c60a",
+          "output_sha256": "0106d33c83fc7a2085a8020db16d1dd028d3e0775cab0bd6b4d7f0f027e1c60a",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/edge_cases.json"
+    },
+    {
+      "id": "golden:edge_cases:code_span_contains_triple_backticks",
+      "input_bytes": 29,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "code-span backtick delimiter selection",
+        "description": "Inline code contains a triple-backtick run and another single backtick; delimiter must be four backticks.",
+        "golden_file": "edge_cases.json",
+        "markdownify_ref": "convert_code"
+      },
+      "normalized_oracle_sha256": "9ee56ff8fafe0b4cb45b64fc66bc54fb635d0c25e8ca5de57e3c5548a3487380",
+      "oracle_sha256": "e9eee4db1ad1ee4a3fafce7ba1e414773787bdf610678ff92b81b4ae224e4f85",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-```` a```b ` c ````\n+`a```b ` c`\n",
+          "error": null,
+          "normalized_output_sha256": "08ca6d41efd9c57b180bedc8f7e839fbb3f62bc389a02655229e95ff01df78ea",
+          "output_sha256": "08ca6d41efd9c57b180bedc8f7e839fbb3f62bc389a02655229e95ff01df78ea",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-```` a```b ` c ````\n+``a```b ` c``\n",
+          "error": null,
+          "normalized_output_sha256": "41d5b4740c4dd1b1815886b3555e1f5f84cc8daeac0bc1eede606cfe5742ddab",
+          "output_sha256": "58c53d1432ed7daad8bf305c0d89af22011f01bfc0bcb9841e68f53af4cd78e9",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-```` a```b ` c ````\n+`a```b ` c`\n",
+          "error": null,
+          "normalized_output_sha256": "08ca6d41efd9c57b180bedc8f7e839fbb3f62bc389a02655229e95ff01df78ea",
+          "output_sha256": "08ca6d41efd9c57b180bedc8f7e839fbb3f62bc389a02655229e95ff01df78ea",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/edge_cases.json"
+    },
+    {
+      "id": "golden:edge_cases:image_alt_src_title_escaping",
+      "input_bytes": 117,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "image alt/src/title escaping",
+        "description": "Image src has parentheses; alt and title contain brackets, ampersand, star, parentheses, and quote.",
+        "golden_file": "edge_cases.json",
+        "markdownify_ref": "convert_img"
+      },
+      "normalized_oracle_sha256": "246e13de82c8823298da221b509dc5c83cb7cdf413fba832834fbf6a8a913acc",
+      "oracle_sha256": "ba128f1c188217004ae726768652ec23908ced58381b0130406c40b7c98e2b8b",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-![a [bracket] & star *](https://example.com/img_(1).png \"t (paren) & quote \\\"x\\\"\")\n+![a [bracket] & star *](https://example.com/img_(1).png \"t (paren) & quote &quot;x&quot;\")\n",
+          "error": null,
+          "normalized_output_sha256": "b65c4dd6ff92c2f4a289a64d3a05b6f155457c53ab83a670ac53ace453c9c083",
+          "output_sha256": "b65c4dd6ff92c2f4a289a64d3a05b6f155457c53ab83a670ac53ace453c9c083",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-![a [bracket] & star *](https://example.com/img_(1).png \"t (paren) & quote \\\"x\\\"\")\n+![a [bracket] & star *](https://example.com/img_\\(1\\).png \"t (paren) & quote \\\"x\\\"\")\n",
+          "error": null,
+          "normalized_output_sha256": "0adda50f8ddfb20e679cd590af15f14c12e5a6dd2cf5b736ecaa02d907e2b914",
+          "output_sha256": "80c4ac05391f20d58e069ced95f723f8e3c7186a24bd8a97dfca9978af52a518",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1 +1 @@\n-![a [bracket] & star *](https://example.com/img_(1).png \"t (paren) & quote \\\"x\\\"\")\n+[a [bracket] & star *]\n",
+          "error": null,
+          "normalized_output_sha256": "4f60cdf17c6ede85df1f8b9d7ababd7a56c167ddee41c7d9253af06887894738",
+          "output_sha256": "4f60cdf17c6ede85df1f8b9d7ababd7a56c167ddee41c7d9253af06887894738",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/edge_cases.json"
+    },
+    {
+      "id": "golden:edge_cases:nested_mixed_lists_deep",
+      "input_bytes": 96,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "nested list indentation",
+        "description": "Mixed unordered/ordered nested lists with a third-level unordered item to lock indentation and bullet rotation.",
+        "golden_file": "edge_cases.json",
+        "markdownify_ref": "convert_li"
+      },
+      "normalized_oracle_sha256": "c0ef03820081a3c26a6bc30487e9bf2cd1113093520374e5bcd9490562562fde",
+      "oracle_sha256": "7f434a2e748686221c285718bebfabefe626b21853d8fd5cc1a3a9f8a997813d",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,5 +1,5 @@\n-* one\n+- one\n   1. sub one\n   2. sub two\n-     + deep\n-* two\n+    * deep\n+- two\n",
+          "error": null,
+          "normalized_output_sha256": "be28d924d73a4d0c1869479e37edb44c78a07a9d2cae8b91bd9d2f4205a4a5f0",
+          "output_sha256": "be28d924d73a4d0c1869479e37edb44c78a07a9d2cae8b91bd9d2f4205a4a5f0",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,5 +1,5 @@\n-* one\n-  1. sub one\n-  2. sub two\n-     + deep\n-* two\n+*   one\n+    1.  sub one\n+    2.  sub two\n+        *   deep\n+*   two\n",
+          "error": null,
+          "normalized_output_sha256": "d67187d6a2d49dd4d2f1e1c69ec13cca0670c0a04b1cb05d2b1c5f90c024a3dc",
+          "output_sha256": "c4961c5538d509dd505b118c49b8f9f5419ee5ec0912657584e37013186dabeb",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,5 +1,5 @@\n * one\n   1. sub one\n   2. sub two\n-     + deep\n+     * deep\n * two\n",
+          "error": null,
+          "normalized_output_sha256": "363047e0cc7cddbc144f316c985eebae7a44feac9fc16ed28042db4c6b784d4c",
+          "output_sha256": "363047e0cc7cddbc144f316c985eebae7a44feac9fc16ed28042db4c6b784d4c",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/edge_cases.json"
+    },
+    {
+      "id": "golden:edge_cases:fenced_pre_code_backticks",
+      "input_bytes": 40,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "fenced pre/code",
+        "description": "Pre/code block containing inline backticks; expected output is a fenced block preserving inner text.",
+        "golden_file": "edge_cases.json",
+        "markdownify_ref": "convert_pre"
+      },
+      "normalized_oracle_sha256": "e04d540520e5b769f8e5f700f708d2c4bf744913a3e7396d6f037582f2536ca5",
+      "oracle_sha256": "350594f55e2a2c601b03c4be153cdb24f2635477ea1bbd4ed1485b2b4bf31510",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,4 +1,5 @@\n ```\n line 1\n line `2`\n+\n ```\n",
+          "error": null,
+          "normalized_output_sha256": "8c79bda19c06ae615e16051faed6af01fee1c4d96cd18aaec25cbc9637a359ef",
+          "output_sha256": "8c79bda19c06ae615e16051faed6af01fee1c4d96cd18aaec25cbc9637a359ef",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": null,
+          "error": null,
+          "normalized_output_sha256": "e04d540520e5b769f8e5f700f708d2c4bf744913a3e7396d6f037582f2536ca5",
+          "output_sha256": "350594f55e2a2c601b03c4be153cdb24f2635477ea1bbd4ed1485b2b4bf31510",
+          "passed": true
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,4 +1,3 @@\n-```\n-line 1\n+`line 1\n line `2`\n-```\n+`\n",
+          "error": null,
+          "normalized_output_sha256": "8e3f4c9c9b84e8e49fffef0625a794b16058712581652bf67533c8e24a0c054f",
+          "output_sha256": "8e3f4c9c9b84e8e49fffef0625a794b16058712581652bf67533c8e24a0c054f",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/edge_cases.json"
+    },
+    {
+      "id": "golden:edge_cases:fenced_pre_code_language_class_ignored_by_default",
+      "input_bytes": 60,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "fenced pre/code language hint",
+        "description": "Language class is present but default markdownify emits an unlabelled fence without code_language_callback.",
+        "golden_file": "edge_cases.json",
+        "markdownify_ref": "convert_pre"
+      },
+      "normalized_oracle_sha256": "53e50c29115d1c9bd33db23333d80089cefb3c34525cf7b6ad6f8ed86a4b5d18",
+      "oracle_sha256": "dfa8c3eeb0538c76d7207d4c26f9597f083c520181661038a0287931da4433be",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,4 @@\n+```python\n+print(\"hi\")\n+\n ```\n-print(\"hi\")\n-```\n",
+          "error": null,
+          "normalized_output_sha256": "0cd50799793edb86a695ec38ff462e54aeb917cc540f2e26fe089ace76cce739",
+          "output_sha256": "0cd50799793edb86a695ec38ff462e54aeb917cc540f2e26fe089ace76cce739",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n-```\n+```python\n print(\"hi\")\n ```\n",
+          "error": null,
+          "normalized_output_sha256": "ce423a04a6ddd7f2ea25dd39798c9a7aebe003dda40f18996f07a297d9926bad",
+          "output_sha256": "db0fe9bf918f84ad7a3619fc728b9689e83c2cd5501330f9524064363e469f34",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,2 @@\n-```\n-print(\"hi\")\n-```\n+`print(\"hi\")\n+`\n",
+          "error": null,
+          "normalized_output_sha256": "39679ac8d7740ec8bdb16de99b34bb4c8ad8d2bbccc2611740a1b2a911e65a4c",
+          "output_sha256": "39679ac8d7740ec8bdb16de99b34bb4c8ad8d2bbccc2611740a1b2a911e65a4c",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/edge_cases.json"
+    },
+    {
+      "id": "golden:edge_cases:table_th_header_inference",
+      "input_bytes": 83,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "table header inference",
+        "description": "Explicit th cells produce a real header row and separator.",
+        "golden_file": "edge_cases.json",
+        "markdownify_ref": "convert_tr"
+      },
+      "normalized_oracle_sha256": "4cb1c308438605f06b8091a042de6b7071d0c13fe139c11a8f13439122a6c7e5",
+      "oracle_sha256": "b6d053e73b3d946e3438ac06ce20e5bb4ee07557843c7034b4be1b581fdfb5b5",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n | Name | Score |\n-| --- | --- |\n-| Ada | 10 |\n+| ---- | ----- |\n+| Ada  | 10    |\n",
+          "error": null,
+          "normalized_output_sha256": "2cd816c41d85fea78529b7baf8180c58a755eb86c982f4c261daef17564278b2",
+          "output_sha256": "2cd816c41d85fea78529b7baf8180c58a755eb86c982f4c261daef17564278b2",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n | Name | Score |\n-| --- | --- |\n-| Ada | 10 |\n+| ---- | ----- |\n+| Ada  | 10    |\n",
+          "error": null,
+          "normalized_output_sha256": "2cd816c41d85fea78529b7baf8180c58a755eb86c982f4c261daef17564278b2",
+          "output_sha256": "61b58a6b15387bb7d19c5198817709ebf3e8877babfe0848c20fd63107233a78",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,5 @@\n-| Name | Score |\n-| --- | --- |\n-| Ada | 10 |\n+\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\n+Name\u2502Score\n+\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\n+Ada \u250210\n+\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\n",
+          "error": null,
+          "normalized_output_sha256": "1be34e1001fed918808d0aca04f4e6dc91569f159eed5de5cc5750a00dc78c66",
+          "output_sha256": "8cd2711b60a362e700c339edd3b78a56b58c12e49606d95ec72fb189bac3ee90",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/edge_cases.json"
+    },
+    {
+      "id": "golden:edge_cases:table_td_first_row_not_header",
+      "input_bytes": 83,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "table header inference",
+        "description": "First row with td cells is not inferred as a header; markdownify emits an empty synthetic header.",
+        "golden_file": "edge_cases.json",
+        "markdownify_ref": "convert_tr"
+      },
+      "normalized_oracle_sha256": "1912c05eda12eb7dfafb61bfdf3163612457a83e0e3e236812718b6c3e8bdb46",
+      "oracle_sha256": "29782a20ee26cac907219521c190dbe20aa21f640bbadf65deff7055fdbc2986",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,4 +1,3 @@\n-|  |  |\n-| --- | --- |\n | Name | Score |\n-| Ada | 10 |\n+| ---- | ----- |\n+| Ada  | 10    |\n",
+          "error": null,
+          "normalized_output_sha256": "2cd816c41d85fea78529b7baf8180c58a755eb86c982f4c261daef17564278b2",
+          "output_sha256": "2cd816c41d85fea78529b7baf8180c58a755eb86c982f4c261daef17564278b2",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,4 +1,7 @@\n-|  |  |\n-| --- | --- |\n-| Name | Score |\n-| Ada | 10 |\n+Name\n+\n+Score\n+\n+Ada\n+\n+10\n",
+          "error": null,
+          "normalized_output_sha256": "857d67ddf2bc43494de2edc92f5d8a5888e8c1640f1c657a33eb35796646561c",
+          "output_sha256": "a7a47602106dda6bd449f5a190b9ed4ba9ec871b45e4ca9875ed7072214add27",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,4 +1,5 @@\n-|  |  |\n-| --- | --- |\n-| Name | Score |\n-| Ada | 10 |\n+\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\n+Name\u2502Score\n+\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\n+Ada \u250210\n+\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\n",
+          "error": null,
+          "normalized_output_sha256": "1be34e1001fed918808d0aca04f4e6dc91569f159eed5de5cc5750a00dc78c66",
+          "output_sha256": "8cd2711b60a362e700c339edd3b78a56b58c12e49606d95ec72fb189bac3ee90",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/edge_cases.json"
+    },
+    {
+      "id": "golden:edge_cases:table_colspan_and_ragged_rows",
+      "input_bytes": 137,
+      "layer": "golden",
+      "metadata": {
+        "behavior": "table colspan / ragged rows",
+        "description": "Colspan and ragged rows lock markdownify's column expansion and missing-cell behavior.",
+        "golden_file": "edge_cases.json",
+        "markdownify_ref": "convert_tr"
+      },
+      "normalized_oracle_sha256": "1feeaf8c2e5c351b0e78c3d2d5cef1ec6d1299d0c4439aa42d53f939a2996dfb",
+      "oracle_sha256": "037c764785572a5336cffd4e7ff811181b8ca1cb85300a8630589f6820420538",
+      "results": [
+        {
+          "adapter": "html_to_markdown",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,5 +1,3 @@\n-|  |  |  |\n-| --- | --- | --- |\n-| Name | Score | |\n-| Ada | 10 | 11 |\n-| Bob | 9 |\n+- Name Score\n+- Ada 10 11\n+- Bob 9\n",
+          "error": null,
+          "normalized_output_sha256": "df360188dade554d44fd2cc7d56c419aabc0e6640acb9646aa4458cf21149277",
+          "output_sha256": "df360188dade554d44fd2cc7d56c419aabc0e6640acb9646aa4458cf21149277",
+          "passed": false
+        },
+        {
+          "adapter": "htmd_py",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,5 +1,13 @@\n-|  |  |  |\n-| --- | --- | --- |\n-| Name | Score | |\n-| Ada | 10 | 11 |\n-| Bob | 9 |\n+Name\n+\n+Score\n+\n+Ada\n+\n+10\n+\n+11\n+\n+Bob\n+\n+9\n",
+          "error": null,
+          "normalized_output_sha256": "e4c3e3a3662c0b66d6e80768f2e6553b3b05f12548568572fd41da978f7bf3aa",
+          "output_sha256": "e41d952b374f8b589f4197f84f71183c098815a5b1783577a55831cbe3e5563d",
+          "passed": false
+        },
+        {
+          "adapter": "html2text_rs",
+          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,5 +1,7 @@\n-|  |  |  |\n-| --- | --- | --- |\n-| Name | Score | |\n-| Ada | 10 | 11 |\n-| Bob | 9 |\n+\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\n+Name\u2502Score\n+\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u252c\u2500\u2500\n+Ada \u250210\u250211\n+\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2534\u2500\u2500\n+Bob \u25029\n+\u2500\u2500\u2500\u2500\u2534\u2500\u2500\n",
+          "error": null,
+          "normalized_output_sha256": "33ea22f2b5d594aea9cdfde611686fb23518efeb9d7e629371c0407823eb7dc5",
+          "output_sha256": "2c6b07a1796cc63beedae51e2464dc4a346dfb36715a80bd4bbb89e22a8d8f2a",
+          "passed": false
+        }
+      ],
+      "source_path": "tests/conformance/golden/edge_cases.json"
+    },
+    {
       "id": "markdownify:test_advanced:5",
       "input_bytes": 9,
       "layer": "markdownify_tests",
@@ -39023,18 +41583,18 @@
     "by_adapter": {
       "htmd_py": {
         "error": 0,
-        "failed": 535,
-        "passed": 516
+        "failed": 568,
+        "passed": 547
       },
       "html2text_rs": {
         "error": 0,
-        "failed": 679,
-        "passed": 372
+        "failed": 713,
+        "passed": 402
       },
       "html_to_markdown": {
         "error": 0,
-        "failed": 486,
-        "passed": 565
+        "failed": 514,
+        "passed": 601
       }
     },
     "by_layer": {
@@ -39053,6 +41613,23 @@
           "error": 0,
           "failed": 348,
           "passed": 306
+        }
+      },
+      "golden": {
+        "htmd_py": {
+          "error": 0,
+          "failed": 33,
+          "passed": 31
+        },
+        "html2text_rs": {
+          "error": 0,
+          "failed": 34,
+          "passed": 30
+        },
+        "html_to_markdown": {
+          "error": 0,
+          "failed": 28,
+          "passed": 36
         }
       },
       "markdownify_tests": {
@@ -39107,6 +41684,6 @@
         }
       }
     },
-    "case_count": 1051
+    "case_count": 1115
   }
 }

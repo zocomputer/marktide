@@ -168,6 +168,51 @@ def load_commonmark_cases(root: Path = DEFAULT_FIXTURE_ROOT) -> list[Case]:
     return cases
 
 
+def load_golden_cases(root: Path = DEFAULT_FIXTURE_ROOT) -> list[Case]:
+    """Load hand-authored markdownify-oracle golden cases from golden/*.json.
+
+    Golden files can be added by multiple agents without central registration. A
+    file is considered an oracle golden file when every loaded case has
+    ``input_html`` and ``expected_markdown`` fields. Files such as
+    ``normalizer_negative_cases.json`` deliberately use different fields and are
+    skipped by this loader.
+    """
+
+    golden_root = root.parent / "golden"
+    if not golden_root.exists():
+        return []
+    cases: list[Case] = []
+    for path in sorted(golden_root.glob("*.json")):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        raw_cases = payload.get("cases", [])
+        if not isinstance(raw_cases, list):
+            continue
+        for index, raw_case in enumerate(raw_cases):
+            if not isinstance(raw_case, dict):
+                continue
+            input_html = raw_case.get("input_html")
+            expected = raw_case.get("expected_markdown")
+            if not isinstance(input_html, str) or not isinstance(expected, str):
+                continue
+            case_id = str(raw_case.get("id") or f"{path.stem}:{index}")
+            cases.append(
+                Case(
+                    id=f"golden:{path.stem}:{case_id}",
+                    layer="golden",
+                    source_path=_display_path(path),
+                    html=input_html,
+                    upstream_expected_markdown=expected,
+                    metadata={
+                        "golden_file": path.name,
+                        "behavior": raw_case.get("behavior"),
+                        "markdownify_ref": raw_case.get("markdownify_ref"),
+                        "description": raw_case.get("description"),
+                    },
+                )
+            )
+    return cases
+
+
 def load_markdownify_cases(root: Path = DEFAULT_FIXTURE_ROOT) -> list[Case]:
     base = root / "markdownify" / "tests"
     cases: list[Case] = []
@@ -226,6 +271,7 @@ def _slug(value: str) -> str:
 
 def load_cases(root: Path = DEFAULT_FIXTURE_ROOT) -> list[Case]:
     return [
+        *load_golden_cases(root),
         *load_markdownify_cases(root),
         *load_turndown_cases(root),
         *load_pandoc_cases(root),

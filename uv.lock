@@ -141,6 +141,7 @@ benchmark = [
     { name = "markdownify" },
 ]
 dev = [
+    { name = "hypothesis" },
     { name = "pytest" },
 ]
 
@@ -155,7 +156,10 @@ benchmark = [
     { name = "html2text-rs", specifier = ">=0.2.5" },
     { name = "markdownify", specifier = ">=0.13" },
 ]
-dev = [{ name = "pytest", specifier = ">=8.0" }]
+dev = [
+    { name = "hypothesis", specifier = ">=6.100" },
+    { name = "pytest", specifier = ">=8.0" },
+]
 
 [[package]]
 name = "html2text-rs"
@@ -191,6 +195,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/75/19/9d8d69c1fd2ea4dcf7b7c5f92ee28368ae5e53a7c47010614c521c398672/html2text_rs-0.2.5-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:e9a1070b18127231cf03ad41e7cb77b81dcb4f2255db6a66ef916666cd42e2b8", size = 724570, upload-time = "2025-08-30T16:48:11.908Z" },
     { url = "https://files.pythonhosted.org/packages/32/ba/df049400faef18f173468e9416536c1802c3370e756e3cd8dd33a82c3275/html2text_rs-0.2.5-cp38-abi3-win32.whl", hash = "sha256:76a78338f7ba42203cc514199c493ce9c813f3418560b189385eaa03d9390449", size = 406900, upload-time = "2025-08-30T16:48:17.801Z" },
     { url = "https://files.pythonhosted.org/packages/69/85/65c0f379430aa12ed2a36eb75e641edcda028365e7705543c36964ebf0e4/html2text_rs-0.2.5-cp38-abi3-win_amd64.whl", hash = "sha256:c76a38d0c81e8238e7352c9018eb7ea089bc8dd78161bd9380770d6e895c0594", size = 408194, upload-time = "2025-08-30T16:48:15.111Z" },
+]
+
+[[package]]
+name = "hypothesis"
+version = "6.155.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "sortedcontainers" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/36/77/13ec9b6390bce44f5badab39837dd6789bbfe6342a2ac611a71537a7756f/hypothesis-6.155.3.tar.gz", hash = "sha256:1e34b17ae9873515384312cb7640abd773eb096c7eef8c0d9c614fa2c306e9bb", size = 477961, upload-time = "2026-06-16T00:33:23.273Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a2/23/ce3a543935a01e478349e82f6c1440776f92d4cb346662c4d81574878fed/hypothesis-6.155.3-py3-none-any.whl", hash = "sha256:ede5a3d142d9c5c9f70cb3075541905b228d6c3a682bcec3d4fe0722e9eda127", size = 544401, upload-time = "2026-06-16T00:33:20.497Z" },
 ]
 
 [[package]]
@@ -367,6 +383,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81", size = 34031, upload-time = "2024-12-04T17:35:28.174Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050, upload-time = "2024-12-04T17:35:26.475Z" },
+]
+
+[[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e8/c4/ba2f8066cceb6f23394729afe52f3bf7adec04bf9ed2c820b39e19299111/sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88", size = 30594, upload-time = "2021-05-16T22:03:42.897Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/46/9cb0e58b2deb7f82b84065f37f3bffeb12413f947f9388e4cac22c4621ce/sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0", size = 29575, upload-time = "2021-05-16T22:03:41.177Z" },
 ]
 
 [[package]]

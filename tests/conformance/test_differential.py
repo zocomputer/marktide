@@ -1,9 +1,10 @@
+import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from differential import Case, load_turndown_cases, normalize_markdown, run_differential, summarize
+from differential import Case, load_golden_cases, load_turndown_cases, normalize_markdown, run_differential, summarize
 
 
 class FakeAdapter:
@@ -44,6 +45,43 @@ def test_load_turndown_cases_from_attendant_html(tmp_path: Path):
     assert "<p>Hello" in cases[0].html
     assert cases[0].upstream_expected_markdown == "Hello **world**"
     assert cases[0].metadata["data_options"] == '{"headingStyle":"atx"}'
+
+
+def test_load_golden_cases_globs_oracle_schema_and_skips_negative_schema(tmp_path: Path):
+    golden = tmp_path / "golden"
+    fixtures = tmp_path / "fixtures"
+    golden.mkdir()
+    fixtures.mkdir()
+    (golden / "edge_cases.json").write_text(
+        json.dumps({
+            "schema_version": 1,
+            "cases": [
+                {
+                    "id": "x",
+                    "behavior": "b",
+                    "markdownify_ref": "ref",
+                    "description": "d",
+                    "input_html": "<p>x</p>",
+                    "expected_markdown": "x",
+                }
+            ],
+        }),
+        encoding="utf-8",
+    )
+    (golden / "normalizer_negative_cases.json").write_text(
+        json.dumps({
+            "schema_version": 1,
+            "cases": [{"id": "neg", "left_markdown": "*x*", "right_markdown": r"\*x\*"}],
+        }),
+        encoding="utf-8",
+    )
+
+    cases = load_golden_cases(fixtures)
+
+    assert [case.id for case in cases] == ["golden:edge_cases:x"]
+    assert cases[0].layer == "golden"
+    assert cases[0].html == "<p>x</p>"
+    assert cases[0].upstream_expected_markdown == "x"
 
 
 def test_run_differential_compares_candidates_against_default_oracle():
