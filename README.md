@@ -87,9 +87,10 @@ table, every public function in detail, and a **migrating-from-markdownify** gui
 
 html2md set out to replace `markdownify` on **five axes at once** — fast, async-friendly,
 streaming, bounded-memory, and faithful. The phase-3 comparison shows no existing library
-clears all five: the Rust one-shot converters are faster in raw wall time but each misses at
-least one axis — most stall the event loop, and all use multiple GiB of memory and can't
-stream; markdownify is faithful but slow and GIL-bound.
+clears all five: the faithful Rust converters (`htmd_py`, `html_to_markdown`) are faster in raw
+wall time but stall the event loop; `html2text_rs` stays responsive but is lower-fidelity; and
+all of them use multiple GiB of memory and can't stream. markdownify is faithful but slow and
+GIL-bound.
 
 ### Phase-3 results — `xlarge` fixture (~110 MiB document)
 
@@ -117,9 +118,12 @@ normalized conformance against the markdownify oracle, with two
   `html2text_rs` 0.4%.
 - **Streaming** — html2md emits the first Markdown chunk after **2.4 ms** and sustains output
   across the document; one-shot libraries emit only after the full conversion finishes.
-- **Bounded memory** — peak RSS growth (244.7 MiB on this 110 MiB input) is **11.5× lower than
-  markdownify's** and 6–18× lower than the Rust one-shots, because the streaming path builds no
-  full DOM and drains completed blocks rather than holding the whole document.
+- **Bounded scaling** — html2md's peak RSS grows **sub-linearly**: its peak-RSS-to-input ratio
+  falls from 7.7× (small) to **2.2× (xlarge)**, while markdownify's stays ~**25× at every size**
+  (linear growth). On the 110 MiB input that puts html2md's growth (244.7 MiB) **11.5× below**
+  markdownify's 2808.9 MiB — because the streaming path builds no full DOM and drains completed
+  blocks rather than holding the whole document. See
+  `benchmarks/results/charts/memory_scaling_peak_rss.png`.
 
 **Verifying fidelity:** run `make verify-fidelity` from the repository root — it prints the
 raw/effective conformance counts (296/298 = 99.3% raw, 298/298 = 100% effective), per-oracle
