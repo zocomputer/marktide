@@ -1,0 +1,32 @@
+name: CI
+
+# The lint + test gate (the same two targets a developer runs locally).
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    name: lint + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      # `make test` runs the full suite: conformance imports the markdownify oracle
+      # and property uses Hypothesis, so it needs the dev (default) + benchmark groups.
+      - name: Sync dependencies
+        run: uv sync --group benchmark
+
+      - name: Lint (ruff + ty)
+        run: make lint
+
+      - name: Test (full suite)
+        run: make test
