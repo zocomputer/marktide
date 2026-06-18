@@ -30,16 +30,25 @@ Division of responsibility (confirmed with the rules tasks)
 
 from __future__ import annotations
 
+import re
+
 from .options import Options
 from .rules import TAG_HANDLERS
 from .state import EmitterState, Frame
 
-# Characters markdownify escapes when escape_misc is on (foundation subset; the text
-# rules refine boundary-sensitive escaping per design §4.7).
-_MISC_ESCAPE = str.maketrans({
-    "\\": "\\\\", "&": "\\&", "<": "\\<", ">": "\\>",
-    "[": "\\[", "]": "\\]", "#": "\\#", "-": "\\-", "+": "\\+",
-})
+# markdownify==1.2.2 regexes (verbatim) for whitespace normalisation, child-boundary
+# newline collapse, and escape_misc — reproduced so output matches the oracle exactly.
+_RE_WHITESPACE = re.compile(r"[\t ]+")
+_RE_ALL_WHITESPACE = re.compile(r"[\t \r\n]+")
+_RE_NEWLINE_WHITESPACE = re.compile(r"[\t \r\n]*[\r\n][\t \r\n]*")
+_RE_EXTRACT_NEWLINES = re.compile(r"^(\n*)((?:.*[^\n])?)(\n*)$", flags=re.DOTALL)
+_RE_ESCAPE_MISC_CHARS = re.compile(r"([]\\&<`[>~=+|])")
+_RE_ESCAPE_MISC_DASH = re.compile(r"(\s|^)(-+(?:\s|$))")
+_RE_ESCAPE_MISC_HASHES = re.compile(r"(\s|^)(#{1,6}(?:\s|$))")
+_RE_ESCAPE_MISC_LIST = re.compile(r"((?:\s|^)[0-9]{1,9})([.)](?:\s|$))")
+
+# markdownify's `_noformat` pseudo-tag: inside any of these, text is not escaped.
+_NOFORMAT_TAGS = frozenset(("pre", "code", "kbd", "samp"))
 
 
 class MarkdownEmitter:
@@ -79,21 +88,70 @@ class MarkdownEmitter:
             self._buf().append(markdown)
 
     def emit_text(self, text: str) -> None:
-        """Append HTML text content, escaped per options unless inside ``pre``/``code``."""
-        if text:
-            self._buf().append(text if self.state.in_pre else self.escape(text))
+        """Append HTML text content, reproducing markdownify's ``process_text``:
+        normalise whitespace unless inside ``pre``, then escape unless inside a
+        ``_noformat`` element (``pre``/``code``/``kbd``/``samp``). The two gates differ
+        (whitespace skips for ``pre`` only; escaping skips for all four)."""
+        if not text:
+            return
+        if self.state.pre_depth == 0:
+            if self.options.wrap:
+                text = _RE_ALL_WHITESPACE.sub(" ", text)
+            else:
+                text = _RE_NEWLINE_WHITESPACE.sub("\n", text)
+                text = _RE_WHITESPACE.sub(" ", text)
+        if not self._in_noformat():
+            text = self.escape(text)
+        if not text:
+            return
+        buf = self._buf()
+        # Whitespace-only text between top-level blocks is formatting, not content —
+        # markdownify's block-boundary trim drops it. Doing so at the drainable root
+        # also keeps the child-boundary collapse from mis-counting newlines.
+        if buf is self.root and not text.strip():
+            return
+        buf.append(text)
 
     def escape(self, text: str) -> str:
-        """Escape Markdown-significant characters per ``Options``. Verbatim in ``pre``."""
-        if self.state.in_pre:
-            return text
-        if self.options.escape_asterisks:
-            text = text.replace("*", "\\*")
-        if self.options.escape_underscores:
-            text = text.replace("_", "\\_")
+        """Escape Markdown-significant characters per ``Options`` (markdownify ``escape``).
+        Does not consult element context — the ``_noformat`` skip lives in ``emit_text``;
+        handlers may call this for a string they source themselves."""
+        if not text:
+            return ""
         if self.options.escape_misc:
-            text = text.translate(_MISC_ESCAPE)
+            text = _RE_ESCAPE_MISC_CHARS.sub(r"\\\1", text)
+            text = _RE_ESCAPE_MISC_DASH.sub(r"\1\\\2", text)
+            text = _RE_ESCAPE_MISC_HASHES.sub(r"\1\\\2", text)
+            text = _RE_ESCAPE_MISC_LIST.sub(r"\1\\\2", text)
+        if self.options.escape_asterisks:
+            text = text.replace("*", r"\*")
+        if self.options.escape_underscores:
+            text = text.replace("_", r"\_")
         return text
+
+    def _in_noformat(self) -> bool:
+        """True if any open ancestor is pre/code/kbd/samp (markdownify ``_noformat``)."""
+        return any(frame.tag in _NOFORMAT_TAGS for frame in self.state.stack)
+
+    @staticmethod
+    def _collapse_join(parts: list[str], prefix: str = "") -> str:
+        """Join child-output strings, collapsing newlines at each boundary to at most
+        two (markdownify ``process_tag``). ``prefix`` seeds the look-back with output
+        already committed before this batch (used to collapse across drains)."""
+        updated = [""]
+        if prefix:
+            updated.append(prefix)
+        for child in parts:
+            if not child:
+                continue
+            leading, content, trailing = _RE_EXTRACT_NEWLINES.match(child).groups()
+            if updated[-1] and leading:
+                prev = updated.pop()
+                leading = "\n" * min(2, max(len(prev), len(leading)))
+            updated.append(leading)
+            updated.append(content)
+            updated.append(trailing)
+        return "".join(updated)
 
     @property
     def content(self) -> str:
@@ -130,7 +188,13 @@ class MarkdownEmitter:
         frame = self.state.pop()
         if frame is None:
             return
-        content = "".join(frame.content)
+        # Join children, collapsing newlines at boundaries — except inside pre, where
+        # newlines are verbatim. pre_depth still counts this element here (the pre
+        # handler decrements it in its own end, which runs below).
+        if self.state.pre_depth > 0:
+            content = "".join(frame.content)
+        else:
+            content = self._collapse_join(frame.content)
         handler = self._handlers.get(tag)
         if handler is not None and self._filter.converts(tag):
             self._content = content
@@ -159,28 +223,29 @@ class MarkdownEmitter:
         boundary — and the leading ``strip_document`` is applied once, so a drained
         prefix is never rewritten by later events. Top-level output only reaches the
         buffer when an element fully closes, so what is drained is already complete."""
-        s = self._pending_tail + "".join(self.root)
+        s = self._collapse_join(self.root, prefix=self._pending_tail)
         self.root.clear()
         self._pending_tail = ""
         if not self._started and self.options.strip_document in ("strip", "lstrip"):
-            s = s.lstrip()
+            s = s.lstrip("\n")
         if s and not self._started:
             self._started = True
-        body = s.rstrip()
-        self._pending_tail = s[len(body):]  # held-back trailing whitespace (only)
+        body = s.rstrip("\n")
+        self._pending_tail = s[len(body):]  # held-back trailing separator newlines
         return body
 
     def close(self) -> str:
-        """Flush all buffered output with the document-level strip applied. Works
-        whether or not ``drain`` was called first (one-shot ``convert`` vs streaming)."""
-        s = self._pending_tail + "".join(self.root)
+        """Flush all buffered output with the document-level strip applied (markdownify
+        ``convert__document_`` strips separator newlines only). Works whether or not
+        ``drain`` was called first (one-shot ``convert`` vs streaming)."""
+        s = self._collapse_join(self.root, prefix=self._pending_tail)
         self.root.clear()
         self._pending_tail = ""
         mode = self.options.strip_document
         if not self._started and mode in ("strip", "lstrip"):
-            s = s.lstrip()
+            s = s.lstrip("\n")
         if mode in ("strip", "rstrip"):
-            s = s.rstrip()
+            s = s.rstrip("\n")
         self._started = True
         return s
 

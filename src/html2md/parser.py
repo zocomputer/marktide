@@ -34,8 +34,14 @@ class IncrementalDriver:
     def __init__(self, options: Options | None = None) -> None:
         self.options = options or Options()
         self.emitter = MarkdownEmitter(self.options)
+        # encoding pins libxml2's decode: a charset-less fragment would otherwise
+        # default to ISO-8859-1 and mojibake UTF-8 input (e.g. "Café" → "CafÃ©"). A
+        # document with its own <meta charset>/BOM still overrides this.
         self._parser = etree.HTMLParser(
-            target=self.emitter, recover=True, huge_tree=True
+            target=self.emitter,
+            recover=True,
+            huge_tree=True,
+            encoding=self.options.default_encoding,
         )
         self._closed = False
         self._result: str | None = None
