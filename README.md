@@ -67,6 +67,32 @@ for piece in html2md.convert_stream([b"<ul><li>a</li>", b"<li>b</li></ul>"]):
 `html` may be `str` or `bytes`. Pass `bytes` when you have them — lxml detects the encoding
 from the document and skips a decode pass.
 
+## Running in production
+
+In async code, prefer the async entry points — they already offload the (GIL-holding) emit
+work to a worker thread via `asyncio.to_thread`, so the event loop keeps running:
+
+- **`convert_stream_async`** for unknown or large input — the loop never stalls, memory stays
+  bounded, and Markdown starts flowing within milliseconds.
+- **`convert_async`** when you just want the whole string and don't need streaming — the same
+  loop-friendliness, simpler call.
+
+```python
+md = await convert_async(html)                       # whole string, off the loop
+async for piece in convert_stream_async(chunks):     # streamed, bounded memory
+    ...
+```
+
+**Do not call the synchronous `convert()` on the event loop for large input.** It runs the
+whole conversion on the loop's *own* thread and blocks it for the full duration (seconds on a
+100 MiB document) — lxml releasing the GIL helps *other* threads, not the loop thread that is
+running the conversion. Reserve `convert()` for non-async contexts (scripts, workers, sync web
+handlers).
+
+You generally don't need to branch on input size: the `asyncio.to_thread` dispatch is
+sub-millisecond, so routing everything through `convert_async` / `convert_stream_async` in
+async code is fine.
+
 ## Options & markdownify compatibility
 
 Pass an `Options` for non-default rendering, or `markdownify_compat(**kwargs)` to reuse your
