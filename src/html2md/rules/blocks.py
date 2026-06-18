@@ -241,11 +241,100 @@ class _ListItem:
         em.emit("%s\n" % text)
 
 
-# Structural wrappers — tracked on the stack for ancestor checks, pass children through.
+class _Div:
+    """``div``/``section``/``article``/``dl`` (markdownify ``convert_div``) — a block that
+    wraps its stripped children in surrounding blank lines, or ``' text '`` inline."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        if in_inline(em):
+            em.emit(" " + em.content.strip() + " ")
+            return
+        text = em.content.strip()
+        em.emit("\n\n%s\n\n" % text if text else "")
+
+
+class _DefTerm:
+    """``dt`` — definition term. One line, whitespace flattened (markdownify ``convert_dt``)."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        text = _RE_ALL_WS.sub(" ", (em.content or "").strip())
+        if in_inline(em):
+            em.emit(" " + text + " ")
+            return
+        em.emit("\n\n%s\n" % text if text else "\n")
+
+
+class _DefDesc:
+    """``dd`` — definition description: indent 4 spaces, lead with ``:`` (markdownify
+    ``convert_dd``)."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        text = (em.content or "").strip()
+        if in_inline(em):
+            em.emit(" " + text + " ")
+            return
+        if not text:
+            em.emit("\n")
+            return
+
+        def _indent(match):
+            line = match.group(1)
+            return "    " + line if line else ""
+
+        text = _RE_LINE.sub(_indent, text)
+        text = ":" + text[1:]
+        em.emit("%s\n" % text)
+
+
+class _Figcaption:
+    """``figcaption`` (markdownify ``convert_figcaption``) — block, stripped, blank-line wrapped."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        em.emit("\n\n" + em.content.strip() + "\n\n")
+
+
+class _Drop:
+    """``script``/``style`` — dropped entirely (markdownify ``convert_script``/``convert_style``
+    return ``''``). The children rendered into the frame buffer are discarded."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        return None
+
+
+# Structural wrappers with NO markdownify converter — tracked on the stack for ancestor
+# checks, pass children through. (div/section/article/dl are NOT here: markdownify's
+# convert_div makes them blocks — see _Div.)
 _TRANSPARENT = (
-    "div", "section", "article", "main", "header", "footer", "nav", "aside",
-    "figure", "figcaption", "body", "html",
+    "main", "header", "footer", "nav", "aside", "figure", "body", "html",
 )
+
+_DIV = _Div()
+_DROP = _Drop()
 
 HANDLERS: dict[str, TagHandler] = {tag: TransparentHandler() for tag in _TRANSPARENT}
 HANDLERS["p"] = _Paragraph()
@@ -257,3 +346,12 @@ HANDLERS["pre"] = _Pre()
 HANDLERS["ul"] = _ListContainer(ordered=False)
 HANDLERS["ol"] = _ListContainer(ordered=True)
 HANDLERS["li"] = _ListItem()
+HANDLERS["div"] = _DIV
+HANDLERS["section"] = _DIV
+HANDLERS["article"] = _DIV
+HANDLERS["dl"] = _DIV
+HANDLERS["dt"] = _DefTerm()
+HANDLERS["dd"] = _DefDesc()
+HANDLERS["figcaption"] = _Figcaption()
+HANDLERS["script"] = _DROP
+HANDLERS["style"] = _DROP

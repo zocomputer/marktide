@@ -207,8 +207,74 @@ class _Image:
         em.emit("![%s](%s%s)" % (alt, src, title_part))
 
 
+class _Quote:
+    """``q`` (markdownify ``convert_q``) — wrap children in straight double quotes."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        em.emit('"' + em.content + '"')
+
+
+class _Source:
+    """``source`` — captures the first ``src`` onto the parent media frame so the
+    enclosing :class:`_Video` can use it when the media element has no own ``src``."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        stack = em.state.stack
+        parent = stack[-2] if len(stack) >= 2 else None
+        if parent is not None and parent.tag in ("video", "audio", "picture"):
+            src = attrs.get("src")
+            if src and "media_source_src" not in parent.data:
+                parent.data["media_source_src"] = src
+
+    def end(self, em) -> None:
+        return None
+
+
+class _Video:
+    """``video`` (markdownify ``convert_video``) — link/poster image depending on which of
+    ``src`` (own or first ``<source>``) and ``poster`` are present; degrades to caption text
+    inside an ``_inline`` ancestor unless the parent is in ``keep_inline_images_in``."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        text = em.content
+        frame = em.frame
+        attrs = frame.attrs if frame is not None else {}
+        if in_inline(em):
+            parent = em.state.top
+            if parent is None or parent.tag not in em.options.keep_inline_images_in:
+                em.emit(text)
+                return
+        src = attrs.get("src") or ""
+        if not src and frame is not None:
+            src = frame.data.get("media_source_src") or ""
+        poster = attrs.get("poster") or ""
+        if src and poster:
+            em.emit("[![%s](%s)](%s)" % (text, poster, src))
+        elif src:
+            em.emit("[%s](%s)" % (text, src))
+        elif poster:
+            em.emit("![%s](%s)" % (text, poster))
+        else:
+            em.emit(text)
+
+
 HANDLERS: dict[str, TagHandler] = {
     "span": TransparentHandler(),
+    "q": _Quote(),
+    "video": _Video(),
+    "source": _Source(),
     "strong": _Strong(),
     "b": _Strong(),
     "em": _Emphasis(),

@@ -4,11 +4,10 @@ Drives the committed golden corpus (``block_inline_handler_cases.json``) through
 ``convert`` and asserts byte-equality with the ``markdownify==1.2.2`` oracle output. The
 handlers reproduce markdownify's ``convert_*`` functions on the rendered children.
 
-Ten cases depend on emitter/parser machinery that is *not* a handler concern and lands in a
-separate pass (see ``EMITTER_PENDING``): markdownify's ``_noformat`` escaping skip inside
-code, ``process_text`` whitespace normalisation, the ``process_tag`` child-boundary newline
-collapse, and the parser's UTF-8 decode. They are marked ``xfail`` (non-strict) so they flip
-to passing automatically once that work lands and this file flags it to remove the marks.
+The emitter escape/whitespace/boundary pass (commit 141c6b6) cleared the bulk of the
+emitter-owned diffs. One case remains: ``blockquote_nested`` needs markdownify's item-D
+boundary trim (rstrip a text node when its *next* sibling is a block), which requires
+next-sibling lookahead not yet built; it stays ``xfail`` (non-strict) until that lands.
 """
 
 from __future__ import annotations
@@ -25,22 +24,11 @@ _CORPUS = (
     / "tests" / "conformance" / "golden" / "block_inline_handler_cases.json"
 )
 
-# Cases whose remaining diff is owned by the emitter/parser, not the block/inline handlers.
+# Cases whose remaining diff is owned by the emitter (next-sibling lookahead), not the
+# block/inline handlers.
 EMITTER_PENDING: dict[str, str] = {
-    # parser: bare fragment is decoded as latin-1, not UTF-8
-    "heading_h2_unicode_codepoints": "parser UTF-8 decode",
-    # emitter: process_tag child-boundary newline collapse (min(2, max))
-    "paragraph_two_blank_line": "boundary newline collapse",
-    "blockquote_two_paragraphs": "boundary newline collapse",
-    "hr_between_paragraphs": "boundary newline collapse",
-    # emitter: process_text whitespace normalisation / boundary trim
-    "paragraph_internal_whitespace_run": "whitespace normalisation",
-    "paragraph_source_newlines": "whitespace normalisation",
-    "br_then_whitespace": "whitespace normalisation",
-    "blockquote_nested": "whitespace boundary trim",
-    # emitter: do not escape text inside code/kbd/samp (_noformat)
-    "code_simple": "noformat escaping skip",
-    "code_no_escape_inside": "noformat escaping skip",
+    # emitter item-D: rstrip a text node when its next sibling is a block (needs lookahead)
+    "blockquote_nested": "next-sibling whitespace boundary trim",
 }
 
 
@@ -135,6 +123,42 @@ def test_strip_pre_strip_one_removes_single_newline() -> None:
     full = convert("<pre>\n\nfoo\n\n</pre>", options=Options(strip_pre="strip"))
     assert one == "```\n\nfoo\n```"
     assert full == "```\nfoo\n```"
+
+
+def test_div_section_article_are_blocks() -> None:
+    # markdownify convert_div: block separation, not transparent pass-through
+    assert convert("<div><span>Hello</div></span>") == "Hello"
+    assert convert("<section>a</section><section>b</section>") == "a\n\nb"
+    assert convert("<article>x</article>") == "x"
+
+
+def test_definition_list() -> None:
+    assert convert("<dl><dt>term</dt><dd>definition</dd></dl>") == "term\n:   definition"
+    assert (
+        convert("<dl><dt>t1</dt><dd>d1</dd><dt>t2</dt><dd>d2</dd></dl>")
+        == "t1\n:   d1\n\nt2\n:   d2"
+    )
+
+
+def test_inline_quote_uses_straight_quotes() -> None:
+    assert convert("foo <q>quote</q> bar") == 'foo "quote" bar'
+
+
+def test_script_and_style_are_dropped() -> None:
+    assert convert("foo <script>var x=42;</script> bar") == "foo  bar"
+    assert convert("foo <style>h1{color:red}</style> bar") == "foo  bar"
+
+
+def test_figcaption_is_block() -> None:
+    md = convert("TEXT<figure><figcaption>Caption</figcaption><span>SPAN</span></figure>")
+    assert md == "TEXT\n\nCaption\n\nSPAN"
+
+
+def test_video_src_poster_and_source_child() -> None:
+    assert convert('<video src="/v.mp4" poster="/i.jpg">t</video>') == "[![t](/i.jpg)](/v.mp4)"
+    assert convert('<video src="/v.mp4">t</video>') == "[t](/v.mp4)"
+    assert convert('<video><source src="/v.mp4"/>t</video>') == "[t](/v.mp4)"
+    assert convert('<video poster="/i.jpg">t</video>') == "![t](/i.jpg)"
 
 
 def test_strikethrough_and_sub_sup_symbols() -> None:

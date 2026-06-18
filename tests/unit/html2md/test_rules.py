@@ -48,5 +48,7 @@ def test_hr_is_registered_as_local_block() -> None:
 
 
 def test_structural_tags_registered_transparent() -> None:
-    for tag in ("div", "section", "article", "span", "main"):
+    # Tags with no markdownify converter pass children through unchanged.
+    # (div/section/article are NOT here — markdownify's convert_div makes them blocks.)
+    for tag in ("span", "main", "header", "footer", "nav", "aside", "figure"):
         assert isinstance(TAG_HANDLERS[tag], TransparentHandler)
