@@ -26,8 +26,11 @@ Regenerate from repo root:
 python3 scripts/regenerate_conformance_corpus.py
 ```
 
-The future phase-2 harness should consume `sources.toml` as the authoritative
-manifest and treat the generated fixture files as disposable cache data.
+`scripts/regenerate_conformance_corpus.py` reads `sources.toml` directly as the
+authoritative manifest, so source URLs, pinned commits, and selected paths cannot
+drift between duplicated script constants and the manifest. The future phase-2
+harness should also consume `sources.toml` as the authoritative manifest and
+treat the generated fixture files as disposable cache data.
 
 ## Differential harness
 

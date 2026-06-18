@@ -16,12 +16,13 @@ import re
 import shutil
 import subprocess
 import tempfile
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-FIXTURE_ROOT = REPO_ROOT / "tests" / "conformance" / "fixtures"
-LOCK_PATH = REPO_ROOT / "tests" / "conformance" / "fixtures.lock.json"
+MANIFEST_PATH = REPO_ROOT / "tests" / "conformance" / "sources.toml"
 
 
 @dataclass(frozen=True)
@@ -32,82 +33,49 @@ class Source:
     paths: tuple[str, ...]
 
 
-SOURCES: tuple[Source, ...] = (
-    Source(
-        name="markdownify",
-        url="https://github.com/matthewwithanm/python-markdownify.git",
-        commit="add391a6235cbc66af30ec0202cb00cb0ff0eb4c",
-        paths=(
-            "tests/__init__.py",
-            "tests/test_advanced.py",
-            "tests/test_args.py",
-            "tests/test_basic.py",
-            "tests/test_conversions.py",
-            "tests/test_custom_converter.py",
-            "tests/test_escaping.py",
-            "tests/test_lists.py",
-            "tests/test_tables.py",
-            "tests/types.py",
-            "tests/utils.py",
-            "README.rst",
-            "LICENSE",
-        ),
-    ),
-    Source(
-        name="turndown",
-        url="https://github.com/mixmark-io/turndown.git",
-        commit="fb7a865ef5eba4081dfd4e20a894a61ef7a2edca",
-        paths=(
-            "test/index.html",
-            "test/turndown-test.js",
-            "test/internals-test.js",
-            "package.json",
-            "LICENSE",
-        ),
-    ),
-    Source(
-        name="turndown-attendant",
-        url="https://github.com/mixmark-io/turndown-attendant.git",
-        commit="651033cae3862b2fadea2f778ab7902ca5f3eee8",
-        paths=(
-            "README.md",
-            "attendant.js",
-            "package.json",
-            "LICENSE",
-        ),
-    ),
-    Source(
-        name="pandoc",
-        url="https://github.com/jgm/pandoc.git",
-        commit="850c7b9613aa7beb1aed8c2c1f7abb01eaf3023e",
-        paths=(
-            "test/Tests/Readers/HTML.hs",
-            "test/Tests/Writers/HTML.hs",
-            "test/html-reader.html",
-            "test/lhs-test.html",
-            "test/s5-basic.html",
-            "test/s5-fancy.html",
-            "test/s5-fragment.html",
-            "test/s5-inserts.html",
-            "test/fb2/images-embedded.html",
-            "test/ipynb/rank.out.html",
-            "data/templates/default.html4",
-            "data/templates/default.html5",
-            "COPYING.md",
-        ),
-    ),
-    Source(
-        name="commonmark-spec",
-        url="https://github.com/commonmark/commonmark-spec.git",
-        commit="3da939428d80f146f270cd1765e4ba462e96bb1b",
-        paths=(
-            "spec.txt",
-            "test/spec_tests.py",
-            "test/normalize.py",
-            "LICENSE",
-        ),
-    ),
-)
+def _repo_relative_path(value: str) -> Path:
+    path = Path(value)
+    if path.is_absolute():
+        raise ValueError(f"manifest paths must be repo-relative, got absolute path: {value}")
+    return REPO_ROOT / path
+
+
+def load_manifest(path: Path = MANIFEST_PATH) -> tuple[Path, Path, tuple[Source, ...]]:
+    """Read sources.toml as the single source of truth for corpus inputs."""
+
+    manifest = tomllib.loads(path.read_text(encoding="utf-8"))
+    corpus = manifest.get("corpus", {})
+    fixture_root = _repo_relative_path(_required_str(corpus, "fixture_root", "corpus"))
+    lock_path = _repo_relative_path(_required_str(corpus, "lockfile", "corpus"))
+
+    sources: list[Source] = []
+    for table_name, table in manifest.get("sources", {}).items():
+        context = f"sources.{table_name}"
+        fixture_path = _required_str(table, "fixture_path", context)
+        fixture_name = Path(fixture_path).name
+        if not fixture_name:
+            raise ValueError(f"{context}.fixture_path must end in a fixture directory name")
+        selected_paths = table.get("selected_paths")
+        if not isinstance(selected_paths, list) or not all(isinstance(item, str) for item in selected_paths):
+            raise ValueError(f"{context}.selected_paths must be a list of strings")
+        sources.append(
+            Source(
+                name=fixture_name,
+                url=_required_str(table, "url", context),
+                commit=_required_str(table, "commit", context),
+                paths=tuple(selected_paths),
+            )
+        )
+    if not sources:
+        raise ValueError("sources.toml must contain at least one [sources.*] table")
+    return fixture_root, lock_path, tuple(sources)
+
+
+def _required_str(table: dict[str, Any], key: str, context: str) -> str:
+    value = table.get(key)
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{context}.{key} must be a non-empty string")
+    return value
 
 
 def run(cmd: list[str], cwd: Path | None = None) -> None:
@@ -147,9 +115,14 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def build_lock(destination_root: Path, copied_by_source: dict[str, list[str]]) -> dict[str, object]:
+def build_lock(
+    destination_root: Path,
+    copied_by_source: dict[str, list[str]],
+    sources: tuple[Source, ...],
+    manifest_path: Path = MANIFEST_PATH,
+) -> dict[str, object]:
     lock_sources = {}
-    source_by_name = {source.name: source for source in SOURCES}
+    source_by_name = {source.name: source for source in sources}
     for name, copied_paths in copied_by_source.items():
         source = source_by_name[name]
         files = []
@@ -169,6 +142,7 @@ def build_lock(destination_root: Path, copied_by_source: dict[str, list[str]]) -
         "version": 1,
         "fixture_root": str(destination_root.relative_to(REPO_ROOT)),
         "generated_by": str(Path(__file__).resolve().relative_to(REPO_ROOT)),
+        "manifest": str(manifest_path.relative_to(REPO_ROOT)),
         "sources": lock_sources,
     }
 
@@ -212,26 +186,27 @@ def main() -> None:
     parser.add_argument("--keep-temp", action="store_true", help="do not delete temporary clone directory")
     args = parser.parse_args()
 
-    FIXTURE_ROOT.mkdir(parents=True, exist_ok=True)
+    fixture_root, lock_path, sources = load_manifest()
+    fixture_root.mkdir(parents=True, exist_ok=True)
     tmp_ctx = tempfile.TemporaryDirectory(prefix="html2md-conformance-")
     tmp = Path(tmp_ctx.name)
     try:
         copied_by_source: dict[str, list[str]] = {}
-        for source in SOURCES:
+        for source in sources:
             checkout = clone_at(source, tmp)
-            copied_by_source[source.name] = copy_selected_files(source, checkout, FIXTURE_ROOT)
+            copied_by_source[source.name] = copy_selected_files(source, checkout, fixture_root)
 
-        summary = summarize(FIXTURE_ROOT)
+        summary = summarize(fixture_root)
         summary["copied_paths"] = copied_by_source
-        summary_path = FIXTURE_ROOT / "_generated_summary.json"
+        summary_path = fixture_root / "_generated_summary.json"
         summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-        lock = build_lock(FIXTURE_ROOT, copied_by_source)
-        LOCK_PATH.write_text(json.dumps(lock, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        lock = build_lock(fixture_root, copied_by_source, sources, MANIFEST_PATH)
+        lock_path.write_text(json.dumps(lock, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
         print(json.dumps(summary, indent=2, sort_keys=True))
         print(f"Wrote {summary_path.relative_to(REPO_ROOT)}")
-        print(f"Wrote {LOCK_PATH.relative_to(REPO_ROOT)}")
+        print(f"Wrote {lock_path.relative_to(REPO_ROOT)}")
     finally:
         if args.keep_temp:
             print(f"Keeping temporary clone directory: {tmp}")

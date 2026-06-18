@@ -1,6 +1,7 @@
 {
   "fixture_root": "tests/conformance/fixtures",
   "generated_by": "scripts/regenerate_conformance_corpus.py",
+  "manifest": "tests/conformance/sources.toml",
   "sources": {
     "commonmark-spec": {
       "commit": "3da939428d80f146f270cd1765e4ba462e96bb1b",
