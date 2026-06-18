@@ -51,3 +51,38 @@ The benchmark fixture plan should write a `benchmarks/fixtures/manifest.json` wi
 ## Supply-chain pin conclusion
 
 The `html-to-markdown==3.5.7` choice over `html-to-markdown==3.6.13` is sound. As of this review on 2026-06-18, PyPI reports `3.6.13` uploaded on 2026-06-17 and `3.5.7` uploaded on 2026-05-29, so `3.5.7` satisfies a 7-day cooldown while preserving the modern `convert()` / `ConversionResult` API used by the planned benchmark.
+
+## Re-review / disposition update for `f6a3fb5`
+
+Date: 2026-06-18  
+Incorporation commit reviewed: `f6a3fb5` (`test: stage conformance corpus manifests`)  
+Scope: coder-1-leaf changes for research-review P1#1, P2 license/maintenance metadata, and P2 benchmark fixture immutability. P1 streaming-support and P1 apples-to-apples option mapping remain owned by the design/benchmark follow-up thread.
+
+### Disposition: P1 — External conformance corpora are not reproducibly pinned or mechanically imported
+
+**Status: Resolved for research staging.**
+
+`f6a3fb5` adds `tests/conformance/sources.toml` with pinned source URLs, exact commit SHAs, selected paths, licenses, roles, case formats, expected-output normalization policies, and local counts for `python-markdownify`, `turndown`, `turndown-attendant`, `pandoc`, and `commonmark-spec`. It also adds `scripts/regenerate_conformance_corpus.py`, which clones each source at the exact commit and copies only the selected paths into the gitignored `tests/conformance/fixtures/` tree, plus `tests/conformance/fixtures.lock.json` with byte counts and SHA-256 hashes.
+
+Verification performed: ran `python3 scripts/regenerate_conformance_corpus.py` from the repo root. The script completed successfully, regenerated `tests/conformance/fixtures/`, and reproduced `tests/conformance/fixtures.lock.json` with no working-tree diff. This satisfies the mechanical pinning/reproducibility requirement for the research layer.
+
+Non-blocking follow-up: `scripts/regenerate_conformance_corpus.py` currently duplicates the source commit/path manifest in Python constants instead of reading `tests/conformance/sources.toml`. Add either a drift check or make the script read the TOML before future corpus expansion.
+
+### Disposition: P2 — License and maintenance checks are incomplete in the checked-in research
+
+**Status: Resolved.**
+
+`docs/research.md` now includes a candidate metadata table covering license metadata, maintenance signal, wheel/platform coverage, and supply-chain note for `html-to-markdown==3.5.7`, `htmd-py==0.1.2`, `html2text_rs==0.2.5`, and `fast-html2md==0.2.0`. This is sufficient for the research doc; dependency adoption can re-check dates before adding runtime dependencies.
+
+### Disposition: P2 — Benchmark fixture generation is mutable and can produce malformed truncation artifacts
+
+**Status: Resolved for benchmark staging.**
+
+`f6a3fb5` replaces the inline byte-truncating fixture-generation recipe with `scripts/regenerate_benchmark_fixtures.py` and `benchmarks/fixtures.lock.json`. The generator records source byte hashes and fixture hashes, does not raw-truncate assembled HTML bytes, closes the outer document, and parse-guards generated fixtures with `lxml.html` when available. `docs/research.md` now points at the script and lists the committed fixture hashes.
+
+Verification performed: ran `python3 scripts/regenerate_benchmark_fixtures.py` from the repo root. The script completed successfully, regenerated `benchmarks/fixtures/*.html`, and reproduced `benchmarks/fixtures.lock.json` with no working-tree diff.
+
+### Remaining open findings after `f6a3fb5`
+
+- **P1 — Candidate streaming support is not actually assessed:** still open in this review doc, but separately addressed by coder-3-leaf in `docs/rust-candidate-smoke.md` and the design/benchmark thread.
+- **P1 — Apples-to-apples option mapping is missing:** still open in this review doc, but owned by the design/benchmark adapter work rather than the research corpus-staging commit.
