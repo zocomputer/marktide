@@ -1,6 +1,6 @@
 # Morning fidelity report prep — html2md
 
-Snapshot basis: current main after `492103d` (standalone table fragments) and `73b77a3` (lxml heading parse divergences logged). Differential command used for the snapshot:
+Snapshot basis: current main after `cc46d58` (item-D whitespace + CDATA), `492103d` (standalone table fragments), and `73b77a3` (lxml heading parse divergences logged). Differential command used for the snapshot:
 
 ```bash
 uv run --group benchmark python tests/conformance/differential.py --report-dir /tmp/html2md-fidelity-report --max-diff-chars 300
@@ -13,21 +13,21 @@ Primary/drop-in contract layers are `golden` and corrected `markdownify_tests` o
 | Layer / metric | html2md | html2md_streaming | Notes |
 | --- | ---: | ---: | --- |
 | `golden` | 64 / 64 = **100.0%** | 64 / 64 = **100.0%** | Hand-authored tricky markdownify oracle cases. |
-| corrected `markdownify_tests` | 229 / 234 = **97.9%** | 229 / 234 = **97.9%** | Excludes custom converter fixtures; honors upstream `md(..., strip_document=None, **kwargs)`. |
-| **Primary raw total** | 293 / 298 = **98.3%** | 293 / 298 = **98.3%** | 5 raw failures remain. |
-| **Primary effective total with allowed divergences** | 295 / 298 = **98.993%** | 295 / 298 = **98.993%** | Counts the two lxml-vs-BS4 parser divergences as allowed. Not mathematically ≥99% yet; one more unallowed fix crosses it. |
+| corrected `markdownify_tests` | 230 / 234 = **98.3%** | 230 / 234 = **98.3%** | Excludes custom converter fixtures; honors upstream `md(..., strip_document=None, **kwargs)`. |
+| **Primary raw total** | 294 / 298 = **98.7%** | 294 / 298 = **98.7%** | 4 raw failures remain. |
+| **Primary effective total with allowed divergences** | 296 / 298 = **99.329%** | 296 / 298 = **99.329%** | Counts the two lxml-vs-BS4 parser divergences as allowed. **≥99% gate crossed.** |
 
-Remaining unallowed primary failures: `markdownify:test_advanced:39` (CDATA parser preservation), `markdownify:test_lists:47`, and `markdownify:test_lists:73` (list/trailing-block boundary blank lines). The two remaining raw failures `markdownify:test_conversions:182` and `markdownify:test_conversions:183` are allowed parser divergences.
+Remaining unallowed primary failures: `markdownify:test_lists:47` and `markdownify:test_lists:73` (list/trailing-block boundary blank lines). The two remaining raw failures `markdownify:test_conversions:182` and `markdownify:test_conversions:183` are allowed parser divergences. `markdownify:test_advanced:39` (CDATA parser preservation) is now fixed.
 
 ## Guardrail / triangulation oracles
 
 | Guardrail layer | html2md | html2md_streaming | Notes |
 | --- | ---: | ---: | --- |
-| `commonmark_expected_html` | 646 / 654 = **98.8%** | 646 / 654 = **98.8%** | Uses CommonMark render-tree semantic comparison, not raw Markdown string equality. |
+| `commonmark_expected_html` | 647 / 654 = **98.9%** | 647 / 654 = **98.9%** | Uses CommonMark render-tree semantic comparison, not raw Markdown string equality. |
 | `pandoc` | 6 / 8 = **75.0%** | 6 / 8 = **75.0%** | Uses Pandoc chrome/body normalization; small fixture set. |
 | `turndown` | 122 / 125 = **97.6%** | 122 / 125 = **97.6%** | Default-semantics Turndown cases only. |
 | `turndown_options` | 22 / 22 = **100.0%** | 22 / 22 = **100.0%** | Option-surface cases separated from default Turndown guardrail. |
-| **All layers total** | 1089 / 1107 = **98.4%** | 1089 / 1107 = **98.4%** | Overall guardrail rollup; not the drop-in headline. |
+| **All layers total** | 1091 / 1107 = **98.6%** | 1091 / 1107 = **98.6%** | Overall guardrail rollup; not the drop-in headline. |
 
 ## Allowed divergences
 
@@ -49,7 +49,7 @@ Validated command:
 uv run --group benchmark pytest tests/property -vv
 ```
 
-Result: **5 passed, 1 xfailed in 4.86s**, within the hard <10s fast-profile requirement.
+Result: **5 passed, 1 xfailed in 4.41s** on the latest run, within the hard <10s fast-profile requirement.
 
 Passing relations:
 
@@ -65,4 +65,4 @@ Documented acceptable xfail:
 
 ## Gate status
 
-Do **not** call the ≥99% primary gate yet on exact math: effective primary fidelity is **295 / 298 = 98.993%**. Fixing any one of the three remaining unallowed primary failures crosses the gate (296 / 298 = 99.329%).
+**Call the ≥99% primary gate as crossed** on effective fidelity: **296 / 298 = 99.329%** after counting the two documented lxml-vs-BS4 parser divergences. Raw primary fidelity is **294 / 298 = 98.658%**. Two unallowed list-boundary residuals remain for cleanup, but they no longer block the ≥99% effective gate.
