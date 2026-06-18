@@ -66,6 +66,16 @@ internal imports beyond the public surface (`convert`, `convert_async`, `convert
 - **Encoding & malformed:** non-UTF-8 declared encodings, lying declarations, BOMs,
   unclosed tags, truncated input — must not crash, must produce sensible Markdown. *Path:*
   `e2etests/test_robustness.py`.
+- **No-truncation on huge docs (`huge_tree=True`):** convert the ~100 MiB `xlarge` fixture and
+  assert the *tail* content (a sentinel near EOF) appears in the output — guards the libxml2
+  silent-truncation bug (design §4.1/§4.2, misc-leaf zo-1fp.4). Also assert a build of the
+  driver *without* `huge_tree=True` would truncate (negative control), so the flag's necessity
+  is proven, not assumed. *Path:* `e2etests/test_huge_tree.py`. **Cadence:** nightly (needs the
+  large fixture).
+- **Streaming prefix-immutability:** for selected fixtures, record the *sequence* of chunks
+  yielded by `convert_stream` and assert the running concatenation is always a prefix of the
+  final whole-document output — no yielded chunk is ever effectively rewritten (design §4.7
+  safe-flush barriers). *Path:* `e2etests/test_stream_prefix.py`.
 - **Runner:** `make e2e` → `pytest e2etests` (excluding `load/`, `fuzz/`).
 - **Cadence:** nightly + on-demand. A fast subset is tagged `@smoke` (see §6) for PRs.
 - **Artifact:** JUnit XML + `e2etests/results/e2e.json` (per-case pass/fail + invariant
@@ -82,10 +92,11 @@ html2md agree with the agreed oracle, and how does it compare to every other can
 ### 2.1 Oracle comparison (gating)
 
 - **Oracle:** live `markdownify==1.2.2` (design §5.1), the drop-in target.
-- **Method:** over the conformance corpus (`tests/conformance/*_cases/`) **and** the real-page
-  corpus, run html2md and markdownify, normalize both (design §5.3 normalization), assert
-  semantic equivalence. Every divergence must be listed in
-  `e2etests/differential/allowed_divergences.toml` with a reason, or the test fails.
+- **Method:** over the conformance corpus (`tests/conformance/fixtures/*/`) **and** the
+  real-page corpus, run html2md and markdownify, normalize both with `normalize_md` (design
+  §5.3.1), assert semantic equivalence. Every divergence must be a row in
+  `e2etests/differential/allowed_divergences.toml` (schema in design §5.3.3), or the test
+  fails. Net-new unexplained divergence vs the stored ledger = fail (the divergence budget).
 - **Path:** `e2etests/differential/test_vs_markdownify.py`.
 
 ### 2.2 Cross-library comparison matrix (reporting, non-gating)
@@ -100,9 +111,13 @@ html2md agree with the agreed oracle, and how does it compare to every other can
 
 ### 2.3 Normalization correctness
 
-- The normalization function itself is unit-tested (idempotent, doesn't mask real
-  differences) in `tests/unit/test_normalization.py` (`make test`) — a normalizer that's too
-  aggressive would hide bugs, so it is tested independently.
+- `normalize_md` is unit-tested in `tests/unit/test_normalization.py` (`make test`) for
+  **idempotence** *and* with the **negative cases** of design §5.3.5 that must stay different
+  after normalization (nested-list indent, blank line inside code, swapped table column,
+  changed link target/title, changed image alt, escaped-vs-unescaped `*`/`_`). A normalizer
+  that collapses any of these fails — the guard that keeps the gating oracle honest.
+- `turndown_to_markdownify` / `pandoc_to_canonical` (design §5.3.2) are unit-tested against
+  their documented rules + non-goals in the same file.
 
 - **Runner:** `make diff-test` → `pytest e2etests/differential` (gating part) + `python -m
   e2etests.differential.matrix` (report). **Cadence:** nightly. **Artifact:**
@@ -125,6 +140,12 @@ For each (adapter × fixture size × placement), with a background heartbeat cor
   `asyncio.to_thread` / `run_in_executor`.
 - **Stage decomposition** for the lxml/html2md paths: S1 parse-only, S2 parse+iterate, S3
   full convert (design §3.3.1) — so we never overclaim parse-only GIL release.
+- **Callback-density fixtures** (design §3.3.2): thousands of empty/nested tags, a
+  thousand-cell row, entity storms, link/image storms — run through placement B at each swept
+  `chunk_size`. *Path:* fixtures from `benchmarks/harness/synth.py`.
+- **Per-`feed()` metrics** reported alongside byte `chunk_size`: events per chunk, **max
+  callbacks per `feed()`**, **max `feed()` wall time**, attributed heartbeat delay — proving
+  "small byte chunk ⇒ short GIL hold" or exposing where it breaks.
 - **Controls/baselines:** pure-Python CPU burner (must stall in B), `time.sleep` sleeper
   (must not stall in B), CPU+sleep mix (partial occupancy).
 
@@ -132,6 +153,11 @@ For each (adapter × fixture size × placement), with a background heartbeat cor
 
 - **Reported:** p50/p95/p99/max heartbeat delay, total stall, missed beats, longest
   contiguous stall, plus throughput (so a "smooth but trivially slow" engine is visible).
+- **Gating assertion (full benchmark):** worker-thread full-convert (S3) — **< 2% of
+  heartbeats delayed > 2 ms AND max delay < 15 ms** (primary metric; percentiles under-weight
+  rare GIL-held windows — misc-leaf zo-1fp.7) — on every tier **and** on the callback-density
+  fixtures, with max per-`feed()` wall time ≤ 2 ms; p99 ≤ 2 ms reported as a secondary signal
+  (design §3.5 crit 2, §3.3.2). Schema/fields in §11.
 - **CI smoke assertion:** on tiny inputs, a regression test asserts the *ordering* holds —
   markdownify placement B stalls ≥ N× more than the lxml/html2md placement-B S1 — and that
   the controls behave (CPU burner stalls, sleeper doesn't). This catches a probe that has
@@ -156,11 +182,21 @@ Design §3.4 / §8. Listed here for completeness of the test inventory.
   benchmarks (rubric pt 8), sizes through ~100 MiB, **process isolation per adapter** (each
   adapter benchmarked in its own subprocess so import-time/global state and allocator
   warmth don't leak across libraries — per research.md "same runner process isolation").
+- **Time-to-first-output + cadence (streaming, design §3.5 crit 4):** for `convert_stream` /
+  `convert_stream_async`, measure wall time to the **first** yielded Markdown chunk and the
+  **max inter-chunk gap** on `large`/`xlarge`; assert TTFO ≤ 50 ms and max gap ≤ 100 ms.
+  One-shot adapters are recorded with TTFO = full-convert time (they structurally emit only at
+  the end), making the streaming advantage explicit. *Path:* `benchmarks/harness/ttfo.py`.
+- **Fixture hash verification (design §3.2, reviewer-leaf P2 #2):** before timing, the runner
+  verifies every fixture against `benchmarks/fixtures/manifest.json`; on mismatch it aborts
+  with the exact regeneration command. Safe-boundary vs intentionally-malformed fixtures are
+  separate named cases.
 - **Path:** `benchmarks/harness/runner.py`, adapters in `benchmarks/harness/adapters/`.
 - **Runner:** `make bench`. **Cadence:** on-demand + nightly perf-track job that fails on
-  regression beyond tolerance vs a stored baseline (`benchmarks/results/baseline.json`).
-- **Artifact:** `benchmarks/results/phase{1,3}.json` + throughput / RSS-curve / p99-delay
-  plots.
+  regression beyond tolerance (warm throughput > 10% or worker p99 > 0.5 ms vs
+  `benchmarks/results/baseline.json`; baseline bumped only via reviewed `make bench-baseline`).
+- **Artifact:** `benchmarks/results/phase{1,3}.json` + throughput / RSS-curve / p99-delay /
+  TTFO+cadence plots.
 
 ---
 
@@ -169,17 +205,17 @@ Design §3.4 / §8. Listed here for completeness of the test inventory.
 Validates behavior under sustained and concurrent load — the real production shape (many
 conversions on a shared event loop).
 
-- **Concurrency / responsiveness:** spawn K concurrent `convert_async` calls on one event
-  loop while the heartbeat runs; assert aggregate throughput scales and **p99 heartbeat
-  delay stays under bound** even with K conversions in flight (this is the property that
-  actually protects the server). *Path:* `e2etests/load/test_concurrent_async.py`.
-- **Soak / memory stability:** run thousands of conversions of mixed sizes for a fixed
-  duration; assert **no RSS growth trend** (no leak in the C parser or the worker-thread
-  pump) via linear-regression slope ≈ 0 on the RSS samples. *Path:*
+- **Concurrency / responsiveness:** spawn K=32 concurrent `convert_async` calls on one event
+  loop while the heartbeat runs; assert aggregate throughput scales and **p99 heartbeat delay
+  ≤ 5 ms** with K conversions in flight (looser than the single-convert 2 ms bound because the
+  thread pool is saturated; value in §11). *Path:* `e2etests/load/test_concurrent_async.py`.
+- **Soak / memory stability:** run conversions of mixed sizes for ≥ 10 min; assert **no RSS
+  growth trend** via OLS slope over the RSS samples ≤ **64 KiB/min** with R² reported (window
+  = full run after a 30 s warmup) — a real leak shows a clear positive slope. *Path:*
   `e2etests/load/test_soak.py`.
 - **Streaming back-pressure:** feed `convert_stream_async` from a slow producer and a slow
-  consumer; assert bounded queue depth and bounded memory (back-pressure works, design §4.5).
-  *Path:* `e2etests/load/test_backpressure.py`.
+  consumer; assert the `asyncio.Queue` never exceeds its `maxsize` and peak RSS stays within
+  the streaming bound (design §4.5). *Path:* `e2etests/load/test_backpressure.py`.
 - **Runner:** `make load` → `pytest e2etests/load -m load`. **Cadence:** on-demand +
   weekly (too slow for nightly). **Artifact:** `e2etests/results/load.json` + RSS-over-time
   and heartbeat-delay-under-concurrency plots.
@@ -214,7 +250,9 @@ Adversarial input generation beyond the curated corpus (design §9 URP items 2�
 - **Runner:** `make fuzz` → `pytest e2etests/fuzz` (bounded examples in nightly; long
   campaign on-demand with `--hypothesis-profile=campaign`). **Cadence:** nightly (short) +
   on-demand (long). **Artifact:** Hypothesis example DB + minimized repros committed under
-  `e2etests/fuzz/repros/` when a failure is found.
+  `e2etests/fuzz/repros/` when a failure is found, each with a sidecar
+  `<repro>.meta.json` (schema in §11): id, discovering test, seed, shrunk input hash,
+  failure category, first-seen timestamp, linked bead.
 
 ---
 
@@ -255,9 +293,10 @@ deps):
   deterministic and committed so CI never depends on a network fetch. The large
   (100 MiB) fixtures are generated/gitignored (research.md) and only the nightly/on-demand
   jobs that need them regenerate via the pinned command.
-- **Corpus importer** (`tests/conformance/import_corpus.py` + `sources.toml`): pins external
-  conformance corpora at commit SHAs for reproducibility (rubric pt 4 / research.md
-  follow-up).
+- **Corpus regenerator** (`scripts/regenerate_conformance_corpus.py` +
+  `tests/conformance/sources.toml` + `tests/conformance/fixtures.lock.json`): pins external
+  conformance corpora at commit SHAs and hashes generated cases for reproducibility (design
+  §5.3 / rubric pt 4 / research.md follow-up).
 
 ---
 
@@ -273,3 +312,66 @@ deps):
 
 All targets are defined in the repo `Makefile`; a test that isn't wired to a target and a
 cadence here is not a real commitment.
+
+---
+
+## 11. Artifact schemas & numeric thresholds (reviewer-leaf P2 #4)
+
+Central, versioned table of every pass/fail bound and the JSON shape of every result artifact,
+so harnesses written by different agents agree. Thresholds mirror design §3.5 gate `v1`.
+
+### 11.1 Numeric thresholds
+
+| Metric | Bound | Where asserted |
+|---|---|---|
+| Worker-thread full-convert (S3) async-yield — **primary** | **< 2% beats > 2 ms AND max < 15 ms** (all tiers + callback-density) | §3.2 |
+| Worker-thread p99 heartbeat — secondary signal | ≤ 2 ms (reported, not sole gate) | §3.2 |
+| Max per-`feed()` wall time | ≤ 2 ms | §3.2 |
+| Throughput | ≥ 5× markdownify on `medium`+ and ≥ 20 MB/s on `large`/`xlarge` | §4 |
+| One-shot peak RSS | ≤ 3× input bytes | §4 |
+| Streaming peak RSS (`xlarge`) | ≤ 256 MiB constant | §4, §5 |
+| Time-to-first-output (`large`/`xlarge`) | ≤ 50 ms | §4 |
+| Max inter-chunk gap | ≤ 100 ms | §4 |
+| Conformance semantic match | ≥ 99% of cases, 0 unlisted divergences | §2.1 |
+| Concurrent (K=32) p99 heartbeat | ≤ 5 ms | §5 |
+| Soak RSS slope | ≤ 64 KiB/min (R² reported) | §5 |
+| Back-pressure queue depth | ≤ `Queue.maxsize` always | §5 |
+| Per-input fuzz timeout | 5 s | §7 |
+| Perf-regression tolerance | warm throughput > 10% **or** worker p99 > 0.5 ms vs baseline | §4 |
+
+### 11.2 Result artifact schemas (required JSON fields)
+
+- **`benchmarks/results/gil.json`** — per `{adapter, fixture, placement, stage, chunk_size}`:
+  `p50_ms, p95_ms, p99_ms, max_ms, total_stall_ms, missed_beats, longest_stall_ms,
+  events_per_chunk, max_callbacks_per_feed, max_feed_ms, throughput_mb_s`.
+- **`benchmarks/results/phase{1,3}.json`** — per `{adapter, fixture}`: `cold_s, warm_median_s,
+  warm_runs, throughput_mb_s, peak_rss_bytes, input_bytes, output_bytes, output_hash,
+  ttfo_ms, max_chunk_gap_ms, streaming (bool)`; top-level `gate_version`.
+- **`e2etests/results/load.json`** — `{test, concurrency_k, duration_s, agg_throughput_mb_s,
+  p99_heartbeat_ms, rss_slope_bytes_per_min, rss_r2, max_queue_depth, queue_maxsize}`.
+- **`e2etests/results/differential.json`** — per case: `{source, case_id, oracle_match (bool),
+  normalized_diff, divergence_listed (bool)}`; top-level match-rate.
+- **`e2etests/fuzz/repros/<id>.meta.json`** — `{id, discovering_test, hypothesis_seed,
+  input_sha256, failure_category, first_seen, bead}`.
+
+Each result file is the unit the nightly perf-track and regression jobs diff against the
+stored baseline; adding a metric means adding its field here first.
+
+---
+
+## 12. Review disposition
+
+### Round 1 — `reviewer-leaf`, reviewed `445bae8` (`docs/design-review.md`)
+
+Findings touching the test plan, incorporated:
+
+| # | Sev | Finding | Disposition | Where |
+|---|---|---|---|---|
+| 1 | P1 | Normalizer could mask regressions | **Fixed** — negative tests for the §5.3.5 cases; transform unit tests | §2.3 |
+| 4 | P1 | GIL probe lacks callback-heavy controls | **Fixed** — callback-density fixtures + per-`feed()` metrics + 2 ms gate | §3 |
+| 6 | P2 | No TTFO gate | **Fixed** — TTFO + cadence measured and bounded | §4 |
+| 7 | P2 | Fixture reproducibility via mutable downloads | **Fixed** — manifest hash verification before timing | §4 |
+| 9 | P2 | Tests lack concrete values / artifact schemas | **Fixed** — §11 thresholds + JSON schemas; §5 load bounds made concrete | §11, §5 |
+
+Design-side findings (oracle/options/streaming-flush/gates/`ConversionResult`) are dispositioned
+in `docs/design.md` §13.
