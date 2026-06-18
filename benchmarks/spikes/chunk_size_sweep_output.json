@@ -1,0 +1,112 @@
+{
+  "heartbeat_interval_ms": 1.0,
+  "idle_jitter": {
+    "max_ms": 0.35500001488253474,
+    "mean_ms": 0.26362798785671643,
+    "p50_ms": 0.2774580391123891,
+    "p95_ms": 0.3048749533481896,
+    "p99_ms": 0.31995894480496645,
+    "samples": 594
+  },
+  "input_bytes": 52429809,
+  "input_mib": 50.000962257385254,
+  "input_path": "benchmarks/spikes/sample_50mb.html",
+  "python": "3.12.13",
+  "rows": [
+    {
+      "chunk_size_bytes": 4096,
+      "chunk_size_kib": 4,
+      "chunks": 12801,
+      "max_ms": 1.0779999904334545,
+      "mean_ms": 0.301229627980665,
+      "p50_ms": 0.30174995865672827,
+      "p95_ms": 0.35983398649841547,
+      "p99_ms": 0.42754201078787446,
+      "parse_s": 0.7632656249916181,
+      "samples": 587,
+      "target_counts": {
+        "data_events": 2588377,
+        "ends": 1756404,
+        "starts": 1756404,
+        "text_chars": 26117055
+      },
+      "throughput_mib_s": 65.50925473413577
+    },
+    {
+      "chunk_size_bytes": 16384,
+      "chunk_size_kib": 16,
+      "chunks": 3201,
+      "max_ms": 0.43245799699798226,
+      "mean_ms": 0.2989483302718186,
+      "p50_ms": 0.30179099505767226,
+      "p95_ms": 0.3576250057667494,
+      "p99_ms": 0.39475002652034163,
+      "parse_s": 0.7377965000341646,
+      "samples": 568,
+      "target_counts": {
+        "data_events": 2588377,
+        "ends": 1756404,
+        "starts": 1756404,
+        "text_chars": 26117055
+      },
+      "throughput_mib_s": 67.77066881595385
+    },
+    {
+      "chunk_size_bytes": 65536,
+      "chunk_size_kib": 64,
+      "chunks": 801,
+      "max_ms": 0.5978749725036323,
+      "mean_ms": 0.30342884973767514,
+      "p50_ms": 0.2993750278837979,
+      "p95_ms": 0.36212498182430863,
+      "p99_ms": 0.4290409744717181,
+      "parse_s": 0.7467057500034571,
+      "samples": 573,
+      "target_counts": {
+        "data_events": 2588377,
+        "ends": 1756404,
+        "starts": 1756404,
+        "text_chars": 26117055
+      },
+      "throughput_mib_s": 66.96206940572476
+    },
+    {
+      "chunk_size_bytes": 262144,
+      "chunk_size_kib": 256,
+      "chunks": 201,
+      "max_ms": 0.867333019617945,
+      "mean_ms": 0.3026329051795859,
+      "p50_ms": 0.30145897855982184,
+      "p95_ms": 0.3637919910252094,
+      "p99_ms": 0.43870903411880136,
+      "parse_s": 0.7454683749820106,
+      "samples": 573,
+      "target_counts": {
+        "data_events": 2588377,
+        "ends": 1756404,
+        "starts": 1756404,
+        "text_chars": 26117055
+      },
+      "throughput_mib_s": 67.07321723552909
+    },
+    {
+      "chunk_size_bytes": 1048576,
+      "chunk_size_kib": 1024,
+      "chunks": 51,
+      "max_ms": 1.4078330025076866,
+      "mean_ms": 0.30671875065257936,
+      "p50_ms": 0.3029170222580433,
+      "p95_ms": 0.361709029879421,
+      "p99_ms": 0.4020840171724558,
+      "parse_s": 0.744703333999496,
+      "samples": 570,
+      "target_counts": {
+        "data_events": 2588377,
+        "ends": 1756404,
+        "starts": 1756404,
+        "text_chars": 26117055
+      },
+      "throughput_mib_s": 67.14212220435567
+    }
+  ]
+}
