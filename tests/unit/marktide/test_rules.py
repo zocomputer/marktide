@@ -22,18 +22,14 @@ def test_registered_handlers_satisfy_protocol() -> None:
 
 
 def test_prefix_suffix_wraps_rendered_children() -> None:
-    # Replicate the emitter's end() routing: children render into the frame buffer,
-    # the frame is popped, then the handler wraps em.content into the parent buffer.
-    h = PrefixSuffixHandler("<", ">")
+    # Drive the real emitter flow: a buffering handler accumulates its children, then
+    # wraps em.content in prefix/suffix into the parent buffer at end.
     em = MarkdownEmitter()
-    em.start("x", {})            # unregistered tag → frame pushed, no handler
-    em.state.top.buffering = True  # force buffering so children accumulate in the frame
-    em.data("body")             # buffered as a coalesced text node
-    em._flush_text()            # finalise it into the frame buffer (end() would do this)
-    frame = em.state.pop()
-    em._content = "".join(frame.content)
-    h.end(em)                   # emits prefix + content + suffix to the (root) parent
-    assert "".join(em.root) == "<body>"
+    em._handlers = {**TAG_HANDLERS, "x": PrefixSuffixHandler("<", ">")}
+    em.start("x", {})
+    em.data("body")
+    em.end("x")
+    assert em.close() == "<body>"
 
 
 def test_transparent_passes_children_through() -> None:

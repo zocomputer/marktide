@@ -80,13 +80,15 @@ class MarkdownEmitter:
 
     __slots__ = (
         "options", "state", "root", "_handlers", "_filter", "_content", "_frame",
-        "_started", "_carry", "_tail", "_text_buf",
+        "_started", "_carry", "_tail", "_text_buf", "_buf_target", "_buf_stack",
     )
 
     def __init__(self, options: Options | None = None) -> None:
         self.options = options or Options()
         self.state = EmitterState()
         self.root: list[str] = []          # top-level output committed since last drain
+        self._buf_target = self.root       # cached current output buffer (nearest
+        self._buf_stack: list[list[str]] = []  # buffering ancestor); restored on pop
         self._handlers = TAG_HANDLERS
         self._filter = _TagFilter(self.options)
         self._content = ""                 # rendered children of element being ended
@@ -106,12 +108,9 @@ class MarkdownEmitter:
     def _buf(self) -> list[str]:
         """The buffer current output goes to: the nearest enclosing *buffering* element's
         content, or the drainable document root if every open ancestor is a transparent
-        streaming container. This is what lets completed top-level blocks reach the root
-        (and stream out) while the always-open <html>/<body> wrappers don't trap them."""
-        for frame in reversed(self.state.stack):
-            if frame.buffering:
-                return frame.content
-        return self.root
+        streaming container. Cached in ``_buf_target`` (maintained on push/pop) instead
+        of rescanning the stack on every call."""
+        return self._buf_target
 
     def emit(self, markdown: str) -> None:
         """Append raw, handler-produced Markdown (never escaped) to the current buffer."""
@@ -246,6 +245,9 @@ class MarkdownEmitter:
         # children through) does not buffer — its children stream to the nearest buffering
         # ancestor. Everything else wraps its children and buffers until end.
         frame.buffering = converts and not getattr(handler, "streaming", False)
+        if frame.buffering:  # output now targets this element's own buffer
+            self._buf_stack.append(self._buf_target)
+            self._buf_target = frame.content
         if converts:
             # start mutates state / captures attrs (e.g. pre_depth, list context, href);
             # output is produced at end from the rendered children.
@@ -257,6 +259,8 @@ class MarkdownEmitter:
         frame = self.state.pop()
         if frame is None:
             return
+        if frame.buffering:  # this element's buffer is finalised; revert to the parent's
+            self._buf_target = self._buf_stack.pop()
         # This element's last text child has no next sibling: keep its deferred trailing
         # whitespace only if the element is not block-level (markdownify rstrips the last
         # text inside a block element).
