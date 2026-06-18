@@ -4,10 +4,8 @@ Drives the committed golden corpus (``block_inline_handler_cases.json``) through
 ``convert`` and asserts byte-equality with the ``markdownify==1.2.2`` oracle output. The
 handlers reproduce markdownify's ``convert_*`` functions on the rendered children.
 
-The emitter escape/whitespace/boundary pass (commit 141c6b6) cleared the bulk of the
-emitter-owned diffs. One case remains: ``blockquote_nested`` needs markdownify's item-D
-boundary trim (rstrip a text node when its *next* sibling is a block), which requires
-next-sibling lookahead not yet built; it stays ``xfail`` (non-strict) until that lands.
+All golden cases pass: the emitter escape/whitespace/boundary pass (141c6b6) and item-D
+next-sibling trim (cc46d58) cleared every previously emitter-owned diff.
 """
 
 from __future__ import annotations
@@ -24,13 +22,6 @@ _CORPUS = (
     / "tests" / "conformance" / "golden" / "block_inline_handler_cases.json"
 )
 
-# Cases whose remaining diff is owned by the emitter (next-sibling lookahead), not the
-# block/inline handlers.
-EMITTER_PENDING: dict[str, str] = {
-    # emitter item-D: rstrip a text node when its next sibling is a block (needs lookahead)
-    "blockquote_nested": "next-sibling whitespace boundary trim",
-}
-
 
 def _load_cases() -> list[dict]:
     return json.loads(_CORPUS.read_text(encoding="utf-8"))["cases"]
@@ -45,8 +36,6 @@ _CASES = _load_cases()
 
 @pytest.mark.parametrize("case", _CASES, ids=_ids(_CASES))
 def test_block_inline_golden(case: dict) -> None:
-    if case["id"] in EMITTER_PENDING:
-        pytest.xfail("blocked on emitter/parser: " + EMITTER_PENDING[case["id"]])
     assert convert(case["input_html"]) == case["expected_markdown"]
 
 
