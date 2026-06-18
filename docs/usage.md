@@ -104,7 +104,7 @@ like).
 ## Options
 
 `Options` is an immutable dataclass whose field names and defaults are **identical to
-`markdownify==1.2.2`**, plus two html2md-specific fields. Construct one and pass it as
+`markdownify==1.2.2`**, plus html2md-specific fields. Construct one and pass it as
 `options=`.
 
 | Option | Default | Meaning |
@@ -130,6 +130,7 @@ like).
 | `wrap` / `wrap_width` | `False` / `80` | Hard-wrap paragraph text at `wrap_width` columns. |
 | **`chunk_size`** | `65536` | *(html2md)* Feed granularity for the streaming/async paths. |
 | **`default_encoding`** | `"utf-8"` | *(html2md)* Encoding used when encoding `str` input. |
+| **`commonmark_roundtrip_stable`** | `False` | *(html2md)* Optional canonical code-span delimiter policy for CommonMark render→convert text stability. Default `False` preserves markdownify fidelity. |
 
 ```python
 from html2md import convert, Options
@@ -137,6 +138,8 @@ from html2md import convert, Options
 convert("<h1>Hi</h1>", options=Options(heading_style="atx"))                # '# Hi'
 convert("<p>a<br>b</p>", options=Options(newline_style="backslash"))       # 'a\\\nb'
 convert("<ul><li>x</li></ul>", options=Options(bullets="-"))               # '- x'
+convert("<p><code>0</code><code>0</code></p>",
+        options=Options(commonmark_roundtrip_stable=True))                  # '`0``0`'
 ```
 
 `strip` and `convert` are mutually exclusive — constructing `Options` with both set raises

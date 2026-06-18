@@ -11,7 +11,7 @@ Public API::
     async for chunk in convert_stream_async(achunks): # streaming, async
         ...
 
-Options mirror ``markdownify==1.2.2`` field-for-field; ``markdownify_compat(**kwargs)``
+Options default to ``markdownify==1.2.2`` behavior; ``markdownify_compat(**kwargs)``
 maps markdownify keyword arguments onto :class:`Options` for drop-in migration.
 """
 

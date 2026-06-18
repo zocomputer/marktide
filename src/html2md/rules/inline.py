@@ -102,10 +102,44 @@ class _Sup:
         _emit_inline(em, em.options.sup_symbol)
 
 
+def _markdownify_code_span(text: str) -> tuple[str, str]:
+    """Return markdownify-compatible inline-code delimiter and text."""
+    max_backticks = max((len(m.group()) for m in _RE_BACKTICKS.finditer(text)), default=0)
+    delimiter = "`" * (max_backticks + 1)
+    if max_backticks > 0:
+        text = " " + text + " "
+    return delimiter, text
+
+
+def _commonmark_stable_code_span(text: str) -> tuple[str, str]:
+    """Return a CommonMark-valid, text-idempotent inline-code delimiter and text.
+
+    CommonMark permits any delimiter length that is not present as a maximal backtick
+    run in the code text. Choosing the smallest absent length gives a canonical form
+    that survives a render-to-HTML-and-convert-back pass for adjacent code spans such
+    as ``<code>0</code><code>0</code>``. Padding is only needed when the code text
+    starts or ends with a backtick; otherwise an edge backtick would merge with the
+    delimiter and stop it being parsed as the intended opening/closing run.
+    """
+    run_lengths = {len(m.group()) for m in _RE_BACKTICKS.finditer(text)}
+    delimiter_length = 1
+    while delimiter_length in run_lengths:
+        delimiter_length += 1
+    delimiter = "`" * delimiter_length
+    if text.startswith("`") or text.endswith("`"):
+        text = " " + text + " "
+    return delimiter, text
+
+
 class _Code:
-    """``code``/``kbd``/``samp`` inline span. Delimits with one more backtick than the
-    longest backtick run in the content, padding with a space when the content itself
-    contains backticks. Passes through unchanged inside a ``_noformat`` ancestor."""
+    """``code``/``kbd``/``samp`` inline span.
+
+    Defaults to markdownify-compatible delimiter selection: one more backtick than the
+    longest backtick run in the content, padding when the content contains any
+    backtick. With ``Options.commonmark_roundtrip_stable=True``, uses a canonical
+    CommonMark delimiter policy instead. Passes through unchanged inside a
+    ``_noformat`` ancestor.
+    """
 
     __slots__ = ()
 
@@ -120,10 +154,10 @@ class _Code:
         prefix, suffix, text = chomp(content)
         if not text:
             return
-        max_backticks = max((len(m.group()) for m in _RE_BACKTICKS.finditer(text)), default=0)
-        delimiter = "`" * (max_backticks + 1)
-        if max_backticks > 0:
-            text = " " + text + " "
+        if em.options.commonmark_roundtrip_stable:
+            delimiter, text = _commonmark_stable_code_span(text)
+        else:
+            delimiter, text = _markdownify_code_span(text)
         em.emit("%s%s%s%s%s" % (prefix, delimiter, text, delimiter, suffix))
 
 

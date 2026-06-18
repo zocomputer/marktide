@@ -4,7 +4,7 @@ Every field name and default here is identical to
 ``markdownify.MarkdownConverter.DefaultOptions`` (verified against
 ``.venv/lib/python3.12/site-packages/markdownify/__init__.py``), which is what makes
 the drop-in claim real and the conformance oracle exact. Two html2md-specific fields
-(``chunk_size``, ``default_encoding``) have no markdownify equivalent.
+(``chunk_size``, ``default_encoding``, and ``commonmark_roundtrip_stable``) have no markdownify equivalent.
 
 ``markdownify_compat(**md_kwargs)`` is the migration contract: it accepts every
 markdownify keyword and maps it onto the identical field, rejecting the two things
@@ -20,7 +20,8 @@ from typing import Any, Literal
 
 HeadingStyle = Literal["underlined", "atx", "atx_closed"]
 NewlineStyle = Literal["spaces", "backslash"]
-StripMode = Literal["strip", "lstrip", "rstrip"]
+DocumentStripMode = Literal["strip", "lstrip", "rstrip"]
+PreStripMode = Literal["strip", "strip_one"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,8 +44,8 @@ class Options:
     heading_style: HeadingStyle = "underlined"  # setext h1/h2 by default
     keep_inline_images_in: tuple[str, ...] = ()
     newline_style: NewlineStyle = "spaces"  # <br> → two trailing spaces
-    strip_document: StripMode | None = "strip"
-    strip_pre: StripMode | None = "strip"
+    strip_document: DocumentStripMode | None = "strip"
+    strip_pre: PreStripMode | None = "strip"
     strong_em_symbol: Literal["*", "_"] = "*"
     sub_symbol: str = ""
     sup_symbol: str = ""
@@ -55,6 +56,8 @@ class Options:
     # --- html2md-specific (no markdownify equivalent) ---
     chunk_size: int = 64 * 1024  # feed granularity; empirical default (design §4.2)
     default_encoding: str = "utf-8"
+    # Optional Markdown-canonical code-span emission. Default stays markdownify-compatible.
+    commonmark_roundtrip_stable: bool = False
 
     def __post_init__(self) -> None:
         # markdownify raises when both tag filters are given (MarkdownConverter.__init__).

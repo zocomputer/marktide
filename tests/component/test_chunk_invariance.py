@@ -176,12 +176,22 @@ def conformance_cases() -> list[Case]:
         return [Case(id="html2md-api-not-implemented", layer="scaffold", source_path="inline", html="<p>skip</p>")]
     fixture_root = CONFORMANCE_DIR / "fixtures"
     if not fixture_root.exists():
-        pytest.skip("conformance fixtures are not generated; run scripts/regenerate_conformance_corpus.py")
+        return [
+            Case(
+                id="conformance-fixtures-not-generated",
+                layer="scaffold",
+                source_path="inline",
+                html="<p>skip</p>",
+                metadata={"skip_reason": "conformance fixtures are not generated; run scripts/regenerate_conformance_corpus.py"},
+            )
+        ]
     return load_cases(fixture_root)
 
 
 @pytest.mark.parametrize("case", conformance_cases(), ids=lambda case: case.id)
 def test_convert_stream_matches_convert_for_adversarial_splits(case: Case):
+    if skip_reason := case.metadata.get("skip_reason"):
+        pytest.skip(str(skip_reason))
     convert, convert_stream = _load_html2md_api()
     payload = case.html.encode("utf-8", errors="replace")
     offsets = adversarial_split_offsets(payload)

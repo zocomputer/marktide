@@ -64,6 +64,17 @@ def test_code_span_backtick_fence_grows_and_pads() -> None:
     assert convert("<p><code>a`b</code></p>") == "`` a`b ``"
 
 
+def test_code_span_commonmark_roundtrip_stable_mode_uses_canonical_delimiters() -> None:
+    from html2md import Options
+
+    opts = Options(commonmark_roundtrip_stable=True)
+    assert convert("<p><code>a`b</code></p>", options=opts) == "``a`b``"
+    assert convert("<p><code>a``b</code></p>", options=opts) == "`a``b`"
+    assert convert("<p><code>`lead</code></p>", options=opts) == "`` `lead ``"
+    assert convert("<p><code>trail`</code></p>", options=opts) == "`` trail` ``"
+    assert convert("<p><code>0</code><code>0</code></p>", options=opts) == "`0``0`"
+
+
 def test_br_two_space_hard_break() -> None:
     assert convert("<p>a<br>b</p>") == "a  \nb"
 

@@ -34,6 +34,7 @@ def test_html2md_specific_defaults() -> None:
     opts = Options()
     assert opts.chunk_size == 64 * 1024
     assert opts.default_encoding == "utf-8"
+    assert opts.commonmark_roundtrip_stable is False
 
 
 def test_options_is_frozen_and_hashable() -> None:
