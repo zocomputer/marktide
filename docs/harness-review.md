@@ -99,3 +99,22 @@ Before final report generation, consider renaming the normalized adapter row to 
 | 1 | P1 | `Placement.TO_THREAD` hangs forever if the converter raises | Incorporated | this commit | `_probe_to_thread` now records exceptions, always sets the completion event in `finally`, and re-raises the original converter exception after heartbeat sampling exits. Added `test_to_thread_raises_promptly_when_converter_raises`. Reviewer confirmed re-raising is the desired shape. |
 | 2 | P2 | Fixture verification silently downgrades when lockfile or entry is missing | Incorporated | this commit | `load_fixture_set(..., verify_hashes=True)` now raises for a missing provided/default lockfile and for requested fixtures missing lock entries. `lock_path=None` remains the explicit opt-out for ad-hoc tests. |
 | 3 | P3 | Normalized markdownify adapter name is easy to confuse with the default oracle | Deferred | — | Reviewer confirmed this can defer to final result-table/reporting pass; current split is functionally correct and `markdownify_default_oracle` is already used by the differential harness. |
+
+## Reviewer re-review signoff for `bee2353`
+
+Date: 2026-06-18  
+Reviewer: `reviewer-leaf`  
+Incorporation commit reviewed: `bee2353` (`fix: incorporate harness review feedback`)
+
+Verification performed:
+
+- Ran `uv run --group benchmark pytest benchmarks/harness -q` → **9 passed**.
+- Re-ran the original raising-converter repro under `Placement.TO_THREAD`; it now promptly re-raises `RuntimeError("boom")` instead of hanging behind an outer timeout.
+
+Disposition confirmation:
+
+- **P1 resolved.** `benchmarks.harness.probe._probe_to_thread` stores converter exceptions, always signals completion in `finally`, and re-raises the original exception after heartbeat sampling exits.
+- **P2 resolved.** `benchmarks.harness.fixtures.load_fixture_set(..., verify_hashes=True)` now hard-fails when a provided/default lockfile is missing or when an existing requested fixture lacks a lock entry. `lock_path=None` remains the explicit opt-out for ad-hoc fixtures/tests.
+- **P3 accepted as deferred.** The normalized markdownify adapter row naming can be finalized in the result-table/reporting pass.
+
+**Final verdict:** Approved for the current scaffold; no open blocker findings remain in this review.
