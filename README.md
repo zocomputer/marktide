@@ -197,10 +197,10 @@ default never changes fidelity.
 
 marktide set out to replace `markdownify` on **five axes at once** — fast, async-friendly,
 streaming, bounded-memory, and faithful. The phase-3 comparison shows no existing library
-clears all five: the faithful Rust converters (`htmd_py`, `html_to_markdown`) are faster in raw
-wall time but stall the event loop; `html2text_rs` stays responsive but is lower-fidelity; and
-all of them use multiple GiB of memory and can't stream. markdownify is faithful but slow and
-GIL-bound.
+clears all five: `htmd_py` is faster in raw wall time but stalls the event loop, `html2text_rs`
+is also faster but lower-fidelity, and `html_to_markdown` is roughly tied with marktide on wall
+time yet still stalls the loop — and all of them use multiple GiB of memory and can't stream.
+markdownify is faithful but slow and GIL-bound.
 
 ### Phase-3 results — `xlarge` fixture (~110 MiB document)
 
@@ -214,10 +214,11 @@ GIL-bound.
 
 Reading it: marktide converts the 110 MiB document **11.5× faster than markdownify** while using
 **11.4× less peak memory** and **never starving the event loop** (0% missed heartbeat beats vs
-markdownify's 60%). The Rust one-shot libraries post lower raw wall times, but each fails a
-different axis: `html_to_markdown` and `htmd_py` **hold the GIL** (~50% missed beats; p99
-event-loop stalls of 1.7–4.8 s), `html2text_rs` releases the GIL (0.4% missed) but is
-**low-fidelity** (drops formatting), and all three use **6–15× more memory than marktide** and
+markdownify's 60%). Two Rust one-shots post lower raw wall times (`htmd_py`, `html2text_rs`;
+`html_to_markdown` is roughly tied), but each fails a different axis: `html_to_markdown` and
+`htmd_py` **hold the GIL** (~50% missed beats; p99 event-loop stalls of 1.7–4.8 s),
+`html2text_rs` releases the GIL (0.4% missed) but is **low-fidelity** (drops formatting), and
+all three use **6–15× more memory than marktide** and
 **cannot stream**. marktide is the only contender that is *simultaneously* fast-enough,
 async-friendly, streaming, memory-bounded, and faithful (**99.3% raw / 100% effective**
 normalized conformance against the markdownify oracle, with two
