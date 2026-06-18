@@ -132,25 +132,7 @@ def test_real_fixture_no_crash_valid_markdown(name: str) -> None:
     assert len(md) > 1000  # proportional output, not silently truncated to a tiny cap
 
 
-# NOTE: `medium`/`xlarge` are xfailed pending a foundation chunk-invariance fix — on docs
-# large enough to split at certain structural/whitespace boundaries, the whole-buffer parse
-# and the chunked feed diverge by a newline (repro: `<title>T</title>\n<h1>H</h1>` →
-# whole `T\n\n\nH\n=` vs stream `T\n\nH\n=`). Reported to the streaming/emitter owner;
-# strict=False so these flip green automatically once fixed. `small` (2 chunks) is unaffected.
-@pytest.mark.parametrize(
-    "name",
-    [
-        "small",
-        pytest.param(
-            "medium",
-            marks=pytest.mark.xfail(
-                reason="foundation chunk-invariance gap: whole vs chunked feed diverge "
-                "at structural boundaries (reported)",
-                strict=False,
-            ),
-        ),
-    ],
-)
+@pytest.mark.parametrize("name", ["small", "medium"])
 def test_real_fixture_convert_equals_stream(name: str) -> None:
     data = _load(name)
     assert convert(data) == "".join(convert_stream(_chunks(data)))
@@ -174,10 +156,6 @@ def test_large_fixture_no_truncation(name: str) -> None:
 
 
 @pytest.mark.nightly
-@pytest.mark.xfail(
-    reason="foundation chunk-invariance gap (see test_real_fixture_convert_equals_stream)",
-    strict=False,
-)
 def test_xlarge_convert_equals_stream() -> None:
     data = _load("xlarge")
     assert convert(data) == "".join(convert_stream(_chunks(data)))
