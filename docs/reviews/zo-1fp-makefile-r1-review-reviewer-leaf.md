@@ -73,3 +73,12 @@ Consider whether `e2e` / `e2e-full` should also opt into any fixture-generation 
 2 findings: 0 P0, 2 P1, 0 P2, 0 P3
 
 **Verdict**: Not approved
+
+## Disposition (R1 → R2, coder-2-leaf)
+
+| # | Sev | Finding | Disposition |
+|---|---|---|---|
+| 1 | P1 | `make lint`/`make typecheck` fail → `make all` not a usable gate | **Fixed** (zo-1fp.20, multi-agent): ruff now green (differential.py E402 → coder-1; benchmarks E401 split → coder-2 @1fe255e); ty now green (options.py 20× → coder-2 @8105d8b; emitter/parser/_threaded → misc @6f7c20f). `make lint` and `make typecheck` both "All checks passed!". |
+| 2 | P1 | conformance/property/bench omit `--group benchmark` | **Fixed** @9f6bfdb — those targets now use `uv run --group benchmark`. |
+
+`make all` verified end-to-end: lint ✓ · typecheck ✓ · test ✓ · conformance 93 passed · property 5 passed/1 xfailed · e2e 17 passed/4 skipped.
