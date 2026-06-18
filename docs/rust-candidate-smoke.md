@@ -50,22 +50,24 @@ PY
 
 ## Streaming / incremental API and GIL probe
 
-Question: can any candidate replace phase 2 by exposing a Python streaming/incremental/chunked HTML→Markdown API, and does the Rust work stay async-friendly when called from a worker thread / `asyncio.to_thread`?
+Question: can any candidate replace phase 2 by exposing a Python streaming/incremental/chunked HTML→Markdown API, and does the Rust work stay async-friendly when called via `asyncio.to_thread`?
 
 Short answer: **no candidate exposes a Python streaming feed API**. `html2text_rs` is the only candidate whose binding releases the GIL around the full Rust conversion, but it still accepts a complete Python `str` and returns a complete Python `str` in one call. `htmd-py` and `html-to-markdown` are one-shot and hold the GIL for the whole conversion in the current Python bindings.
 
-| Candidate | Python API shape | Streaming / feed exposed? | Binding GIL behavior | Heartbeat result on ~4.19 MiB fixture | Decision impact |
+| Candidate | Python API shape assessed | Incremental / streaming / reader API exposed? | Binding GIL behavior | Empirical `asyncio.to_thread` heartbeat result on ~4.19 MiB fixture | Phase-1 go/no-go impact |
 | --- | --- | --- | --- | --- | --- |
-| `htmd-py==0.1.2` | `htmd.convert_html(html: str, options=None) -> str` | No. Source exposes only `convert_html` and `create_options_with_skip_tags`. | No `Python::detach` / `Python::allow_threads` around `converter.convert(html)` / `htmd_convert(html)`. | Worker thread still starves main asyncio heartbeat: p50 `133.948ms`, p95 `136.916ms`, max `136.916ms`. | Fast comparison candidate only; not async-friendly enough to remove phase 2. |
-| `html-to-markdown==3.5.7` | `html_to_markdown.convert(html: str, options=None, visitor=None) -> ConversionResult`, markdown at `.content` | No. Installed Python wrapper and generated `.pyi` expose only whole-string `convert`. | No `Python::detach` / `Python::allow_threads` around `html_to_markdown_rs::convert(&html, Some(options_core))`. | Worker thread still starves main asyncio heartbeat: p50 `510.276ms`, p95 `515.621ms`, max `515.621ms`. | Strong semantic/perf comparison candidate, but current Python binding is not async-friendly. |
-| `html2text_rs==0.2.5` | `html2text_rs.text_markdown(html: str, width=100) -> str` | No. Stub exposes only `text_markdown`, `text_plain`, `text_rich`; `bytes` input is rejected. | Yes. Source wraps the Rust `from_read(html_cow.as_bytes(), width)` call in `py.detach(...)`. | Worker thread is near idle heartbeat: p50 `0.271ms`, p95 `0.283ms`, p99 `2.665ms`, max `3.483ms`. | Useful async-friendly baseline, but one-shot whole-string input/output and lower Markdown fidelity mean it does not replace a streaming converter. |
+| `htmd-py==0.1.2` | `htmd.convert_html(html: str, options=None) -> str` | No. Source exposes only `convert_html` and `create_options_with_skip_tags`. | No `Python::detach` / `Python::allow_threads` around `converter.convert(html)` / `htmd_convert(html)`. | `asyncio.to_thread` still starves main asyncio heartbeat: p50 `67.259ms`, p95 `74.158ms`, max `74.158ms`. | Fast comparison candidate only; not async-friendly enough to remove phase 2. |
+| `html-to-markdown==3.5.7` | `html_to_markdown.convert(html: str, options=None, visitor=None) -> ConversionResult`, markdown at `.content` | No. Installed Python wrapper and generated `.pyi` expose only whole-string `convert`. | No `Python::detach` / `Python::allow_threads` around `html_to_markdown_rs::convert(&html, Some(options_core))`. | `asyncio.to_thread` still starves main asyncio heartbeat: p50 `260.677ms`, p95 `521.446ms`, max `521.446ms`. | Strong semantic/perf comparison candidate, but current Python binding is not async-friendly. |
+| `html2text_rs==0.2.5` | `html2text_rs.text_markdown(html: str, width=100) -> str` | No. Stub exposes only `text_markdown`, `text_plain`, `text_rich`; `bytes` input is rejected. | Yes. Source wraps the Rust `from_read(html_cow.as_bytes(), width)` call in `py.detach(...)`. | `asyncio.to_thread` is near idle heartbeat: p50 `0.272ms`, p95 `0.283ms`, p99 `2.704ms`, max `3.342ms`. | Useful async-friendly baseline, but one-shot whole-string input/output and lower Markdown fidelity mean it does not replace a streaming converter. |
 
 Probe controls on the same machine / fixture:
 
 | Workload | p50 heartbeat jitter | p95 heartbeat jitter | max heartbeat jitter |
 | --- | ---: | ---: | ---: |
-| Idle heartbeat | `0.284ms` | `0.315ms` | `6.861ms` |
-| Pure-Python loop control | `13.690ms` | `15.331ms` | `16.522ms` |
+| Idle heartbeat | `0.281ms` | `0.308ms` | `1.551ms` |
+| Pure-Python loop control via `asyncio.to_thread` | `13.614ms` | `19.338ms` | `47.637ms` |
+
+Probe method: the main thread ran a 1ms asyncio sleep heartbeat while each candidate repeatedly converted the fixture through `await asyncio.to_thread(adapter, html)`. Jitter is actual sleep elapsed minus 1ms target.
 
 Evidence checked:
 
