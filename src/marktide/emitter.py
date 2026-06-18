@@ -54,6 +54,10 @@ _NOFORMAT_TAGS = frozenset(("pre", "code", "kbd", "samp"))
 def _split_newlines(s: str) -> tuple[str, str, str]:
     """Split into (leading newlines, content, trailing newlines). The pattern matches
     every string, so ``match`` never returns None (the guard is unreachable)."""
+    # Fast path: most child strings (inline content) have no boundary newline, so skip
+    # the regex match + 3 group() calls entirely.
+    if not (s.startswith("\n") or s.endswith("\n")):
+        return "", s, ""
     m = _RE_EXTRACT_NEWLINES.match(s)
     if m is None:  # pragma: no cover - pattern matches any input
         return "", s, ""
@@ -130,7 +134,10 @@ class MarkdownEmitter:
         if not in_pre:
             if self.options.wrap:
                 text = _RE_ALL_WHITESPACE.sub(" ", text)
-            else:
+            # Fast path: skip both subs when there is nothing to collapse — no
+            # newline/CR/tab and no run of 2+ spaces (a lone space is already
+            # normalised). Cheap substring scans vs two regex subs on every node.
+            elif "\n" in text or "\r" in text or "\t" in text or "  " in text:
                 text = _RE_NEWLINE_WHITESPACE.sub("\n", text)
                 text = _RE_WHITESPACE.sub(" ", text)
         if not self._in_noformat():
