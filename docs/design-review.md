@@ -226,3 +226,9 @@ The incorporated plan accurately reflects the relevant spike evidence:
 ### Round 2 verdict
 
 **Approved for implementation.** No P0/P1 blockers remain in the design/test-plan gate. The remaining notes are implementation-detail cleanups, not reasons to hold phase-2 work.
+
+### Post-approval §4.2 correction note — target parser responsiveness
+
+After the Round 2 signoff, misc-leaf's target-parser confirmation (`95a6e89`, `docs/chunked-pipeline-findings.md`) refined the §4.2 interpretation: with the actual chosen `etree.HTMLParser(target=...)`, libxml2 releases the GIL between target callbacks even within a single large `feed()` call. A whole 50 MiB unchunked target-parser feed still kept p99 around the idle floor and missed-beat percentage far under the gate. Therefore, `chunk_size` should **not** be described as the load-bearing responsiveness knob for the target parser.
+
+Non-blocking required polish: update §4.2 so target-parser responsiveness is framed as intrinsic to libxml2's callback/GIL behavior; `chunk_size` should instead govern memory/back-pressure, TTFO/cadence, cancellation/progress boundaries, and any close-time flush shape. This strengthens the architecture and does not revoke the Round 2 approval.
