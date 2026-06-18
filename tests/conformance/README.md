@@ -28,3 +28,25 @@ python3 scripts/regenerate_conformance_corpus.py
 
 The future phase-2 harness should consume `sources.toml` as the authoritative
 manifest and treat the generated fixture files as disposable cache data.
+
+## Differential harness
+
+Run the correctness/fidelity differential harness from repo root after generating
+fixtures:
+
+```bash
+uv run --group benchmark python tests/conformance/differential.py --report-dir tests/conformance/reports
+```
+
+The harness uses `benchmarks.harness.adapters` so performance and correctness
+paths share the same converter adapter layer. It uses
+`markdownify_default_oracle` as the drop-in semantic oracle, applies the
+policy-level Markdown normalization from `sources.toml`, then compares each
+candidate adapter output against the normalized oracle output.
+
+Generated reports:
+
+- `tests/conformance/reports/latest.md` — committed summary table for the latest
+  staged run.
+- `tests/conformance/reports/latest.json` — committed per-fixture pass/fail,
+  output hashes, and bounded unified diffs for failed cases.
