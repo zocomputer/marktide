@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "purpose": "Required hand-authored tricky-fidelity golden fixtures from docs/design.md §5.3.4.",
+  "oracle": {
+    "package": "markdownify",
+    "version": "1.2.2",
+    "mode": "library defaults / markdownify_default_oracle semantics"
+  },
+  "cases": [
+    {
+      "id": "whitespace_boundary_trim_runs",
+      "behavior": "whitespace collapse / boundary trim",
+      "markdownify_ref": "process_tag/process_text",
+      "description": "Leading/trailing/inter-element whitespace, including a preserved two-space run before an inline child and newline collapse.",
+      "input_html": "<div>  alpha   <span> beta </span>\n\n gamma  </div>",
+      "expected_markdown": "alpha  beta \ngamma"
+    },
+    {
+      "id": "link_with_title_and_parenthesized_href",
+      "behavior": "links / titles / parenthesized href",
+      "markdownify_ref": "convert_a",
+      "description": "Inline link whose text, href, and title contain Markdown-sensitive brackets/parentheses.",
+      "input_html": "<p><a href=\"https://example.com/a_(b)?q=1\" title=\"Title (x)\">click [here]</a></p>",
+      "expected_markdown": "[click [here]](https://example.com/a_(b)?q=1 \"Title (x)\")"
+    },
+    {
+      "id": "autolink_when_text_equals_href",
+      "behavior": "links / autolinks",
+      "markdownify_ref": "convert_a",
+      "description": "Link text exactly equals href and should become markdownify's autolink form.",
+      "input_html": "<p><a href=\"https://example.com/path\">https://example.com/path</a></p>",
+      "expected_markdown": "<https://example.com/path>"
+    },
+    {
+      "id": "code_span_contains_single_backtick",
+      "behavior": "code-span backtick delimiter selection",
+      "markdownify_ref": "convert_code",
+      "description": "Inline code contains one backtick, requiring a longer delimiter and padding spaces.",
+      "input_html": "<p><code>a`b</code></p>",
+      "expected_markdown": "`` a`b ``"
+    },
+    {
+      "id": "code_span_contains_triple_backticks",
+      "behavior": "code-span backtick delimiter selection",
+      "markdownify_ref": "convert_code",
+      "description": "Inline code contains a triple-backtick run and another single backtick; delimiter must be four backticks.",
+      "input_html": "<p><code>a```b ` c</code></p>",
+      "expected_markdown": "```` a```b ` c ````"
+    },
+    {
+      "id": "image_alt_src_title_escaping",
+      "behavior": "image alt/src/title escaping",
+      "markdownify_ref": "convert_img",
+      "description": "Image src has parentheses; alt and title contain brackets, ampersand, star, parentheses, and quote.",
+      "input_html": "<p><img src=\"https://example.com/img_(1).png\" alt=\"a [bracket] & star *\" title=\"t (paren) & quote &quot;x&quot;\"></p>",
+      "expected_markdown": "![a [bracket] & star *](https://example.com/img_(1).png \"t (paren) & quote \\\"x\\\"\")"
+    },
+    {
+      "id": "nested_mixed_lists_deep",
+      "behavior": "nested list indentation",
+      "markdownify_ref": "convert_li",
+      "description": "Mixed unordered/ordered nested lists with a third-level unordered item to lock indentation and bullet rotation.",
+      "input_html": "<ul><li>one<ol><li>sub one</li><li>sub two<ul><li>deep</li></ul></li></ol></li><li>two</li></ul>",
+      "expected_markdown": "* one\n  1. sub one\n  2. sub two\n     + deep\n* two"
+    },
+    {
+      "id": "fenced_pre_code_backticks",
+      "behavior": "fenced pre/code",
+      "markdownify_ref": "convert_pre",
+      "description": "Pre/code block containing inline backticks; expected output is a fenced block preserving inner text.",
+      "input_html": "<pre><code>line 1\nline `2`\n</code></pre>",
+      "expected_markdown": "```\nline 1\nline `2`\n```"
+    },
+    {
+      "id": "fenced_pre_code_language_class_ignored_by_default",
+      "behavior": "fenced pre/code language hint",
+      "markdownify_ref": "convert_pre",
+      "description": "Language class is present but default markdownify emits an unlabelled fence without code_language_callback.",
+      "input_html": "<pre><code class=\"language-python\">print(\"hi\")\n</code></pre>",
+      "expected_markdown": "```\nprint(\"hi\")\n```"
+    },
+    {
+      "id": "table_th_header_inference",
+      "behavior": "table header inference",
+      "markdownify_ref": "convert_tr",
+      "description": "Explicit th cells produce a real header row and separator.",
+      "input_html": "<table><tr><th>Name</th><th>Score</th></tr><tr><td>Ada</td><td>10</td></tr></table>",
+      "expected_markdown": "| Name | Score |\n| --- | --- |\n| Ada | 10 |"
+    },
+    {
+      "id": "table_td_first_row_not_header",
+      "behavior": "table header inference",
+      "markdownify_ref": "convert_tr",
+      "description": "First row with td cells is not inferred as a header; markdownify emits an empty synthetic header.",
+      "input_html": "<table><tr><td>Name</td><td>Score</td></tr><tr><td>Ada</td><td>10</td></tr></table>",
+      "expected_markdown": "|  |  |\n| --- | --- |\n| Name | Score |\n| Ada | 10 |"
+    },
+    {
+      "id": "table_colspan_and_ragged_rows",
+      "behavior": "table colspan / ragged rows",
+      "markdownify_ref": "convert_tr",
+      "description": "Colspan and ragged rows lock markdownify's column expansion and missing-cell behavior.",
+      "input_html": "<table><tr><td>Name</td><td colspan=\"2\">Score</td></tr><tr><td>Ada</td><td>10</td><td>11</td></tr><tr><td>Bob</td><td>9</td></tr></table>",
+      "expected_markdown": "|  |  |  |\n| --- | --- | --- |\n| Name | Score | |\n| Ada | 10 | 11 |\n| Bob | 9 |"
+    }
+  ]
+}

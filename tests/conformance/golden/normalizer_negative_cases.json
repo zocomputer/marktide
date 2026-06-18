@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "purpose": "Normalizer negative fixtures from docs/design.md §5.3.5. Each left/right pair must remain different after normalize_md; if a normalizer makes them equal it is masking a real bug.",
+  "cases": [
+    {
+      "id": "nested_list_indentation_changed",
+      "reason": "Changing nested-list indentation changes list structure.",
+      "left_markdown": "- outer\n  - inner\n",
+      "right_markdown": "- outer\n - inner\n"
+    },
+    {
+      "id": "blank_line_added_inside_code_block",
+      "reason": "Blank lines inside fenced code are literal content.",
+      "left_markdown": "```\nalpha\nbeta\n```\n",
+      "right_markdown": "```\nalpha\n\nbeta\n```\n"
+    },
+    {
+      "id": "swapped_table_columns",
+      "reason": "Column order is semantic table data.",
+      "left_markdown": "| Name | Score |\n| --- | --- |\n| Ada | 10 |\n",
+      "right_markdown": "| Score | Name |\n| --- | --- |\n| 10 | Ada |\n"
+    },
+    {
+      "id": "changed_link_target",
+      "reason": "Link destination changes must never be normalized away.",
+      "left_markdown": "[docs](https://example.com/a)\n",
+      "right_markdown": "[docs](https://example.com/b)\n"
+    },
+    {
+      "id": "changed_link_title",
+      "reason": "Link title is user-visible metadata.",
+      "left_markdown": "[docs](https://example.com \"Alpha\")\n",
+      "right_markdown": "[docs](https://example.com \"Beta\")\n"
+    },
+    {
+      "id": "changed_image_alt_text",
+      "reason": "Image alt text is content/accessibility data.",
+      "left_markdown": "![Alpha](https://example.com/img.png)\n",
+      "right_markdown": "![Beta](https://example.com/img.png)\n"
+    },
+    {
+      "id": "escaped_vs_unescaped_emphasis_marker",
+      "reason": "Escaping punctuation can change rendered emphasis/content.",
+      "left_markdown": "literal \\*star\\*\n",
+      "right_markdown": "literal *star*\n"
+    },
+    {
+      "id": "escaped_vs_unescaped_underscore_marker",
+      "reason": "Escaping underscore can change rendered emphasis/content.",
+      "left_markdown": "literal \\_word\\_\n",
+      "right_markdown": "literal _word_\n"
+    }
+  ]
+}
