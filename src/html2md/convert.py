@@ -41,15 +41,18 @@ def convert_stream(
 ) -> Iterator[str]:
     """Convert a stream of HTML byte chunks to a stream of Markdown chunks (sync).
 
-    Foundation behavior: feeds every input chunk through the incremental driver and
-    yields the complete document once at the end. Incremental per-block flushing (the
-    safe-emission barriers of design §4.7) is layered on with the emit rules; the public
-    contract — an iterator of Markdown whose concatenation is the document — holds now.
+    Yields Markdown incrementally: after each fed input chunk, any output that is safe
+    to emit (completed top-level blocks, trailing whitespace held back per the §4.7
+    barrier) is drained and yielded; the final remainder is flushed at close. The
+    concatenation of all yielded chunks is exactly ``convert(...)``.
     """
     options = options or Options()
     with IncrementalDriver(options) as driver:
         for chunk in chunks:
             driver.feed(chunk if isinstance(chunk, bytes) else _to_bytes(chunk))
+            piece = driver.drain()
+            if piece:
+                yield piece
         result = driver.close()
     if result:
         yield result

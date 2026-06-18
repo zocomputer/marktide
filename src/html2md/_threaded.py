@@ -36,8 +36,12 @@ class ChunkPump:
                 data = chunk if isinstance(chunk, bytes) else bytes(chunk)
                 # feed+emit one chunk off the loop; the loop runs between chunks.
                 await asyncio.to_thread(driver.feed, data)
-                # DRAIN POINT (design §4.7): once barriers commit output incrementally,
-                # yield driver.drain() here for true streaming. No-op until then.
+                # drain whatever is safe to emit now (completed blocks) and yield it,
+                # so consumers see Markdown before EOF (design §4.7). The async
+                # generator's natural back-pressure paces the producer.
+                piece = await asyncio.to_thread(driver.drain)
+                if piece:
+                    yield piece
             result = await asyncio.to_thread(driver.close)
             if result:
                 yield result

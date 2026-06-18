@@ -45,24 +45,33 @@ _MISC_ESCAPE = str.maketrans({
 class MarkdownEmitter:
     """SAX target that emits Markdown. ``close()`` returns the assembled document."""
 
-    __slots__ = ("options", "state", "root", "_handlers", "_filter", "_content", "_frame")
+    __slots__ = (
+        "options", "state", "root", "_handlers", "_filter", "_content", "_frame",
+        "_started", "_pending_tail",
+    )
 
     def __init__(self, options: Options | None = None) -> None:
         self.options = options or Options()
         self.state = EmitterState()
-        self.root: list[str] = []          # top-level output (document buffer)
+        self.root: list[str] = []          # top-level output committed since last drain
         self._handlers = TAG_HANDLERS
         self._filter = _TagFilter(self.options)
         self._content = ""                 # rendered children of element being ended
         self._frame: Frame | None = None   # the element being ended (its own attrs/data)
+        self._started = False              # have we emitted leading (post-lstrip) output?
+        self._pending_tail = ""            # trailing whitespace held back across drains
 
     # --- handler-facing context API ------------------------------------------
 
     def _buf(self) -> list[str]:
-        """The buffer the current output goes to: the innermost open element's, or the
-        document root when nothing is open (or, during ``end``, the parent's)."""
-        top = self.state.top
-        return top.content if top is not None else self.root
+        """The buffer current output goes to: the nearest enclosing *buffering* element's
+        content, or the drainable document root if every open ancestor is a transparent
+        streaming container. This is what lets completed top-level blocks reach the root
+        (and stream out) while the always-open <html>/<body> wrappers don't trap them."""
+        for frame in reversed(self.state.stack):
+            if frame.buffering:
+                return frame.content
+        return self.root
 
     def emit(self, markdown: str) -> None:
         """Append raw, handler-produced Markdown (never escaped) to the current buffer."""
@@ -106,9 +115,14 @@ class MarkdownEmitter:
         tag = tag.lower()
         frame = self.state.push(tag, dict(attrs))
         handler = self._handlers.get(tag)
-        # start mutates state / captures attrs (e.g. pre_depth, list context, href);
-        # output is produced at end from the rendered children.
-        if handler is not None and self._filter.converts(tag):
+        converts = handler is not None and self._filter.converts(tag)
+        # A transparent/streaming handler (or an unhandled/filtered tag, which passes its
+        # children through) does not buffer — its children stream to the nearest buffering
+        # ancestor. Everything else wraps its children and buffers until end.
+        frame.buffering = converts and not getattr(handler, "streaming", False)
+        if converts:
+            # start mutates state / captures attrs (e.g. pre_depth, list context, href);
+            # output is produced at end from the rendered children.
             handler.start(self, frame.attrs)
 
     def end(self, tag: str) -> None:
@@ -136,8 +150,39 @@ class MarkdownEmitter:
     def comment(self, text: str) -> None:
         return None  # markdownify drops HTML comments
 
+    # --- streaming drain / final flush ---------------------------------------
+
+    def drain(self) -> str:
+        """Return the Markdown that is safe to yield NOW (streaming), removing it from
+        the buffer. The safe-emission barrier (design §4.7): trailing whitespace is held
+        back — it may be ``rstrip``-ped at ``close`` or merged at a following sibling
+        boundary — and the leading ``strip_document`` is applied once, so a drained
+        prefix is never rewritten by later events. Top-level output only reaches the
+        buffer when an element fully closes, so what is drained is already complete."""
+        s = self._pending_tail + "".join(self.root)
+        self.root.clear()
+        self._pending_tail = ""
+        if not self._started and self.options.strip_document in ("strip", "lstrip"):
+            s = s.lstrip()
+        if s and not self._started:
+            self._started = True
+        body = s.rstrip()
+        self._pending_tail = s[len(body):]  # held-back trailing whitespace (only)
+        return body
+
     def close(self) -> str:
-        return _apply_document_strip("".join(self.root), self.options.strip_document)
+        """Flush all buffered output with the document-level strip applied. Works
+        whether or not ``drain`` was called first (one-shot ``convert`` vs streaming)."""
+        s = self._pending_tail + "".join(self.root)
+        self.root.clear()
+        self._pending_tail = ""
+        mode = self.options.strip_document
+        if not self._started and mode in ("strip", "lstrip"):
+            s = s.lstrip()
+        if mode in ("strip", "rstrip"):
+            s = s.rstrip()
+        self._started = True
+        return s
 
 
 class _TagFilter:
@@ -157,13 +202,3 @@ class _TagFilter:
         if self._strip is not None:
             return tag not in self._strip
         return True
-
-
-def _apply_document_strip(text: str, mode: str | None) -> str:
-    if mode == "strip":
-        return text.strip()
-    if mode == "lstrip":
-        return text.lstrip()
-    if mode == "rstrip":
-        return text.rstrip()
-    return text

@@ -29,6 +29,12 @@ class Frame:
     attrs: dict[str, str]
     content: list[str] = field(default_factory=list)
     data: dict[str, object] = field(default_factory=dict)
+    # buffering=True: this element wraps/transforms its children, so their Markdown
+    # accumulates in `content` until end (bounded by the block). buffering=False:
+    # a transparent container that streams children straight through to the nearest
+    # buffering ancestor (or the drainable root), so output is not trapped inside an
+    # always-open wrapper like the auto-inserted <html>/<body> (design §4.7).
+    buffering: bool = True
 
 
 @dataclass(slots=True)

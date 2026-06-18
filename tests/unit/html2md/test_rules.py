@@ -27,6 +27,7 @@ def test_prefix_suffix_wraps_rendered_children() -> None:
     h = PrefixSuffixHandler("<", ">")
     em = MarkdownEmitter()
     em.start("x", {})            # unregistered tag → frame pushed, no handler
+    em.state.top.buffering = True  # force buffering so children accumulate in the frame
     em.data("body")             # accumulates into the frame buffer
     frame = em.state.pop()
     em._content = "".join(frame.content)

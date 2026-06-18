@@ -89,12 +89,19 @@ class PrefixSuffixHandler:
 class TransparentHandler:
     """A structural wrapper (``div``/``section``/``article``/``span``…) that adds no
     Markdown of its own — it passes its rendered children straight through. Registered
-    so the element is tracked on the stack (ancestor checks) without altering output."""
+    so the element is tracked on the stack (ancestor checks) without altering output.
+
+    ``streaming = True`` marks it as a non-buffering container: its children stream
+    directly to the nearest buffering ancestor (or the drainable root) instead of
+    accumulating in this frame, so output is never trapped inside an always-open
+    wrapper like the auto-inserted ``<html>``/``<body>`` (design §4.7). Its own
+    ``content`` is therefore empty at ``end``; ``end`` is a no-op."""
 
     __slots__ = ()
+    streaming = True
 
     def start(self, em: MarkdownEmitter, attrs: Mapping[str, str]) -> None:
         return None
 
     def end(self, em: MarkdownEmitter) -> None:
-        em.emit(em.content)
+        return None

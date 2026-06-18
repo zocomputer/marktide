@@ -52,6 +52,13 @@ class IncrementalDriver:
         for start in range(0, len(data), step):
             self.feed(data[start:start + step])
 
+    def drain(self) -> str:
+        """Return Markdown safe to emit now (streaming), removing it from the emitter
+        buffer. Empty until a top-level block completes. See ``MarkdownEmitter.drain``."""
+        if self._closed:
+            return ""
+        return self.emitter.drain()
+
     def close(self) -> str:
         """Finalize the parse, flush trailing Markdown, release the C parser, and
         return the document. Idempotent."""
