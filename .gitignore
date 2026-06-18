@@ -6,6 +6,9 @@ dist/
 build/
 *.egg-info/
 .pytest_cache/
+
+.beads
+
 # Large test fixtures — generated/downloaded, not committed
 benchmarks/fixtures/*.html
 benchmarks/results/*.json
