@@ -13,7 +13,7 @@ from __future__ import annotations
 import importlib
 import re
 import sys
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
@@ -59,6 +59,48 @@ def fixed_chunk_offsets(payload: bytes, chunk_size: int) -> list[int]:
     return list(range(chunk_size, len(payload), chunk_size))
 
 
+STRUCTURAL_BOUNDARY_REPRO_CASES = (
+    b"<title>T</title>\n<h1>H</h1>",
+    b"<title>T</title>\n<p>x</p>",
+    b"<head><title>T</title></head>\n<h1>H</h1>",
+)
+
+STRUCTURAL_BOUNDARY_CONTROL_CASES = (
+    b"<title>T</title><h1>H</h1>",
+    b"<html><head><title>T</title></head><body>\n<h1>H</h1></body></html>",
+    b"<meta charset='utf-8'>\n<h1>H</h1>",
+    b"<!-- c -->\n<h1>H</h1>",
+    b"text\n<h1>H</h1>",
+    b"<style>x</style>\n<h1>H</h1>",
+    b"<h1>A</h1>\n<h1>B</h1>",
+)
+
+
+def _assert_stream_matches_convert_for_offsets(payload: bytes, offsets: Iterable[int]):
+    convert, convert_stream = _load_html2md_api()
+    chunks = split_bytes(payload, offsets)
+
+    assert "".join(convert_stream(chunks)) == convert(payload)
+
+
+def structural_boundary_offsets(payload: bytes) -> list[int]:
+    """Split around adjacent structural tags/wrapper-sensitive boundaries."""
+
+    offsets: set[int] = set()
+    boundary_patterns = [
+        rb"><",
+        rb">\s+<",
+        rb"</title>\s*<h1\b",
+        rb"</head>\s*<body\b",
+        rb"</body>\s*</html>",
+    ]
+    for pattern in boundary_patterns:
+        for match in re.finditer(pattern, payload, re.I | re.S):
+            start, end = match.span()
+            offsets.update(range(max(1, start - 2), min(len(payload), end + 3)))
+    return _dedupe_cap(offsets, len(payload), MAX_ADVERSARIAL_OFFSETS_PER_CASE)
+
+
 def adversarial_split_offsets(payload: bytes) -> list[int]:
     """Find split points inside parser-sensitive constructs.
 
@@ -78,6 +120,7 @@ def adversarial_split_offsets(payload: bytes) -> list[int]:
     offsets.extend(_inside_regex(payload, rb"<tr\b[^>]*>.*?</tr>", flags=re.I | re.S, fractions=(0.33, 0.66)))
     offsets.extend(_inside_regex(payload, rb"<li\b[^>]*>.*?</li>", flags=re.I | re.S, fractions=(0.33, 0.66)))
     offsets.extend(_inside_regex(payload, rb"\s{2,}", fractions=(0.5,)))
+    offsets.extend(structural_boundary_offsets(payload))
     offsets.extend(_inside_utf8_sequences(payload))
     offsets.extend([1, max(1, len(payload) - 1)])
     return _dedupe_cap(offsets, len(payload), MAX_ADVERSARIAL_OFFSETS_PER_CASE)
@@ -155,6 +198,34 @@ def test_convert_stream_matches_convert_for_fixed_chunk_sweep(chunk_size: int):
     chunks = split_bytes(payload, fixed_chunk_offsets(payload, chunk_size))
 
     assert "".join(convert_stream(chunks)) == convert(payload)
+
+
+
+@pytest.mark.parametrize("payload", STRUCTURAL_BOUNDARY_REPRO_CASES)
+def test_convert_stream_matches_convert_for_implicit_head_body_structural_boundaries(payload: bytes):
+    # Regression for zo-1fp.19: streaming flushes around structural/document
+    # wrapper boundaries must exactly match whole-document conversion. The bug
+    # appears when a <title> closes, a source newline follows, and lxml has to
+    # infer the head/body boundary because the input lacks an explicit wrapper.
+    _assert_stream_matches_convert_for_offsets(payload, range(1, len(payload)))
+
+
+@pytest.mark.parametrize("payload", STRUCTURAL_BOUNDARY_CONTROL_CASES)
+def test_convert_stream_matches_convert_for_structural_boundary_controls(payload: bytes):
+    # These nearby shapes should remain covered as controls so the repro test is
+    # targeted at implicit <title> + newline + body-block tree construction, not
+    # every structural boundary.
+    _assert_stream_matches_convert_for_offsets(payload, range(1, len(payload)))
+
+
+def test_structural_boundary_offsets_cover_title_h1_transition():
+    payload = STRUCTURAL_BOUNDARY_REPRO_CASES[0]
+    offsets = structural_boundary_offsets(payload)
+    assert offsets
+    chunks = split_bytes(payload, offsets)
+    assert b"".join(chunks) == payload
+    boundary = payload.index(b"<h1")
+    assert any(boundary - 2 <= offset <= boundary + 2 for offset in offsets)
 
 
 SYNTHETIC_ADVERSARIAL_HTML = """\

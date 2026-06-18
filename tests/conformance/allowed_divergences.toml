@@ -43,3 +43,11 @@ diff_summary = "lxml/browser HTML tree construction auto-closes <h1> before nest
 reason = "Intentional parser divergence: same invalid nested block-in-heading input as markdownify:test_conversions:182, but with heading_style=ATX. html2md should preserve the lxml/browser parse contract instead of emulating BeautifulSoup html.parser's non-browser nesting."
 owner = "coder-1-leaf"
 revisit = "only if the project chooses BeautifulSoup html.parser compatibility over lxml/browser tree-construction for invalid nested block-in-heading markup"
+
+[[divergence]]
+source = "commonmark_expected_html"
+case_id = "commonmark:0630"
+diff_summary = "lxml treats a CDATA section containing '>' as malformed comment text and does not expose the original CDATA content in parser events"
+reason = "Intentional parser divergence: the CommonMark HTML fixture contains CDATA text with angle brackets (`foo <![CDATA[>&<]]>`). lxml/libxml2 recovers it as malformed comment data (`&<]]>`) rather than surfacing the original `>&<` text, so html2md cannot reconstruct markdownify/BeautifulSoup's output from the event stream. Plain CDATA without this malformed angle-bracket recovery path is preserved."
+owner = "coder-1-leaf"
+revisit = "only if the parser layer gains a pre-scan/rewrite for malformed CDATA sections before lxml feed; otherwise this remains unrecoverable from lxml events"

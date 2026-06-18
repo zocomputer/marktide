@@ -143,3 +143,7 @@ This is fixable only if we choose a canonical/idempotent code-span delimiter pol
 `markdownify:test_conversions:182` and `markdownify:test_conversions:183` are now classified as intentional parser divergences, not handler bugs. The input shape is invalid HTML: `<h1>A <p>P</p> C </h1>`. lxml/browser-style tree construction auto-closes the heading before the nested paragraph, so the local heading handler correctly sees only `A`. markdownify's BeautifulSoup `html.parser` fixture keeps `<p>` inside `<h1>`, treats it like inline heading content, and expects `# A P C #` / `# A P C`.
 
 These two cases are added to `tests/conformance/allowed_divergences.toml` as markdownify-test parser divergences. They should not block the ≥99% gate unless the project explicitly changes its parser contract from lxml/browser behavior to BeautifulSoup `html.parser` invalid-markup compatibility.
+
+## Parser-construction divergence: malformed CDATA with angle brackets
+
+`commonmark:0630` is now classified as an intentional parser divergence. The source shape contains CDATA text with angle brackets (`foo <![CDATA[>&<]]>`). lxml/libxml2 recovery does not expose the original `>&<` text in the event stream; it recovers the tail as malformed comment-like text (`&<]]>`). Because html2md's streaming parser consumes lxml events rather than a pre-tokenized source buffer, it cannot reconstruct markdownify/BeautifulSoup's output without a separate pre-scan/rewrite layer. Plain CDATA is preserved; this divergence is limited to the malformed angle-bracket recovery path.
