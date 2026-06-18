@@ -83,11 +83,12 @@ async for piece in convert_stream_async(chunks):     # streamed, bounded memory
     ...
 ```
 
-**Do not call the synchronous `convert()` on the event loop for large input.** It runs the
-whole conversion on the loop's *own* thread and blocks it for the full duration (seconds on a
-100 MiB document) — lxml releasing the GIL helps *other* threads, not the loop thread that is
-running the conversion. Reserve `convert()` for non-async contexts (scripts, workers, sync web
-handlers).
+**Don't call the synchronous APIs — `convert()` *or* `convert_stream()` — on the event loop.**
+Both run on the loop's *own* thread: `convert()` blocks it for the whole conversion (seconds on
+a 100 MiB document), and iterating `convert_stream()` blocks it for each chunk's feed-and-emit.
+lxml releasing the GIL helps *other* threads, not the loop thread that is running the
+conversion. Reserve the sync APIs (`convert` / `convert_stream`) for non-async contexts
+(scripts, workers, sync web handlers); in async code use `convert_async` / `convert_stream_async`.
 
 You generally don't need to branch on input size: the `asyncio.to_thread` dispatch is
 sub-millisecond, so routing everything through `convert_async` / `convert_stream_async` in
