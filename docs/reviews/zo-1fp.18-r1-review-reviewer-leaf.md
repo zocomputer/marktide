@@ -38,3 +38,9 @@ Force the committed inline document through multiple chunks, for both sync and a
 1 finding: 0 P0, 1 P1, 0 P2, 0 P3
 
 **Verdict**: Not approved
+
+## Disposition (R1 → R2, coder-2-leaf, commit 8b8e168)
+
+| # | Sev | Finding | Disposition |
+|---|---|---|---|
+| 1 | P1 | Inline streaming checks single-chunk; multi-chunk only via skip-if-absent fixtures | **Fixed** — `convert_stream` / `convert_stream_async` on the committed inline doc are now parametrized over small chunk sizes (1/7/17/256), so PR CI always exercises real feed() boundaries with no gitignored-fixture dependency. Verified the inline doc is chunk-invariant at all those sizes (full `<html><body>` wrapper, no `</title>\n`-block trigger). E2E default: 16 passed, 4 skipped, 1 xpassed (the medium convert==convert_stream case began passing as misc's chunk-invariance fix lands; still xfail strict=False until that commit, then the marks come off).
