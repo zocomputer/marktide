@@ -1,0 +1,1229 @@
+{
+  "adapters": [
+    "markdownify",
+    "html_to_markdown",
+    "htmd_py",
+    "html2text_rs",
+    "lxml_naive"
+  ],
+  "fixture_manifest": "benchmarks/fixtures.lock.json",
+  "gate": {
+    "adapter_evaluations": {
+      "htmd_py": {
+        "async_pass": false,
+        "fidelity_options_prelim_pass": true,
+        "passes_all_v1": false,
+        "rss_one_shot_pass": false,
+        "streaming_ttfo_pass": false,
+        "throughput_pass": true
+      },
+      "html2text_rs": {
+        "async_pass": false,
+        "fidelity_options_prelim_pass": false,
+        "passes_all_v1": false,
+        "rss_one_shot_pass": false,
+        "streaming_ttfo_pass": false,
+        "throughput_pass": true
+      },
+      "html_to_markdown": {
+        "async_pass": false,
+        "fidelity_options_prelim_pass": true,
+        "passes_all_v1": false,
+        "rss_one_shot_pass": false,
+        "streaming_ttfo_pass": false,
+        "throughput_pass": true
+      },
+      "lxml_naive": {
+        "async_pass": false,
+        "fidelity_options_prelim_pass": false,
+        "passes_all_v1": false,
+        "rss_one_shot_pass": false,
+        "streaming_ttfo_pass": false,
+        "throughput_pass": true
+      }
+    },
+    "gate_version": "v1",
+    "notes": [
+      "TTFO criterion is structurally failed for all existing one-shot libraries in this phase-1 matrix.",
+      "Fidelity is preliminary here; tests/conformance differential harness owns exact conformance scoring."
+    ],
+    "phase2_required": true,
+    "thresholds": {
+      "async": "missed_beat_pct <2% and max_delay_ms <15ms on every tier",
+      "fidelity": ">=99% conformance vs markdownify oracle post-normalization",
+      "rss": "one-shot path <=3x input bytes; streaming candidate <=256MiB constant on xlarge",
+      "throughput": "warm throughput >=5x markdownify on medium+ and >=20 MiB/s on large/xlarge",
+      "ttfo": "streaming only: first chunk <=50ms and max inter-chunk gap <=100ms on large/xlarge"
+    }
+  },
+  "generated_at": "2026-06-17T22:04:24-0700",
+  "manifest_naming": "benchmarks/fixtures.lock.json is the canonical fixture manifest; no separate benchmarks/fixtures/manifest.json is used.",
+  "rows": [
+    {
+      "adapter": "markdownify",
+      "async_gate": {
+        "max_delay_ms": 7.470459041651338,
+        "missed_beat_pct": 0.0,
+        "p99_delay_ms": 7.470459041651338,
+        "passes_v1_worker_async": true
+      },
+      "conversion_wall_s": 0.012411999981850386,
+      "engine": "BeautifulSoup / pure Python",
+      "fixture": "small",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/small.html",
+      "heartbeat": {
+        "conversion_wall_s": 0.012411999981850386,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 7.470459041651338,
+        "max_ms": 7.470459041651338,
+        "mean_ms": 7.470459041651338,
+        "missed_beats": 0,
+        "output_bytes": 93973,
+        "output_hash": "b96c518cc4ebffbd25d6a1cf637b0c3ae502c605503b949a7ad8823accf6c853",
+        "p50_ms": 7.470459041651338,
+        "p95_ms": 7.470459041651338,
+        "p99_ms": 7.470459041651338,
+        "per_iter_s": 0.012411999981850386,
+        "placement": "to_thread",
+        "samples": 1,
+        "total_stall_ms": 7.470459041651338,
+        "workload": "markdownify:small"
+      },
+      "input_bytes": 102740,
+      "option_map": {
+        "residual": [
+          "This is the incumbent oracle; residual divergences are assigned to other adapters."
+        ],
+        "settings": {
+          "bullets": "*",
+          "code_language": "",
+          "heading_style": "ATX",
+          "strong_em_symbol": "ASTERISK"
+        },
+        "targets": {
+          "bullets": "stable unordered-list marker",
+          "code_language": "do not inject synthetic code fence language",
+          "heading_style": "ATX headings for comparability with Rust candidates",
+          "strong_em_symbol": "asterisk emphasis/strong markers"
+        }
+      },
+      "output_bytes": 93973,
+      "output_hash": "b96c518cc4ebffbd25d6a1cf637b0c3ae502c605503b949a7ad8823accf6c853",
+      "output_to_input_ratio": 0.9146680942184154,
+      "package": "markdownify>=0.13 + beautifulsoup4",
+      "ru_maxrss_after_bytes": 36896768,
+      "ru_maxrss_before_bytes": 33718272,
+      "ru_maxrss_delta_bytes": 3178496,
+      "status": "ok",
+      "subprocess_wall_s": 0.012650833989027888,
+      "throughput_mib_s": 7.894013810091156
+    },
+    {
+      "adapter": "html_to_markdown",
+      "async_gate": {
+        "max_delay_ms": 0.6184999994002282,
+        "missed_beat_pct": 0.0,
+        "p99_delay_ms": 0.6184999994002282,
+        "passes_v1_worker_async": true
+      },
+      "conversion_wall_s": 0.0026326249935664237,
+      "engine": "Rust html-to-markdown-rs via PyO3",
+      "fixture": "small",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/small.html",
+      "heartbeat": {
+        "conversion_wall_s": 0.0026326249935664237,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 0.6184999994002282,
+        "max_ms": 0.6184999994002282,
+        "mean_ms": 0.6184999994002282,
+        "missed_beats": 0,
+        "output_bytes": 93983,
+        "output_hash": "a1b2cec3126f830a2ba8fdc47b837d134c29df62acf208d56effb82978cc2bec",
+        "p50_ms": 0.6184999994002282,
+        "p95_ms": 0.6184999994002282,
+        "p99_ms": 0.6184999994002282,
+        "per_iter_s": 0.0026326249935664237,
+        "placement": "to_thread",
+        "samples": 1,
+        "total_stall_ms": 0.6184999994002282,
+        "workload": "html_to_markdown:small"
+      },
+      "input_bytes": 102740,
+      "option_map": {
+        "residual": [
+          "May emit reference-style or otherwise normalized links differently from markdownify.",
+          "Full semantic distance is reported separately from throughput/GIL metrics."
+        ],
+        "settings": {
+          "code_block_style": "backticks",
+          "heading_style": "atx",
+          "strong_em_symbol": "*",
+          "wrap": false
+        },
+        "targets": {
+          "code_block_style": "fenced code blocks",
+          "heading_style": "ATX headings",
+          "strong_em_symbol": "asterisk emphasis/strong markers",
+          "wrap": "avoid line-wrap confound in throughput/fidelity output"
+        }
+      },
+      "output_bytes": 93983,
+      "output_hash": "a1b2cec3126f830a2ba8fdc47b837d134c29df62acf208d56effb82978cc2bec",
+      "output_to_input_ratio": 0.9147654272921939,
+      "package": "html-to-markdown==3.5.7",
+      "ru_maxrss_after_bytes": 36438016,
+      "ru_maxrss_before_bytes": 34652160,
+      "ru_maxrss_delta_bytes": 1785856,
+      "status": "ok",
+      "subprocess_wall_s": 0.005769208015408367,
+      "throughput_mib_s": 37.21779573886203
+    },
+    {
+      "adapter": "htmd_py",
+      "async_gate": {
+        "max_delay_ms": 1.0314159491099417,
+        "missed_beat_pct": 0.0,
+        "p99_delay_ms": 1.0314159491099417,
+        "passes_v1_worker_async": true
+      },
+      "conversion_wall_s": 0.0012419999693520367,
+      "engine": "Rust htmd via PyO3",
+      "fixture": "small",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/small.html",
+      "heartbeat": {
+        "conversion_wall_s": 0.0012419999693520367,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 1.0314159491099417,
+        "max_ms": 1.0314159491099417,
+        "mean_ms": 1.0314159491099417,
+        "missed_beats": 0,
+        "output_bytes": 94143,
+        "output_hash": "415140ffd0e35a1ca4408a4f75a12a4cb6601ec72d0893813df52537e431b9fb",
+        "p50_ms": 1.0314159491099417,
+        "p95_ms": 1.0314159491099417,
+        "p99_ms": 1.0314159491099417,
+        "per_iter_s": 0.0012419999693520367,
+        "placement": "to_thread",
+        "samples": 1,
+        "total_stall_ms": 1.0314159491099417,
+        "workload": "htmd_py:small"
+      },
+      "input_bytes": 102740,
+      "option_map": {
+        "residual": [
+          "htmd-py's option surface differs from markdownify; unsupported contract dimensions are scored as residual semantic divergence."
+        ],
+        "settings": {
+          "br_style": "TWO_SPACES",
+          "bullet_list_marker": "ASTERISK",
+          "code_block_style": "FENCED",
+          "heading_style": "ATX"
+        },
+        "targets": {
+          "br_style": "markdownify-compatible hard breaks where supported",
+          "bullet_list_marker": "stable unordered-list marker",
+          "code_block_style": "fenced code blocks",
+          "heading_style": "ATX headings"
+        }
+      },
+      "output_bytes": 94143,
+      "output_hash": "415140ffd0e35a1ca4408a4f75a12a4cb6601ec72d0893813df52537e431b9fb",
+      "output_to_input_ratio": 0.9163227564726494,
+      "package": "htmd-py==0.1.2",
+      "ru_maxrss_after_bytes": 33439744,
+      "ru_maxrss_before_bytes": 32030720,
+      "ru_maxrss_delta_bytes": 1409024,
+      "status": "ok",
+      "subprocess_wall_s": 0.006202582968398929,
+      "throughput_mib_s": 78.88929282236253
+    },
+    {
+      "adapter": "html2text_rs",
+      "async_gate": {
+        "max_delay_ms": 0.6742090382613241,
+        "missed_beat_pct": 0.0,
+        "p99_delay_ms": 0.6742090382613241,
+        "passes_v1_worker_async": true
+      },
+      "conversion_wall_s": 0.002461249998304993,
+      "engine": "Rust html2text via PyO3",
+      "fixture": "small",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/small.html",
+      "heartbeat": {
+        "conversion_wall_s": 0.002461249998304993,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 0.6742090382613241,
+        "max_ms": 0.6742090382613241,
+        "mean_ms": 0.6742090382613241,
+        "missed_beats": 0,
+        "output_bytes": 94059,
+        "output_hash": "1a8e585095b1648761a6d15c84f0034cc91a2e2f64794c472cea2abebc970c3b",
+        "p50_ms": 0.6742090382613241,
+        "p95_ms": 0.6742090382613241,
+        "p99_ms": 0.6742090382613241,
+        "per_iter_s": 0.002461249998304993,
+        "placement": "to_thread",
+        "samples": 1,
+        "total_stall_ms": 0.6742090382613241,
+        "workload": "html2text_rs:small"
+      },
+      "input_bytes": 102740,
+      "option_map": {
+        "residual": [
+          "No option surface for markdownify-equivalent image, table, hard-break, or escaping semantics.",
+          "Spot-check shows material divergence for code blocks, tables, images, escaping, hard breaks, and link titles."
+        ],
+        "settings": {
+          "width": 100
+        },
+        "targets": {
+          "width": "use library default wrapping to avoid html2text_rs abort on width=0"
+        }
+      },
+      "output_bytes": 94059,
+      "output_hash": "1a8e585095b1648761a6d15c84f0034cc91a2e2f64794c472cea2abebc970c3b",
+      "output_to_input_ratio": 0.9155051586529103,
+      "package": "html2text_rs==0.2.5",
+      "ru_maxrss_after_bytes": 34177024,
+      "ru_maxrss_before_bytes": 32145408,
+      "ru_maxrss_delta_bytes": 2031616,
+      "status": "ok",
+      "subprocess_wall_s": 0.005833207978866994,
+      "throughput_mib_s": 39.80924300053025
+    },
+    {
+      "adapter": "lxml_naive",
+      "async_gate": {
+        "max_delay_ms": 1.1388749745674431,
+        "missed_beat_pct": 0.0,
+        "p99_delay_ms": 1.1388749745674431,
+        "passes_v1_worker_async": true
+      },
+      "conversion_wall_s": 0.0006812079809606075,
+      "engine": "libxml2 parse + Python tree walk",
+      "fixture": "small",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/small.html",
+      "heartbeat": {
+        "conversion_wall_s": 0.0006812079809606075,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 1.1388749745674431,
+        "max_ms": 1.1388749745674431,
+        "mean_ms": 1.1388749745674431,
+        "missed_beats": 0,
+        "output_bytes": 93240,
+        "output_hash": "896424225c42eb05f3f4d46604e98ed89d9bb789f47a731a865ae3082993bec8",
+        "p50_ms": 1.1388749745674431,
+        "p95_ms": 1.1388749745674431,
+        "p99_ms": 1.1388749745674431,
+        "per_iter_s": 0.0006812079809606075,
+        "placement": "to_thread",
+        "samples": 1,
+        "total_stall_ms": 1.1388749745674431,
+        "workload": "lxml_naive:small"
+      },
+      "input_bytes": 102740,
+      "option_map": {
+        "residual": [
+          "Intentionally naive Markdown semantics; establishes lxml parse + Python walk performance/GIL baseline only."
+        ],
+        "settings": {
+          "parser": "etree.HTMLParser(recover=True, huge_tree=True)"
+        },
+        "targets": {
+          "parser": "large malformed HTML fixture compatibility"
+        }
+      },
+      "output_bytes": 93240,
+      "output_hash": "896424225c42eb05f3f4d46604e98ed89d9bb789f47a731a865ae3082993bec8",
+      "output_to_input_ratio": 0.9075335799104536,
+      "package": "lxml>=5.0",
+      "ru_maxrss_after_bytes": 32227328,
+      "ru_maxrss_before_bytes": 31473664,
+      "ru_maxrss_delta_bytes": 753664,
+      "status": "ok",
+      "subprocess_wall_s": 0.00628420797875151,
+      "throughput_mib_s": 143.83345763126647
+    },
+    {
+      "adapter": "markdownify",
+      "async_gate": {
+        "max_delay_ms": 32.61795803438872,
+        "missed_beat_pct": 98.48484848484848,
+        "p99_delay_ms": 32.61795803438872,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 1.31398033403093,
+      "engine": "BeautifulSoup / pure Python",
+      "fixture": "medium",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/medium.html",
+      "heartbeat": {
+        "conversion_wall_s": 1.31398033403093,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 32.61795803438872,
+        "max_ms": 32.61795803438872,
+        "mean_ms": 14.968714622364406,
+        "missed_beats": 65,
+        "output_bytes": 2126477,
+        "output_hash": "b0814c9d8bdfed254bcf32a634a7048a18f84df0ffaecfebf7d3e63de38f3378",
+        "p50_ms": 14.47845797985792,
+        "p95_ms": 21.31500002462417,
+        "p99_ms": 32.61795803438872,
+        "per_iter_s": 1.31398033403093,
+        "placement": "to_thread",
+        "samples": 66,
+        "total_stall_ms": 987.9351650760508,
+        "workload": "markdownify:medium"
+      },
+      "input_bytes": 5606346,
+      "option_map": {
+        "residual": [
+          "This is the incumbent oracle; residual divergences are assigned to other adapters."
+        ],
+        "settings": {
+          "bullets": "*",
+          "code_language": "",
+          "heading_style": "ATX",
+          "strong_em_symbol": "ASTERISK"
+        },
+        "targets": {
+          "bullets": "stable unordered-list marker",
+          "code_language": "do not inject synthetic code fence language",
+          "heading_style": "ATX headings for comparability with Rust candidates",
+          "strong_em_symbol": "asterisk emphasis/strong markers"
+        }
+      },
+      "output_bytes": 2126477,
+      "output_hash": "b0814c9d8bdfed254bcf32a634a7048a18f84df0ffaecfebf7d3e63de38f3378",
+      "output_to_input_ratio": 0.3792982095646612,
+      "package": "markdownify>=0.13 + beautifulsoup4",
+      "ru_maxrss_after_bytes": 184188928,
+      "ru_maxrss_before_bytes": 39452672,
+      "ru_maxrss_delta_bytes": 144736256,
+      "status": "ok",
+      "subprocess_wall_s": 1.3193609159789048,
+      "throughput_mib_s": 4.069032123703808
+    },
+    {
+      "adapter": "html_to_markdown",
+      "async_gate": {
+        "max_delay_ms": 223.65241602994502,
+        "missed_beat_pct": 100.0,
+        "p99_delay_ms": 223.65241602994502,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 0.2285975000122562,
+      "engine": "Rust html-to-markdown-rs via PyO3",
+      "fixture": "medium",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/medium.html",
+      "heartbeat": {
+        "conversion_wall_s": 0.2285975000122562,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 223.65241602994502,
+        "max_ms": 223.65241602994502,
+        "mean_ms": 223.65241602994502,
+        "missed_beats": 1,
+        "output_bytes": 9624049,
+        "output_hash": "52c5eadf3eb58c5592d8c3f1ef529ac2138336758d9b912567d6a9a678b687e6",
+        "p50_ms": 223.65241602994502,
+        "p95_ms": 223.65241602994502,
+        "p99_ms": 223.65241602994502,
+        "per_iter_s": 0.2285975000122562,
+        "placement": "to_thread",
+        "samples": 1,
+        "total_stall_ms": 223.65241602994502,
+        "workload": "html_to_markdown:medium"
+      },
+      "input_bytes": 5606346,
+      "option_map": {
+        "residual": [
+          "May emit reference-style or otherwise normalized links differently from markdownify.",
+          "Full semantic distance is reported separately from throughput/GIL metrics."
+        ],
+        "settings": {
+          "code_block_style": "backticks",
+          "heading_style": "atx",
+          "strong_em_symbol": "*",
+          "wrap": false
+        },
+        "targets": {
+          "code_block_style": "fenced code blocks",
+          "heading_style": "ATX headings",
+          "strong_em_symbol": "asterisk emphasis/strong markers",
+          "wrap": "avoid line-wrap confound in throughput/fidelity output"
+        }
+      },
+      "output_bytes": 9624049,
+      "output_hash": "52c5eadf3eb58c5592d8c3f1ef529ac2138336758d9b912567d6a9a678b687e6",
+      "output_to_input_ratio": 1.7166348634208448,
+      "package": "html-to-markdown==3.5.7",
+      "ru_maxrss_after_bytes": 261881856,
+      "ru_maxrss_before_bytes": 40419328,
+      "ru_maxrss_delta_bytes": 221462528,
+      "status": "ok",
+      "subprocess_wall_s": 0.23458679096074775,
+      "throughput_mib_s": 23.388830537517933
+    },
+    {
+      "adapter": "htmd_py",
+      "async_gate": {
+        "max_delay_ms": 76.56724995933473,
+        "missed_beat_pct": 100.0,
+        "p99_delay_ms": 76.56724995933473,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 0.0815145829692483,
+      "engine": "Rust htmd via PyO3",
+      "fixture": "medium",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/medium.html",
+      "heartbeat": {
+        "conversion_wall_s": 0.0815145829692483,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 76.56724995933473,
+        "max_ms": 76.56724995933473,
+        "mean_ms": 76.56724995933473,
+        "missed_beats": 1,
+        "output_bytes": 4115958,
+        "output_hash": "a35ea94e02cbf81793d45ad7dfc27cf30a50f72cb118621f0c9f45996774b1f5",
+        "p50_ms": 76.56724995933473,
+        "p95_ms": 76.56724995933473,
+        "p99_ms": 76.56724995933473,
+        "per_iter_s": 0.0815145829692483,
+        "placement": "to_thread",
+        "samples": 1,
+        "total_stall_ms": 76.56724995933473,
+        "workload": "htmd_py:medium"
+      },
+      "input_bytes": 5606346,
+      "option_map": {
+        "residual": [
+          "htmd-py's option surface differs from markdownify; unsupported contract dimensions are scored as residual semantic divergence."
+        ],
+        "settings": {
+          "br_style": "TWO_SPACES",
+          "bullet_list_marker": "ASTERISK",
+          "code_block_style": "FENCED",
+          "heading_style": "ATX"
+        },
+        "targets": {
+          "br_style": "markdownify-compatible hard breaks where supported",
+          "bullet_list_marker": "stable unordered-list marker",
+          "code_block_style": "fenced code blocks",
+          "heading_style": "ATX headings"
+        }
+      },
+      "output_bytes": 4115958,
+      "output_hash": "a35ea94e02cbf81793d45ad7dfc27cf30a50f72cb118621f0c9f45996774b1f5",
+      "output_to_input_ratio": 0.7341605387894361,
+      "package": "htmd-py==0.1.2",
+      "ru_maxrss_after_bytes": 122077184,
+      "ru_maxrss_before_bytes": 37666816,
+      "ru_maxrss_delta_bytes": 84410368,
+      "status": "ok",
+      "subprocess_wall_s": 0.08414512500166893,
+      "throughput_mib_s": 65.5910635168673
+    },
+    {
+      "adapter": "html2text_rs",
+      "async_gate": {
+        "max_delay_ms": 1.312916986644268,
+        "missed_beat_pct": 0.0,
+        "p99_delay_ms": 1.312916986644268,
+        "passes_v1_worker_async": true
+      },
+      "conversion_wall_s": 0.14571675000479445,
+      "engine": "Rust html2text via PyO3",
+      "fixture": "medium",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/medium.html",
+      "heartbeat": {
+        "conversion_wall_s": 0.14571675000479445,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 1.312916986644268,
+        "max_ms": 1.312916986644268,
+        "mean_ms": 1.0729011214183022,
+        "missed_beats": 0,
+        "output_bytes": 3515809,
+        "output_hash": "b55a0e7c7761c69f28ab20a484c2167dcd0db515edf590299285d86ff3fd3421",
+        "p50_ms": 1.2864170176908374,
+        "p95_ms": 1.3051250181160867,
+        "p99_ms": 1.312916986644268,
+        "per_iter_s": 0.14571675000479445,
+        "placement": "to_thread",
+        "samples": 24,
+        "total_stall_ms": 25.749626914039254,
+        "workload": "html2text_rs:medium"
+      },
+      "input_bytes": 5606346,
+      "option_map": {
+        "residual": [
+          "No option surface for markdownify-equivalent image, table, hard-break, or escaping semantics.",
+          "Spot-check shows material divergence for code blocks, tables, images, escaping, hard breaks, and link titles."
+        ],
+        "settings": {
+          "width": 100
+        },
+        "targets": {
+          "width": "use library default wrapping to avoid html2text_rs abort on width=0"
+        }
+      },
+      "output_bytes": 3515809,
+      "output_hash": "b55a0e7c7761c69f28ab20a484c2167dcd0db515edf590299285d86ff3fd3421",
+      "output_to_input_ratio": 0.6271123830031182,
+      "package": "html2text_rs==0.2.5",
+      "ru_maxrss_after_bytes": 237207552,
+      "ru_maxrss_before_bytes": 37781504,
+      "ru_maxrss_delta_bytes": 199426048,
+      "status": "ok",
+      "subprocess_wall_s": 0.14792037499137223,
+      "throughput_mib_s": 36.69192586927032
+    },
+    {
+      "adapter": "lxml_naive",
+      "async_gate": {
+        "max_delay_ms": 16.31375001044944,
+        "missed_beat_pct": 22.22222222222222,
+        "p99_delay_ms": 16.31375001044944,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 0.07211620802991092,
+      "engine": "libxml2 parse + Python tree walk",
+      "fixture": "medium",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/medium.html",
+      "heartbeat": {
+        "conversion_wall_s": 0.07211620802991092,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 16.31375001044944,
+        "max_ms": 16.31375001044944,
+        "mean_ms": 3.618328772071335,
+        "missed_beats": 2,
+        "output_bytes": 1338133,
+        "output_hash": "a938406f91b65d6ab00529e65175f8650f6c9dfeb98bc57e7de2769629897ff8",
+        "p50_ms": 1.2761249719187617,
+        "p95_ms": 16.31375001044944,
+        "p99_ms": 16.31375001044944,
+        "per_iter_s": 0.07211620802991092,
+        "placement": "to_thread",
+        "samples": 9,
+        "total_stall_ms": 32.564958948642015,
+        "workload": "lxml_naive:medium"
+      },
+      "input_bytes": 5606346,
+      "option_map": {
+        "residual": [
+          "Intentionally naive Markdown semantics; establishes lxml parse + Python walk performance/GIL baseline only."
+        ],
+        "settings": {
+          "parser": "etree.HTMLParser(recover=True, huge_tree=True)"
+        },
+        "targets": {
+          "parser": "large malformed HTML fixture compatibility"
+        }
+      },
+      "output_bytes": 1338133,
+      "output_hash": "a938406f91b65d6ab00529e65175f8650f6c9dfeb98bc57e7de2769629897ff8",
+      "output_to_input_ratio": 0.23868184375348936,
+      "package": "lxml>=5.0",
+      "ru_maxrss_after_bytes": 101105664,
+      "ru_maxrss_before_bytes": 37076992,
+      "ru_maxrss_delta_bytes": 64028672,
+      "status": "ok",
+      "subprocess_wall_s": 0.08007754199206829,
+      "throughput_mib_s": 74.13906436774027
+    },
+    {
+      "adapter": "markdownify",
+      "async_gate": {
+        "max_delay_ms": 263.3312089648098,
+        "missed_beat_pct": 99.67982924226254,
+        "p99_delay_ms": 43.451250011567026,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 19.514864458004013,
+      "engine": "BeautifulSoup / pure Python",
+      "fixture": "large",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/large.html",
+      "heartbeat": {
+        "conversion_wall_s": 19.514864458004013,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 263.3312089648098,
+        "max_ms": 263.3312089648098,
+        "mean_ms": 15.833003701527353,
+        "missed_beats": 934,
+        "output_bytes": 21844606,
+        "output_hash": "d06acdcdecac6727255e41993c0977539c2d64967a3d82fea32d87b7acf5562b",
+        "p50_ms": 14.635792006738482,
+        "p95_ms": 16.352415962610394,
+        "p99_ms": 43.451250011567026,
+        "per_iter_s": 19.514864458004013,
+        "placement": "to_thread",
+        "samples": 937,
+        "total_stall_ms": 14835.52446833113,
+        "workload": "markdownify:large"
+      },
+      "input_bytes": 57590748,
+      "option_map": {
+        "residual": [
+          "This is the incumbent oracle; residual divergences are assigned to other adapters."
+        ],
+        "settings": {
+          "bullets": "*",
+          "code_language": "",
+          "heading_style": "ATX",
+          "strong_em_symbol": "ASTERISK"
+        },
+        "targets": {
+          "bullets": "stable unordered-list marker",
+          "code_language": "do not inject synthetic code fence language",
+          "heading_style": "ATX headings for comparability with Rust candidates",
+          "strong_em_symbol": "asterisk emphasis/strong markers"
+        }
+      },
+      "output_bytes": 21844606,
+      "output_hash": "d06acdcdecac6727255e41993c0977539c2d64967a3d82fea32d87b7acf5562b",
+      "output_to_input_ratio": 0.37930755822098366,
+      "package": "markdownify>=0.13 + beautifulsoup4",
+      "ru_maxrss_after_bytes": 1564770304,
+      "ru_maxrss_before_bytes": 91488256,
+      "ru_maxrss_delta_bytes": 1473282048,
+      "status": "ok",
+      "subprocess_wall_s": 19.53347995801596,
+      "throughput_mib_s": 2.814409362074664
+    },
+    {
+      "adapter": "html_to_markdown",
+      "async_gate": {
+        "max_delay_ms": 2266.991874964442,
+        "missed_beat_pct": 50.0,
+        "p99_delay_ms": 2266.991874964442,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 2.272069874976296,
+      "engine": "Rust html-to-markdown-rs via PyO3",
+      "fixture": "large",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/large.html",
+      "heartbeat": {
+        "conversion_wall_s": 2.272069874976296,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 2266.991874964442,
+        "max_ms": 2266.991874964442,
+        "mean_ms": 1134.1423959867097,
+        "missed_beats": 1,
+        "output_bytes": 98864970,
+        "output_hash": "c73a02e1d9d52e89318b9964b6899b6b272d034e7e538f1a0d23ea05d1b5a512",
+        "p50_ms": 2266.991874964442,
+        "p95_ms": 2266.991874964442,
+        "p99_ms": 2266.991874964442,
+        "per_iter_s": 2.272069874976296,
+        "placement": "to_thread",
+        "samples": 2,
+        "total_stall_ms": 2268.2847919734195,
+        "workload": "html_to_markdown:large"
+      },
+      "input_bytes": 57590748,
+      "option_map": {
+        "residual": [
+          "May emit reference-style or otherwise normalized links differently from markdownify.",
+          "Full semantic distance is reported separately from throughput/GIL metrics."
+        ],
+        "settings": {
+          "code_block_style": "backticks",
+          "heading_style": "atx",
+          "strong_em_symbol": "*",
+          "wrap": false
+        },
+        "targets": {
+          "code_block_style": "fenced code blocks",
+          "heading_style": "ATX headings",
+          "strong_em_symbol": "asterisk emphasis/strong markers",
+          "wrap": "avoid line-wrap confound in throughput/fidelity output"
+        }
+      },
+      "output_bytes": 98864970,
+      "output_hash": "c73a02e1d9d52e89318b9964b6899b6b272d034e7e538f1a0d23ea05d1b5a512",
+      "output_to_input_ratio": 1.7166814711279665,
+      "package": "html-to-markdown==3.5.7",
+      "ru_maxrss_after_bytes": 2348744704,
+      "ru_maxrss_before_bytes": 92160000,
+      "ru_maxrss_delta_bytes": 2256584704,
+      "status": "ok",
+      "subprocess_wall_s": 2.338874750013929,
+      "throughput_mib_s": 24.173031751850328
+    },
+    {
+      "adapter": "htmd_py",
+      "async_gate": {
+        "max_delay_ms": 805.5289579834789,
+        "missed_beat_pct": 50.0,
+        "p99_delay_ms": 805.5289579834789,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 0.8105366670060903,
+      "engine": "Rust htmd via PyO3",
+      "fixture": "large",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/large.html",
+      "heartbeat": {
+        "conversion_wall_s": 0.8105366670060903,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 805.5289579834789,
+        "max_ms": 805.5289579834789,
+        "mean_ms": 403.4202704834752,
+        "missed_beats": 1,
+        "output_bytes": 42282011,
+        "output_hash": "1271d45858b82cdd2c02f3e0e5a1e07f6f779105e08b0f029c25cc70c6a36533",
+        "p50_ms": 805.5289579834789,
+        "p95_ms": 805.5289579834789,
+        "p99_ms": 805.5289579834789,
+        "per_iter_s": 0.8105366670060903,
+        "placement": "to_thread",
+        "samples": 2,
+        "total_stall_ms": 806.8405409669504,
+        "workload": "htmd_py:large"
+      },
+      "input_bytes": 57590748,
+      "option_map": {
+        "residual": [
+          "htmd-py's option surface differs from markdownify; unsupported contract dimensions are scored as residual semantic divergence."
+        ],
+        "settings": {
+          "br_style": "TWO_SPACES",
+          "bullet_list_marker": "ASTERISK",
+          "code_block_style": "FENCED",
+          "heading_style": "ATX"
+        },
+        "targets": {
+          "br_style": "markdownify-compatible hard breaks where supported",
+          "bullet_list_marker": "stable unordered-list marker",
+          "code_block_style": "fenced code blocks",
+          "heading_style": "ATX headings"
+        }
+      },
+      "output_bytes": 42282011,
+      "output_hash": "1271d45858b82cdd2c02f3e0e5a1e07f6f779105e08b0f029c25cc70c6a36533",
+      "output_to_input_ratio": 0.7341806187341063,
+      "package": "htmd-py==0.1.2",
+      "ru_maxrss_after_bytes": 914079744,
+      "ru_maxrss_before_bytes": 89669632,
+      "ru_maxrss_delta_bytes": 824410112,
+      "status": "ok",
+      "subprocess_wall_s": 0.8445841670036316,
+      "throughput_mib_s": 67.76105198682137
+    },
+    {
+      "adapter": "html2text_rs",
+      "async_gate": {
+        "max_delay_ms": 32.53037500428036,
+        "missed_beat_pct": 0.851063829787234,
+        "p99_delay_ms": 1.3068330055102706,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 1.4364942920510657,
+      "engine": "Rust html2text via PyO3",
+      "fixture": "large",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/large.html",
+      "heartbeat": {
+        "conversion_wall_s": 1.4364942920510657,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 32.53037500428036,
+        "max_ms": 32.53037500428036,
+        "mean_ms": 1.1373342091138374,
+        "missed_beats": 2,
+        "output_bytes": 36508806,
+        "output_hash": "1b82daf7511efe5385903948bcbe489b0771aacc08f8448cf687a07bee19ab61",
+        "p50_ms": 1.2787499628029764,
+        "p95_ms": 1.2962499796412885,
+        "p99_ms": 1.3068330055102706,
+        "per_iter_s": 1.4364942920510657,
+        "placement": "to_thread",
+        "samples": 235,
+        "total_stall_ms": 267.2735391417518,
+        "workload": "html2text_rs:large"
+      },
+      "input_bytes": 57590748,
+      "option_map": {
+        "residual": [
+          "No option surface for markdownify-equivalent image, table, hard-break, or escaping semantics.",
+          "Spot-check shows material divergence for code blocks, tables, images, escaping, hard breaks, and link titles."
+        ],
+        "settings": {
+          "width": 100
+        },
+        "targets": {
+          "width": "use library default wrapping to avoid html2text_rs abort on width=0"
+        }
+      },
+      "output_bytes": 36508806,
+      "output_hash": "1b82daf7511efe5385903948bcbe489b0771aacc08f8448cf687a07bee19ab61",
+      "output_to_input_ratio": 0.6339352633516758,
+      "package": "html2text_rs==0.2.5",
+      "ru_maxrss_after_bytes": 2137767936,
+      "ru_maxrss_before_bytes": 89817088,
+      "ru_maxrss_delta_bytes": 2047950848,
+      "status": "ok",
+      "subprocess_wall_s": 1.4644167919759639,
+      "throughput_mib_s": 38.23392653499814
+    },
+    {
+      "adapter": "lxml_naive",
+      "async_gate": {
+        "max_delay_ms": 104.41716696834192,
+        "missed_beat_pct": 19.230769230769234,
+        "p99_delay_ms": 104.41716696834192,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 0.7488404589821585,
+      "engine": "libxml2 parse + Python tree walk",
+      "fixture": "large",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/large.html",
+      "heartbeat": {
+        "conversion_wall_s": 0.7488404589821585,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 104.41716696834192,
+        "max_ms": 104.41716696834192,
+        "mean_ms": 4.67892260180237,
+        "missed_beats": 15,
+        "output_bytes": 13745515,
+        "output_hash": "4bcf32f2d52c563751b73916d7083047951c4b434a45539da9ef2c19fcaa8c97",
+        "p50_ms": 1.2847090302966535,
+        "p95_ms": 16.328916016500443,
+        "p99_ms": 104.41716696834192,
+        "per_iter_s": 0.7488404589821585,
+        "placement": "to_thread",
+        "samples": 78,
+        "total_stall_ms": 364.95596294058487,
+        "workload": "lxml_naive:large"
+      },
+      "input_bytes": 57590748,
+      "option_map": {
+        "residual": [
+          "Intentionally naive Markdown semantics; establishes lxml parse + Python walk performance/GIL baseline only."
+        ],
+        "settings": {
+          "parser": "etree.HTMLParser(recover=True, huge_tree=True)"
+        },
+        "targets": {
+          "parser": "large malformed HTML fixture compatibility"
+        }
+      },
+      "output_bytes": 13745515,
+      "output_hash": "4bcf32f2d52c563751b73916d7083047951c4b434a45539da9ef2c19fcaa8c97",
+      "output_to_input_ratio": 0.2386757504868664,
+      "package": "lxml>=5.0",
+      "ru_maxrss_after_bytes": 740212736,
+      "ru_maxrss_before_bytes": 89079808,
+      "ru_maxrss_delta_bytes": 651132928,
+      "status": "ok",
+      "subprocess_wall_s": 0.7650228750426322,
+      "throughput_mib_s": 73.34381652518748
+    },
+    {
+      "adapter": "markdownify",
+      "async_gate": {
+        "max_delay_ms": 490.53874996490777,
+        "missed_beat_pct": 99.88198269079464,
+        "p99_delay_ms": 16.428167005069554,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 52.536820833047386,
+      "engine": "BeautifulSoup / pure Python",
+      "fixture": "xlarge",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/xlarge.html",
+      "heartbeat": {
+        "conversion_wall_s": 52.536820833047386,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 490.53874996490777,
+        "max_ms": 490.53874996490777,
+        "mean_ms": 15.66930073894484,
+        "missed_beats": 2539,
+        "output_bytes": 43689202,
+        "output_hash": "e96201df1b1a1b0249842847f68a404f1f1366db38289e5fff9b99842136a685",
+        "p50_ms": 14.893958000466226,
+        "p95_ms": 16.351749950554222,
+        "p99_ms": 16.428167005069554,
+        "per_iter_s": 52.536820833047386,
+        "placement": "to_thread",
+        "samples": 2542,
+        "total_stall_ms": 39831.36247839779,
+        "workload": "markdownify:xlarge"
+      },
+      "input_bytes": 115181313,
+      "option_map": {
+        "residual": [
+          "This is the incumbent oracle; residual divergences are assigned to other adapters."
+        ],
+        "settings": {
+          "bullets": "*",
+          "code_language": "",
+          "heading_style": "ATX",
+          "strong_em_symbol": "ASTERISK"
+        },
+        "targets": {
+          "bullets": "stable unordered-list marker",
+          "code_language": "do not inject synthetic code fence language",
+          "heading_style": "ATX headings for comparability with Rust candidates",
+          "strong_em_symbol": "asterisk emphasis/strong markers"
+        }
+      },
+      "output_bytes": 43689202,
+      "output_hash": "e96201df1b1a1b0249842847f68a404f1f1366db38289e5fff9b99842136a685",
+      "output_to_input_ratio": 0.3793080740449625,
+      "package": "markdownify>=0.13 + beautifulsoup4",
+      "ru_maxrss_after_bytes": 3096363008,
+      "ru_maxrss_before_bytes": 149078016,
+      "ru_maxrss_delta_bytes": 2947284992,
+      "status": "ok",
+      "subprocess_wall_s": 52.56802508299006,
+      "throughput_mib_s": 2.09082807441125
+    },
+    {
+      "adapter": "html_to_markdown",
+      "async_gate": {
+        "max_delay_ms": 4377.5710840174,
+        "missed_beat_pct": 50.0,
+        "p99_delay_ms": 4377.5710840174,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 4.382665749988519,
+      "engine": "Rust html-to-markdown-rs via PyO3",
+      "fixture": "xlarge",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/xlarge.html",
+      "heartbeat": {
+        "conversion_wall_s": 4.382665749988519,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 4377.5710840174,
+        "max_ms": 4377.5710840174,
+        "mean_ms": 2189.036083528772,
+        "missed_beats": 1,
+        "output_bytes": 197729914,
+        "output_hash": "a9173c428f3da10835851ceb4f9bfc06a91acb40779f1ddac59f683640fdd1c7",
+        "p50_ms": 4377.5710840174,
+        "p95_ms": 4377.5710840174,
+        "p99_ms": 4377.5710840174,
+        "per_iter_s": 4.382665749988519,
+        "placement": "to_thread",
+        "samples": 2,
+        "total_stall_ms": 4378.072167057544,
+        "workload": "html_to_markdown:xlarge"
+      },
+      "input_bytes": 115181313,
+      "option_map": {
+        "residual": [
+          "May emit reference-style or otherwise normalized links differently from markdownify.",
+          "Full semantic distance is reported separately from throughput/GIL metrics."
+        ],
+        "settings": {
+          "code_block_style": "backticks",
+          "heading_style": "atx",
+          "strong_em_symbol": "*",
+          "wrap": false
+        },
+        "targets": {
+          "code_block_style": "fenced code blocks",
+          "heading_style": "ATX headings",
+          "strong_em_symbol": "asterisk emphasis/strong markers",
+          "wrap": "avoid line-wrap confound in throughput/fidelity output"
+        }
+      },
+      "output_bytes": 197729914,
+      "output_hash": "a9173c428f3da10835851ceb4f9bfc06a91acb40779f1ddac59f683640fdd1c7",
+      "output_to_input_ratio": 1.7166839728593821,
+      "package": "html-to-markdown==3.5.7",
+      "ru_maxrss_after_bytes": 4653547520,
+      "ru_maxrss_before_bytes": 149913600,
+      "ru_maxrss_delta_bytes": 4503633920,
+      "status": "ok",
+      "subprocess_wall_s": 4.509245875000488,
+      "throughput_mib_s": 25.063617944931593
+    },
+    {
+      "adapter": "htmd_py",
+      "async_gate": {
+        "max_delay_ms": 1593.9290409488603,
+        "missed_beat_pct": 50.0,
+        "p99_delay_ms": 1593.9290409488603,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 1.598919875046704,
+      "engine": "Rust htmd via PyO3",
+      "fixture": "xlarge",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/xlarge.html",
+      "heartbeat": {
+        "conversion_wall_s": 1.598919875046704,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 1593.9290409488603,
+        "max_ms": 1593.9290409488603,
+        "mean_ms": 797.5907289702445,
+        "missed_beats": 1,
+        "output_bytes": 84564013,
+        "output_hash": "a2f267bbc892bf11f2f6be0d4fe7b67367dbd9179b6c3715dad3e4da2aca15bd",
+        "p50_ms": 1593.9290409488603,
+        "p95_ms": 1593.9290409488603,
+        "p99_ms": 1593.9290409488603,
+        "per_iter_s": 1.598919875046704,
+        "placement": "to_thread",
+        "samples": 2,
+        "total_stall_ms": 1595.181457940489,
+        "workload": "htmd_py:xlarge"
+      },
+      "input_bytes": 115181313,
+      "option_map": {
+        "residual": [
+          "htmd-py's option surface differs from markdownify; unsupported contract dimensions are scored as residual semantic divergence."
+        ],
+        "settings": {
+          "br_style": "TWO_SPACES",
+          "bullet_list_marker": "ASTERISK",
+          "code_block_style": "FENCED",
+          "heading_style": "ATX"
+        },
+        "targets": {
+          "br_style": "markdownify-compatible hard breaks where supported",
+          "bullet_list_marker": "stable unordered-list marker",
+          "code_block_style": "fenced code blocks",
+          "heading_style": "ATX headings"
+        }
+      },
+      "output_bytes": 84564013,
+      "output_hash": "a2f267bbc892bf11f2f6be0d4fe7b67367dbd9179b6c3715dad3e4da2aca15bd",
+      "output_to_input_ratio": 0.7341817070621517,
+      "package": "htmd-py==0.1.2",
+      "ru_maxrss_after_bytes": 1791328256,
+      "ru_maxrss_before_bytes": 147243008,
+      "ru_maxrss_delta_bytes": 1644085248,
+      "status": "ok",
+      "subprocess_wall_s": 1.6565680000348948,
+      "throughput_mib_s": 68.69979018482134
+    },
+    {
+      "adapter": "html2text_rs",
+      "async_gate": {
+        "max_delay_ms": 67.517583030276,
+        "missed_beat_pct": 0.4424778761061947,
+        "p99_delay_ms": 1.3200420117937028,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 2.8248961659846827,
+      "engine": "Rust html2text via PyO3",
+      "fixture": "xlarge",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/xlarge.html",
+      "heartbeat": {
+        "conversion_wall_s": 2.8248961659846827,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 67.517583030276,
+        "max_ms": 67.517583030276,
+        "mean_ms": 1.2634389573477407,
+        "missed_beats": 2,
+        "output_bytes": 73190753,
+        "output_hash": "21ee515d75a0196bbd7018a8b1cf1d39bfe0cb15a2227ffdb3fad1ff1cd6d1e7",
+        "p50_ms": 1.276707979850471,
+        "p95_ms": 1.2951669679023325,
+        "p99_ms": 1.3200420117937028,
+        "per_iter_s": 2.8248961659846827,
+        "placement": "to_thread",
+        "samples": 452,
+        "total_stall_ms": 571.0744087211788,
+        "workload": "html2text_rs:xlarge"
+      },
+      "input_bytes": 115181313,
+      "option_map": {
+        "residual": [
+          "No option surface for markdownify-equivalent image, table, hard-break, or escaping semantics.",
+          "Spot-check shows material divergence for code blocks, tables, images, escaping, hard breaks, and link titles."
+        ],
+        "settings": {
+          "width": 100
+        },
+        "targets": {
+          "width": "use library default wrapping to avoid html2text_rs abort on width=0"
+        }
+      },
+      "output_bytes": 73190753,
+      "output_hash": "21ee515d75a0196bbd7018a8b1cf1d39bfe0cb15a2227ffdb3fad1ff1cd6d1e7",
+      "output_to_input_ratio": 0.6354394744571109,
+      "package": "html2text_rs==0.2.5",
+      "ru_maxrss_after_bytes": 4242161664,
+      "ru_maxrss_before_bytes": 147390464,
+      "ru_maxrss_delta_bytes": 4094771200,
+      "status": "ok",
+      "subprocess_wall_s": 2.874771792034153,
+      "throughput_mib_s": 38.8847778763437
+    },
+    {
+      "adapter": "lxml_naive",
+      "async_gate": {
+        "max_delay_ms": 173.62249998142943,
+        "missed_beat_pct": 19.047619047619047,
+        "p99_delay_ms": 32.948458979371935,
+        "passes_v1_worker_async": false
+      },
+      "conversion_wall_s": 1.4559153749723919,
+      "engine": "libxml2 parse + Python tree walk",
+      "fixture": "xlarge",
+      "fixture_path": "/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures/xlarge.html",
+      "heartbeat": {
+        "conversion_wall_s": 1.4559153749723919,
+        "interval_s": 0.005,
+        "iterations": 1,
+        "longest_contiguous_stall_ms": 173.62249998142943,
+        "max_ms": 173.62249998142943,
+        "mean_ms": 4.9467222137712445,
+        "missed_beats": 28,
+        "output_bytes": 27490950,
+        "output_hash": "15ee7c678ed1a180b35c6a53c655955b6c575573e51a50ab6379dba255906f5a",
+        "p50_ms": 1.2794580007903278,
+        "p95_ms": 16.1659170454368,
+        "p99_ms": 32.948458979371935,
+        "per_iter_s": 1.4559153749723919,
+        "placement": "to_thread",
+        "samples": 147,
+        "total_stall_ms": 727.168165424373,
+        "workload": "lxml_naive:xlarge"
+      },
+      "input_bytes": 115181313,
+      "option_map": {
+        "residual": [
+          "Intentionally naive Markdown semantics; establishes lxml parse + Python walk performance/GIL baseline only."
+        ],
+        "settings": {
+          "parser": "etree.HTMLParser(recover=True, huge_tree=True)"
+        },
+        "targets": {
+          "parser": "large malformed HTML fixture compatibility"
+        }
+      },
+      "output_bytes": 27490950,
+      "output_hash": "15ee7c678ed1a180b35c6a53c655955b6c575573e51a50ab6379dba255906f5a",
+      "output_to_input_ratio": 0.2386754351376425,
+      "package": "lxml>=5.0",
+      "ru_maxrss_after_bytes": 1445314560,
+      "ru_maxrss_before_bytes": 146702336,
+      "ru_maxrss_delta_bytes": 1298612224,
+      "status": "ok",
+      "subprocess_wall_s": 1.4801080420147628,
+      "throughput_mib_s": 75.44769553665321
+    }
+  ],
+  "sizes": [
+    "small",
+    "medium",
+    "large",
+    "xlarge"
+  ]
+}
