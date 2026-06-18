@@ -14,7 +14,9 @@ def test_load_fixture_set_orders_available_sizes(tmp_path: Path):
 def test_load_fixture_set_verifies_lock_hash(tmp_path: Path):
     path = tmp_path / "small.html"
     path.write_text("<p>small</p>")
-    import hashlib, json
+    import hashlib
+    import json
+
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     lock = tmp_path / "fixtures.lock.json"
     lock.write_text(json.dumps({"fixtures": [{"path": "benchmarks/fixtures/small.html", "actual_bytes": path.stat().st_size, "sha256": digest, "target_bytes": 1}]}))
