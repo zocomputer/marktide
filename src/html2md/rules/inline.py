@@ -1,34 +1,188 @@
-"""Inline rules: links, images, emphasis, code, line breaks, sub/sup, spans.
+"""Inline rules: emphasis, code spans, line breaks, spans.
 
-Foundation scaffold. One worked local example (``strong``) shows the contract; the
-rest are filled in by the inline-rules task. Links and images are NON-LOCAL (the href/
-title/alt are only fully known at ``end``/from attrs) and must honour the safe-flush
-barriers in design §4.7 — capture what you need onto ``em.state.top.data`` at ``start``
-and emit at ``end``:
+Each handler reproduces the ``markdownify==1.2.2`` ``convert_*`` function on the element's
+rendered children (``em.content``). Links (``a``) and images (``img``) are attribute-driven
+and land once the foundation exposes element attributes at ``end``; they are intentionally
+absent here for now.
 
-    a          [text](href "title"); autolinks; options.autolinks / default_title
-    img        ![alt](src "title"); keep_inline_images_in
-    strong/b   options.strong_em_symbol doubled
-    em/i       options.strong_em_symbol
-    code       inline backticks with run-length escaping; verbatim text
-    br         newline_style: two trailing spaces (spaces) or backslash
-    sub/sup    options.sub_symbol / sup_symbol
-    span       transparent
-
-Register each in ``HANDLERS``. Use :class:`~html2md.rules.base.PrefixSuffixHandler`
-for local rules.
+``em.content`` is already escaped by the emitter's text path, so handlers never re-escape;
+inside a ``_noformat`` ancestor (pre/code/kbd/samp) markdownify passes inline markup straight
+through, which :func:`~html2md.rules.blocks.in_noformat` detects.
 """
 
 from __future__ import annotations
 
-from .base import PrefixSuffixHandler, TagHandler, TransparentHandler
+import re
 
-# Worked example of a local inline rule (option-aware variants are the rules task's
-# job; this demonstrates the PrefixSuffixHandler contract for the foundation).
-_STRONG = PrefixSuffixHandler("**", "**")
+from .base import TagHandler, TransparentHandler
+from .blocks import chomp, in_inline, in_noformat
+
+_RE_BACKTICKS = re.compile(r"`+")
+
+
+class _InlineMarkup:
+    """markdownify ``abstract_inline_conversion``: wrap the chomped children in a fixed
+    markup pair (``**`` for strong, ``*`` for em…). Empty content emits nothing; inside a
+    ``_noformat`` ancestor the children pass through unwrapped."""
+
+    __slots__ = ("_markup",)
+
+    def __init__(self, markup: str) -> None:
+        self._markup = markup
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        content = em.content
+        if in_noformat(em):
+            em.emit(content)
+            return
+        prefix, suffix, text = chomp(content)
+        if not text:
+            return
+        em.emit("%s%s%s%s%s" % (prefix, self._markup, text, self._markup, suffix))
+
+
+class _Strong:
+    """``strong``/``b`` → ``strong_em_symbol`` doubled (option-aware)."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        _InlineMarkup(em.options.strong_em_symbol * 2).end(em)
+
+
+class _Emphasis:
+    """``em``/``i`` → ``strong_em_symbol`` (option-aware)."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        _InlineMarkup(em.options.strong_em_symbol).end(em)
+
+
+class _Code:
+    """``code``/``kbd``/``samp`` inline span. Delimits with one more backtick than the
+    longest backtick run in the content, padding with a space when the content itself
+    contains backticks. Passes through unchanged inside a ``_noformat`` ancestor."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        content = em.content
+        if in_noformat(em):
+            em.emit(content)
+            return
+        prefix, suffix, text = chomp(content)
+        if not text:
+            return
+        max_backticks = max((len(m.group()) for m in _RE_BACKTICKS.finditer(text)), default=0)
+        delimiter = "`" * (max_backticks + 1)
+        if max_backticks > 0:
+            text = " " + text + " "
+        em.emit("%s%s%s%s%s" % (prefix, delimiter, text, delimiter, suffix))
+
+
+class _Break:
+    """``br`` → two trailing spaces + newline (``spaces``) or ``\\`` + newline
+    (``backslash``); a single space inside an ``_inline`` ancestor."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        if in_inline(em):
+            em.emit(" ")
+            return
+        if em.options.newline_style == "backslash":
+            em.emit("\\\n")
+        else:
+            em.emit("  \n")
+
+
+class _Link:
+    """``a`` → ``[text](href "title")``, with markdownify's autolink shortcut when the
+    link text equals the href. Reads ``href``/``title`` from the just-popped frame at
+    ``end``. Passes children through inside a ``_noformat`` ancestor."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        content = em.content
+        if in_noformat(em):
+            em.emit(content)
+            return
+        prefix, suffix, text = chomp(content)
+        if not text:
+            return
+        attrs = em.frame.attrs if em.frame is not None else {}
+        href = attrs.get("href")
+        title = attrs.get("title")
+        if (em.options.autolinks
+                and text.replace(r"\_", "_") == href
+                and not title
+                and not em.options.default_title):
+            em.emit("<%s>" % href)
+            return
+        if em.options.default_title and not title:
+            title = href
+        title_part = ' "%s"' % title.replace('"', r"\"") if title else ""
+        if href:
+            em.emit("%s[%s](%s%s)%s" % (prefix, text, href, title_part, suffix))
+        else:
+            em.emit(text)
+
+
+class _Image:
+    """``img`` → ``![alt](src "title")``. Void element (no children); ``alt``/``src``/
+    ``title`` are read from the frame and used verbatim (markdownify does not escape them).
+    Inside an ``_inline`` ancestor it degrades to the alt text unless the parent is in
+    ``keep_inline_images_in``."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        attrs = em.frame.attrs if em.frame is not None else {}
+        alt = attrs.get("alt") or ""
+        src = attrs.get("src") or ""
+        title = attrs.get("title") or ""
+        title_part = ' "%s"' % title.replace('"', r"\"") if title else ""
+        if in_inline(em):
+            parent = em.state.top
+            if parent is None or parent.tag not in em.options.keep_inline_images_in:
+                em.emit(alt)
+                return
+        em.emit("![%s](%s%s)" % (alt, src, title_part))
+
 
 HANDLERS: dict[str, TagHandler] = {
     "span": TransparentHandler(),
-    "strong": _STRONG,
-    "b": _STRONG,
+    "strong": _Strong(),
+    "b": _Strong(),
+    "em": _Emphasis(),
+    "i": _Emphasis(),
+    "code": _Code(),
+    "kbd": _Code(),
+    "samp": _Code(),
+    "br": _Break(),
+    "a": _Link(),
+    "img": _Image(),
 }
