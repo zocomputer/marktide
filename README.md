@@ -92,8 +92,8 @@ by html2md and by an oracle, and the results are compared. It has two tiers.
 (234 cases) plus a hand-authored per-handler + edge-case golden corpus (64 cases), checked
 against `markdownify==1.2.2`. html2md passes **296/298 raw (99.3%)** and **298/298 effective
 (100%)**; the two raw misses are [documented divergences](docs/usage.md#documented-divergences)
-where lxml's browser-standard tree construction differs from BeautifulSoup on invalid
-nested-block-in-heading markup. `convert` and `convert_stream` agree on **0/1107** cases
+on invalid nested-block-in-heading markup, where lxml's HTML tree construction differs from
+markdownify's BeautifulSoup parser. `convert` and `convert_stream` agree on **0/1107** cases
 (exact streaming parity).
 
 **Guardrail / triangulation (809 cases).** Diverse HTML inputs drawn from the Turndown (147),
@@ -120,16 +120,18 @@ streaming path, huge-document handling (`huge_tree`), and `convert == convert_st
 ## Compatibility & edge cases
 
 The markdownify drop-in contract is the primary guarantee — **296/298 raw, 298/298 effective**
-(`make verify-fidelity`). The handful of cases that differ are edge/guardrail behaviors, all
-on invalid or ambiguous HTML; each is shown below as *input → html2md → markdownify*.
+(`make verify-fidelity`). The cases that differ are edge/guardrail behaviors — some on
+invalid HTML, others convention or whitespace-normalization choices on valid HTML. A
+representative selection is shown below as *input → html2md → markdownify* (not exhaustive; the
+guardrail layers carry a few more, all non-primary).
 
-**Intentional parser divergences (the 2 primary effective-pass cases).** html2md parses with
-lxml, which builds the tree the way a browser does; markdownify uses BeautifulSoup's
-`html.parser`. They diverge only on *invalid* markup:
+**Parser divergences (the 2 primary effective-pass cases).** html2md parses with lxml;
+markdownify uses BeautifulSoup's `html.parser`. The two HTML parsers build different trees for
+*invalid* markup, and which one matches the HTML5 spec depends on the case:
 
 | Input | html2md | markdownify | Why |
 |---|---|---|---|
-| `<h1>A <p>P</p> C </h1>` (ATX) | `# A`, then `P`, then `C` | `# A P C` | A `<p>` can't nest in a heading: lxml auto-closes the `<h1>` (browser-standard), so html2md sees a heading `A` plus a sibling paragraph; BeautifulSoup keeps the `<p>` inside and markdownify flattens it into the heading text. |
+| `<h1>A <p>P</p> C </h1>` (ATX) | `# A`, then `P`, then `C` | `# A P C` | A `<p>` can't nest in a heading (non-conforming input). The HTML5 algorithm does *not* close the heading here — `html5lib` and `html.parser` keep the `<p>` inside the `<h1>`, so markdownify flattens it into the heading text. lxml/libxml2 uses a custom, documented non-HTML5 tree builder that auto-closes the `<h1>`, so html2md sees a heading plus a sibling paragraph. (Here lxml is the one that diverges from HTML5.) |
 
 **Guardrail edge cases** (from the Turndown / Pandoc / CommonMark corpora — not the primary
 contract):
@@ -140,10 +142,13 @@ contract):
 | `<h7>Heading?</h7>` | `Heading?` | `###### Heading?` | `<h7>` is not a real tag; lxml leaves it transparent (so does Turndown), markdownify coerces it to an h6. |
 | `<p>Foo<span> </span>Bar</p>` | `FooBar` | `Foo Bar` | A `<span>` containing only collapsible ASCII whitespace: html2md drops it, markdownify keeps one separating space. |
 | `<p>Foo<span>  &nbsp;  </span>Bar</p>` | `'Foo \xa0Bar'` (NBSP, no space) | `'Foo \xa0 Bar'` (NBSP + space) | Mixed ASCII + NBSP in a whitespace-only span: html2md preserves the NBSP but drops the ASCII space after it. |
-| `<p>foo <![CDATA[>&<]]></p>` | `foo &<]]>` | `foo >&<` | CDATA with angle brackets: lxml's recovery doesn't expose the original `>&<` text, so html2md can't reconstruct it from the event stream. |
+| `<p>foo <![CDATA[>&<]]></p>` | `foo &<]]>` | `foo >&<` | `<![CDATA[` in HTML content isn't a real CDATA section — the HTML5 tokenizer treats it as a bogus comment, and the `>` after `[CDATA[` ends it, leaving `&<]]>` as text. `html5lib` and lxml agree (lxml is HTML5-correct here); markdownify's `html.parser` instead preserves the raw `>&<` source text. |
 
-These are tracked in `tests/conformance/allowed_divergences.toml` and surfaced by
-`make verify-fidelity`.
+Of these, the two parser-divergence cases (`<h1>`-nesting) and the CDATA case are recorded in
+[`tests/conformance/allowed_divergences.toml`](tests/conformance/allowed_divergences.toml) and
+surfaced by `make verify-fidelity`. The `<strike>`/`<h7>`/whitespace-span rows are
+guardrail-layer convention differences against the markdownify oracle, not part of the primary
+contract and not in that ledger.
 
 **Optional: `commonmark_roundtrip_stable`.** Inline code-span delimiters are markdownify-exact
 by default (longest backtick run + 1, padded when the content has any backtick). Set

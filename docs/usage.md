@@ -196,15 +196,19 @@ edge cases differ — see below.
 
 Conformance is high but not yet 100%; the known intentional differences are:
 
-- **Invalid nested block-in-heading** (e.g. `<p>` inside `<h1>`). html2md parses HTML with
-  lxml, which constructs the tree the way a browser does — it auto-closes the `<h1>` before
-  the `<p>`. markdownify's BeautifulSoup `html.parser` keeps the `<p>` nested. For valid HTML
-  this never arises; for invalid HTML html2md follows the browser/standards behavior.
+- **Invalid nested block-in-heading** (e.g. `<p>` inside `<h1>`, which is non-conforming —
+  headings permit phrasing content only). lxml/libxml2 uses a custom, documented non-HTML5
+  tree builder that auto-closes the `<h1>` before the `<p>`, so html2md sees a heading plus a
+  sibling paragraph. The HTML5 algorithm keeps the `<p>` nested, and markdownify's
+  BeautifulSoup `html.parser` matches `html5lib` there — so on this case lxml is the one that
+  diverges from HTML5. Valid HTML never triggers it.
+- **CDATA-like text in HTML** (e.g. `<![CDATA[…]]>` outside SVG/MathML). Here lxml is
+  HTML5-correct: the tokenizer treats `<![CDATA[` as a bogus comment, so the bracketed text is
+  re-tokenized rather than preserved. markdownify's `html.parser` keeps the raw source text
+  instead. (Guardrail-layer only.)
 - **Lossy tables** (`colspan`, ragged rows, header-less first rows). Markdown pipe tables
   cannot encode these faithfully; html2md's handling of such tables may differ from
   markdownify's synthetic-cell output. Prefer explicit, valid table markup.
-- **CDATA sections** and a small number of other whitespace/edge cases are still being
-  reconciled against the oracle.
 
 The reviewed intentional divergences are tracked in
 `tests/conformance/allowed_divergences.toml`; the remaining gaps are tracked as open
