@@ -145,12 +145,12 @@ smoke-tested by coder-3-leaf (`docs/rust-candidate-smoke.md`); pinned versions c
 coder-1-leaf's research (`docs/research.md`). All candidates install via the
 `[dependency-groups].benchmark` group so the shipped package depends only on `lxml`.
 
-| Adapter | Package | Native call (normalized in adapter) | Engine | GIL during convert | Notes |
+| Adapter | Package | Native call (normalized in adapter) | Engine | GIL under `to_thread` (preliminary spike, §3.1.2) | Notes |
 |---|---|---|---|---|---|
-| `markdownify` | `markdownify>=0.13` + `beautifulsoup4` | `markdownify(html)` | Pure Python (BS4) | **Held throughout** | Incumbent / primary correctness oracle |
-| `html_to_markdown` | `html-to-markdown==3.5.7` (Rust `html-to-markdown-rs`) | `html_to_markdown.convert(html).content` | Rust, abi3 wheel | Released *iff* bindings call `allow_threads` — **to be measured** | Primary Rust candidate. Pinned to 3.5.7 (released 2026-05-29), **not** the newest 3.6.13 — 3.6.13 shipped 2026-06-17 and is inside the 7-day supply-chain cooldown |
-| `htmd_py` | `htmd-py==0.1.2` (Rust `htmd`) | `htmd.convert_html(html)` | Rust | To be measured | Turndown-inspired comparison |
-| `html2text_rs` | `html2text_rs==0.2.5` (rust-html2text) | `html2text_rs.text_markdown(html)` | Rust | To be measured | Secondary Rust point of comparison |
+| `markdownify` | `markdownify>=0.13` + `beautifulsoup4` | `markdownify(html)` | Pure Python (BS4) | **Held** (pure Python) | Incumbent / primary correctness oracle |
+| `html_to_markdown` | `html-to-markdown==3.5.7` (Rust `html-to-markdown-rs`) | `html_to_markdown.convert(html).content` | Rust, abi3 wheel | **Held** — no `detach`; p95 ≈ **521 ms** | Primary Rust candidate. Pinned to 3.5.7 (released 2026-05-29), **not** the newest 3.6.13 — 3.6.13 shipped 2026-06-17 and is inside the 7-day supply-chain cooldown |
+| `htmd_py` | `htmd-py==0.1.2` (Rust `htmd`) | `htmd.convert_html(html)` | Rust | **Held** — no `detach`; p95 ≈ **74 ms** | Turndown-inspired comparison |
+| `html2text_rs` | `html2text_rs==0.2.5` (rust-html2text) | `html2text_rs.text_markdown(html)` | Rust | **Released** — `py.detach`; p95 ≈ **0.28 ms** | GIL-friendly but one-shot `str→str`, rejects `bytes`, and lower fidelity (drops bold). Secondary comparison |
 | `lxml_naive` | `lxml>=5.0` | `lxml.html.fromstring` + recursive walk | C parse + Python tree walk | Released during C parse only; **held during the Python walk** | Establishes the "lxml without streaming" baseline that motivates phase 2 |
 
 All adapters take/return the same `bytes → str` contract; the adapter is responsible for any
@@ -183,6 +183,44 @@ library on **two explicitly separated axes** — performance/GIL *and* a semanti
 score vs the oracle — never as a single "is it better" number. A fast converter that
 produces different Markdown is reported as fast *and* divergent, not conflated. This keeps
 the phase-1 comparison meaningful (rubric pt 10).
+
+#### 3.1.2 Preliminary spike findings (coder-3-leaf, `docs/rust-candidate-smoke.md`)
+
+A throwaway probe (1 ms heartbeat, `~4.19 MiB` fixture, `asyncio.to_thread`) already
+measured the candidates' GIL behavior. These numbers are **preliminary** — the phase-1
+harness (§3.3) re-measures them properly across all sizes with the stage decomposition — but
+they sharpen two design conclusions:
+
+1. **No candidate exposes a Python streaming / incremental / reader API.** All three are
+   one-shot `str → str` (and `html2text_rs` rejects `bytes` entirely). So even the
+   GIL-friendly candidate must materialize the *entire* input string and output string in
+   memory — O(input) RSS, no chunking — which a 100 MiB document makes painful regardless of
+   speed. **This is the gap our streaming target-parser design (§4) fills, and no existing
+   library closes it.**
+
+   *Why streaming matters even though `html2text_rs` is already async-friendly:* releasing
+   the GIL on a worker thread keeps the event loop responsive, but it does **not** give you
+   the other two properties that a 100 MiB workload needs — (a) **bounded peak RSS**: a
+   one-shot converter holds the full input *and* output in memory at once (O(input)), whereas
+   the streaming path stays O(depth·chunk); and (b) **time-to-first-output**: a streaming
+   converter emits Markdown for early blocks while the tail is still being parsed, so an SSE
+   consumer sees bytes in milliseconds instead of after the whole document converts. Async-
+   friendliness, bounded memory, and incremental output are three distinct properties; the
+   existing libraries deliver at most one.
+
+2. **The faithful, fast candidates hold the GIL; the GIL-friendly one is lossy.** Measured
+   p95 heartbeat jitter under `to_thread`: `html-to-markdown` 3.5.7 ≈ **521 ms**, `htmd-py`
+   ≈ **74 ms** (neither wraps the Rust call in `Python::detach` / `allow_threads`), versus
+   `html2text_rs` ≈ **0.28 ms** (it *does* `py.detach`) — but html2text_rs is one-shot and
+   drops formatting (bold → plain). Probe controls: idle ≈ 0.3 ms p95; a pure-Python loop on
+   a worker thread ≈ 19 ms p95.
+
+Net: the candidate with the best semantics (the primary Rust pick) is the *worst* async
+citizen, and the best async citizen is semantically lossy and non-streaming. That pattern is
+exactly the §3.5 gate's "no single library satisfies all four" outcome — so phase 2 looks
+likely to be **build**, pending the full harness confirming it across sizes. We still run the
+complete phase-1 measurement before committing; the gate decides on harness data, not this
+spike.
 
 ### 3.2 Input corpus & sizes
 
