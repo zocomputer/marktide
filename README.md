@@ -1,9 +1,10 @@
 # html2md
 
 Fast, streaming **HTML → Markdown** for Python, built on **lxml** (C, releases the GIL)
-instead of BeautifulSoup. A drop-in replacement for [`markdownify`](https://pypi.org/project/markdownify/):
-the same options and output, but it parses large HTML incrementally — like a browser — and
-emits Markdown without stalling the asyncio event loop.
+instead of BeautifulSoup. A near drop-in replacement for [`markdownify`](https://pypi.org/project/markdownify/):
+markdownify-compatible options and output (with a few [documented divergences](docs/usage.md#documented-divergences)),
+but it parses large HTML incrementally — like a browser — and emits Markdown without stalling
+the asyncio event loop.
 
 ```python
 import html2md
@@ -31,12 +32,14 @@ streams stutter, unrelated requests queue.
 thread, and emits Markdown incrementally. The result:
 
 - **Async-friendly** — `convert_async` runs off the event loop and the loop keeps ticking.
-- **Bounded memory** — the streaming path never materializes a DOM, so a 100 MB document
-  converts in O(nesting depth), not O(document).
+- **Bounded memory** — the streaming path builds no full DOM and drains completed blocks as
+  they close, so peak memory is bounded by the parser's open-element state plus the largest
+  currently-open block or table — not the whole document.
 - **Early output** — `convert_stream` yields Markdown for early blocks while the tail is
   still being read (sub-millisecond time-to-first-chunk on large docs).
-- **Drop-in** — option names, defaults, and output match `markdownify==1.2.2`, validated
-  against markdownify's own test suite plus a layered conformance corpus.
+- **markdownify-compatible** — option names and defaults mirror `markdownify==1.2.2`, and the
+  output matches across the bulk of markdownify's own test suite and a layered conformance
+  corpus, apart from a few [documented divergences](docs/usage.md#documented-divergences).
 
 ## The four public functions
 
@@ -86,5 +89,7 @@ table, every public function in detail, and a **migrating-from-markdownify** gui
 - **[docs/design.md](docs/design.md)** — architecture, the GIL/streaming story, test strategy
 - **[docs/test-plan.md](docs/test-plan.md)** — the test harness
 
-Early but functional. The conversion handlers match `markdownify` across its own test suite;
-the streaming and async paths are validated end-to-end.
+Early but functional. The conversion handlers match `markdownify` across the bulk of its own
+test suite (a few edge cases — e.g. lossy tables, CDATA, invalid nested markup — are
+[documented divergences](docs/usage.md#documented-divergences) or in progress); the streaming
+and async paths are validated end-to-end.

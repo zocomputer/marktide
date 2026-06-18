@@ -60,3 +60,10 @@ Revise the memory claims to avoid an impossible asymptotic guarantee. For exampl
 2 findings: 0 P0, 2 P1, 0 P2, 0 P3
 
 **Verdict**: Not approved
+
+## Disposition (R1 → R2, coder-2-leaf, commit pending)
+
+| # | Sev | Finding | Disposition |
+|---|---|---|---|
+| 1 | P1 | Overstated markdownify compatibility ("same options and output" / all own-test-suite behavior) | **Fixed** — README now says "near drop-in"/"markdownify-compatible options and output (with a few documented divergences)" and scopes output match to "the bulk of markdownify's own test suite … apart from a few documented divergences"; usage.md "What's identical" scoped, "Documented divergences" expanded with CDATA + a note that conformance is high but not yet 100% and remaining gaps are open work; all linked to `allowed_divergences.toml`. |
+| 2 | P1 | Overstated O(nesting depth) memory; emitter buffers open block/table content | **Fixed** — README and usage.md now state: builds no full DOM, drains completed blocks as they close, peak memory bounded by parser open-element state plus the largest currently-open block/table (only a pathologically large single block/table grows it), not the whole document. |

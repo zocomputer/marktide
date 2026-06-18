@@ -167,7 +167,8 @@ markdownify_compat(bs4_options="html.parser")
 
 ## Migrating from markdownify
 
-`html2md` is designed as a drop-in replacement. In most code the change is:
+`html2md` is designed as a near drop-in replacement (see [Documented
+divergences](#documented-divergences) for the exceptions). In most code the change is:
 
 ```python
 # before
@@ -181,16 +182,16 @@ md = convert(html, options=markdownify_compat(heading_style="atx"))
 
 ### What's identical
 
-Option names, defaults, and rendered Markdown match `markdownify==1.2.2`, verified against
-markdownify's own test suite (`test_conversions`, `test_basic`, `test_advanced`,
+Option names and defaults match `markdownify==1.2.2`, and rendered Markdown matches across the
+bulk of markdownify's own test suite (`test_conversions`, `test_basic`, `test_advanced`,
 `test_lists`, …) and a layered HTML→Markdown conformance corpus. Headings, emphasis, links,
 images, code spans, lists (including nested indentation and ordered `start`), blockquotes,
-definition lists, tables, `<br>`, and the dropped tags (`<script>`/`<style>`) all behave the
-same.
+definition lists, `<br>`, and the dropped tags (`<script>`/`<style>`) behave the same. A few
+edge cases differ — see below.
 
 ### Documented divergences
 
-A small number of cases differ on purpose:
+Conformance is high but not yet 100%; the known intentional differences are:
 
 - **Invalid nested block-in-heading** (e.g. `<p>` inside `<h1>`). html2md parses HTML with
   lxml, which constructs the tree the way a browser does — it auto-closes the `<h1>` before
@@ -199,8 +200,12 @@ A small number of cases differ on purpose:
 - **Lossy tables** (`colspan`, ragged rows, header-less first rows). Markdown pipe tables
   cannot encode these faithfully; html2md's handling of such tables may differ from
   markdownify's synthetic-cell output. Prefer explicit, valid table markup.
+- **CDATA sections** and a small number of other whitespace/edge cases are still being
+  reconciled against the oracle.
 
-These are tracked in `tests/conformance/allowed_divergences.toml`.
+The reviewed intentional divergences are tracked in
+`tests/conformance/allowed_divergences.toml`; the remaining gaps are tracked as open
+conformance work.
 
 ### What you gain
 
@@ -217,7 +222,9 @@ incremental **target parser** (SAX-like, no DOM) on a worker thread. lxml releas
 while it tokenizes each fed chunk, and the Markdown emitter runs as a deterministic
 transducer over the event stream, so:
 
-- a 100 MB document converts in memory proportional to nesting depth, not document size;
+- memory is bounded by the parser's open-element state plus the largest currently-open block
+  or table — completed blocks are drained as they close, so a 100 MB document of
+  normal-sized blocks stays flat; only a pathologically large single block/table grows it;
 - the async paths keep the event loop responsive (measured: sub-2 ms p99 scheduling latency
   under load, versus hundreds of milliseconds for a GIL-bound converter);
 - streaming emits Markdown for completed blocks before the input is fully read.
