@@ -1,0 +1,45 @@
+sample: sample_50mb.html (50.0 MiB)
+
+stage                                  time    throughput
+---------------------------------------------------------
+parse + no-op target (FLOOR)        0.539s      92.7 MiB/s
+parse + counting target             0.585s      85.5 MiB/s
+lxml_naive (parse + py walk)        0.796s      62.8 MiB/s
+marktide.convert (one-shot)         5.812s       8.6 MiB/s
+marktide.convert_stream 64KiB       5.866s       8.5 MiB/s
+
+emission overhead = convert - floor = 5.273s (91% of convert)
+streaming overhead = stream - convert = 0.054s (+1%)
+
+cProfile Python tottime breakdown (total 23.663s):
+  other              10.285s   43.5%
+  dispatch            6.409s   27.1%
+  text/emit           4.005s   16.9%
+  collapse/fold       2.129s    9.0%
+  escape              0.836s    3.5%
+
+Top functions by tottime:
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+  1756404    2.273    0.000    8.112    0.000 /Users/dcosson/h2home/projects/new-html-parser/src/marktide/emitter.py:226(start)
+  2311051    2.252    0.000    7.020    0.000 /Users/dcosson/h2home/projects/new-html-parser/src/marktide/emitter.py:121(emit_text)
+  1756404    1.421    0.000   14.137    0.000 /Users/dcosson/h2home/projects/new-html-parser/src/marktide/emitter.py:251(end)
+  4899428    1.347    0.000    1.425    0.000 {method 'sub' of 're.Pattern' objects}
+  1756404    1.291    0.000    3.824    0.000 /Users/dcosson/h2home/projects/new-html-parser/src/marktide/emitter.py:190(_collapse_join)
+      801    1.243    0.002   23.887    0.030 /Users/dcosson/h2home/projects/new-html-parser/src/marktide/parser.py:49(feed)
+  3096808    1.124    0.000    1.978    0.000 {built-in method builtins.any}
+ 16547142    0.898    0.000    0.898    0.000 {method 'append' of 'list' objects}
+  2819482    0.818    0.000    1.865    0.000 /Users/dcosson/h2home/projects/new-html-parser/src/marktide/emitter.py:54(_split_newlines)
+  3512809    0.710    0.000    8.000    0.000 /Users/dcosson/h2home/projects/new-html-parser/src/marktide/emitter.py:291(_flush_text)
+ 15946249    0.624    0.000    0.624    0.000 /Users/dcosson/h2home/projects/new-html-parser/src/marktide/emitter.py:188(<genexpr>)
+  8828214    0.577    0.000    0.577    0.000 {method 'group' of 're.Match' objects}
+  2819482    0.495    0.000    0.495    0.000 {method 'match' of 're.Pattern' objects}
+  2264830    0.495    0.000    0.822    0.000 /Users/dcosson/h2home/projects/new-html-parser/src/marktide/emitter.py:169(escape)
+  1756404    0.489    0.000    0.817    0.000 /Users/dcosson/h2home/projects/new-html-parser/src/marktide/state.py:139(push)
+  3697681    0.413    0.000    0.413    0.000 /Users/dcosson/h2home/projects/new-html-parser/src/marktide/emitter.py:106(_buf)
+4760771/4344782    0.387    0.000    0.622    0.000 {method 'join' of 'str' objects}
+  4575899    0.360    0.000    0.360    0.000 {method 'get' of 'dict' objects}
+  2311051    0.360    0.000    1.787    0.000 /Users/dcosson/h2home/projects/new-html-parser/src/marktide/emitter.py:186(_in_noformat)
+  4714544    0.342    0.000    0.342    0.000 {method 'replace' of 'str' objects}
+
+
