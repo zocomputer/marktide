@@ -56,3 +56,10 @@ Qualify the sentence: `Upstream-derived corpora are pinned to immutable commits 
 2 findings: 0 P0, 1 P1, 1 P2, 0 P3
 
 **Verdict**: Not approved
+
+## Disposition (R1 → R2, coder-2-leaf)
+
+| # | Sev | Finding | Disposition |
+|---|---|---|---|
+| 1 | P1 | Claimed all guardrail corpora are compared by rendering back to HTML; only commonmark does | **Fixed** — guardrail paragraph now states html2md's output is compared to the markdownify oracle after normalization, and **only the CommonMark layer** adds the render-back-to-HTML semantic check (matches `differential.py` run_differential: `commonmark_semantic_equal` for `commonmark_expected_html`, normalized text equality otherwise). |
+| 2 | P2 | "Every corpus pulled from upstream and pinned" excludes the hand-authored golden set | **Fixed** — now "the *external* corpora are pulled upstream and pinned in sources.toml; the 64-case golden set is hand-authored (oracle-generated) under tests/conformance/golden/." |

@@ -96,14 +96,17 @@ where lxml's browser-standard tree construction differs from BeautifulSoup on in
 nested-block-in-heading markup. `convert` and `convert_stream` agree on **0/1107** cases
 (exact streaming parity).
 
-**Guardrail / triangulation (809 cases).** Turndown (147), the CommonMark spec (654), and
-Pandoc (8). These libraries emit different Markdown dialects, so they are compared
-*semantically* (the output is rendered back to HTML and the structure compared) rather than
-byte-for-byte — they catch regressions the markdownify oracle alone would miss.
+**Guardrail / triangulation (809 cases).** Diverse HTML inputs drawn from the Turndown (147),
+CommonMark spec (654), and Pandoc (8) test suites — real-world fragments beyond what the
+markdownify suite covers. html2md's output is compared to the markdownify oracle on the same
+input after normalization (collapsing incidental blank-line/whitespace differences); the
+CommonMark layer adds a stricter *semantic* check that renders both outputs back to HTML and
+compares the structure. These catch regressions the curated markdownify cases alone would miss.
 
-Every corpus is pulled from its upstream project and **pinned to an immutable commit** in
-[`tests/conformance/sources.toml`](tests/conformance/sources.toml), regenerated
-deterministically by `scripts/regenerate_conformance_corpus.py`. Reproduce locally:
+The external corpora are pulled from their upstream projects and **pinned to immutable
+commits** in [`tests/conformance/sources.toml`](tests/conformance/sources.toml), regenerated
+deterministically by `scripts/regenerate_conformance_corpus.py`; the 64-case golden set is
+hand-authored (oracle-generated) under `tests/conformance/golden/`. Reproduce locally:
 
 ```bash
 make verify-fidelity   # primary drop-in fidelity: raw/effective counts, parity, divergences
