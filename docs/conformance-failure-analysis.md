@@ -83,3 +83,15 @@ Commit after this triage implements the converter-independent harness normalizat
 - `tests/conformance/differential.py::summarize` now reports primary markdownify-oracle fidelity over only `golden` + `markdownify_tests`; CommonMark, Pandoc, Turndown, and Turndown options remain guardrail/triangulation layers.
 
 Post-normalizer snapshot from `tests/conformance/reports/latest.json`: primary `html2md` fidelity is **257 / 306 = 84.0%**; overall guardrail total is **947 / 1115 = 84.9%**. This snapshot includes handler work present in the shared working tree at the time of the run; the durable harness change is the normalization and primary/guardrail accounting, not the exact handler-pass count.
+
+## Markdownify unit-test oracle correction
+
+`tests/conformance/differential.py::load_markdownify_cases` now mirrors the upstream `tests/utils.py::md` helper instead of treating those fixtures as default-option conversions:
+
+- `test_custom_converter.py` is excluded because it exercises a custom `MarkdownConverter` subclass, not default/drop-in behavior.
+- Per-assert keyword arguments are captured from the `md(...)` AST call and stored in `Case.metadata["markdownify_options"]`.
+- The implicit upstream helper default `strip_document=None` is applied per markdownify-test case.
+- `tests/conformance/differential.py::_candidate_output` applies those options to local `html2md`/`html2md_streaming` via `html2md.options.markdownify_compat`.
+- `tests/conformance/differential.py::_oracle_output` uses the upstream expected string as the oracle for this layer, so option-specific tests are measured against the behavior they actually assert.
+
+Corrected fast primary snapshot after block/inline + table handler landings: primary `html2md` fidelity is **229 / 298 = 76.8%** across `golden` + corrected `markdownify_tests`; the corrected `markdownify_tests` sublayer alone is **173 / 234 = 73.9%**. `html2md_streaming` matches the same numbers.

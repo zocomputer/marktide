@@ -25,6 +25,7 @@ from lxml import etree
 from lxml import html as lxml_html
 
 from benchmarks.harness.adapters.base import Adapter, get_adapters
+from html2md.options import markdownify_compat
 
 DEFAULT_FIXTURE_ROOT = REPO_ROOT / "tests" / "conformance" / "fixtures"
 DEFAULT_REPORT_DIR = REPO_ROOT / "tests" / "conformance" / "reports"
@@ -311,6 +312,8 @@ def load_markdownify_cases(root: Path = DEFAULT_FIXTURE_ROOT) -> list[Case]:
     base = root / "markdownify" / "tests"
     cases: list[Case] = []
     for path in sorted(base.glob("test_*.py")):
+        if path.name == "test_custom_converter.py":
+            continue
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
             if not isinstance(node, ast.Assert):
@@ -318,7 +321,7 @@ def load_markdownify_cases(root: Path = DEFAULT_FIXTURE_ROOT) -> list[Case]:
             extracted = _extract_md_assert(node.test)
             if extracted is None:
                 continue
-            html_input, expected = extracted
+            html_input, expected, md_kwargs = extracted
             line = getattr(node, "lineno", 0)
             cases.append(
                 Case(
@@ -327,13 +330,27 @@ def load_markdownify_cases(root: Path = DEFAULT_FIXTURE_ROOT) -> list[Case]:
                     source_path=_display_path(path),
                     html=html_input,
                     upstream_expected_markdown=expected,
-                    metadata={"line": line},
+                    metadata={"line": line, "markdownify_options": {"strip_document": None, **md_kwargs}},
                 )
             )
     return cases
 
 
-def _extract_md_assert(expr: ast.expr) -> tuple[str, str] | None:
+_MARKDOWNIFY_NAME_CONSTANTS = {
+    "ATX": "atx",
+    "ATX_CLOSED": "atx_closed",
+    "UNDERLINED": "underlined",
+    "BACKSLASH": "backslash",
+    "SPACES": "spaces",
+    "ASTERISK": "*",
+    "UNDERSCORE": "_",
+    "STRIP": "strip",
+    "LSTRIP": "lstrip",
+    "RSTRIP": "rstrip",
+}
+
+
+def _extract_md_assert(expr: ast.expr) -> tuple[str, str, dict[str, object]] | None:
     if not isinstance(expr, ast.Compare) or len(expr.ops) != 1 or not isinstance(expr.ops[0], ast.Eq):
         return None
     if len(expr.comparators) != 1:
@@ -354,7 +371,31 @@ def _extract_md_assert(expr: ast.expr) -> tuple[str, str] | None:
         return None
     if not isinstance(right, ast.Constant) or not isinstance(right.value, str):
         return None
-    return left.args[0].value, right.value
+    kwargs: dict[str, object] = {}
+    for keyword in left.keywords:
+        if keyword.arg is None:
+            return None
+        value = _literal_md_kwarg(keyword.value)
+        if value is _UNSUPPORTED_KWARG:
+            return None
+        kwargs[keyword.arg] = value
+    return left.args[0].value, right.value, kwargs
+
+
+_UNSUPPORTED_KWARG = object()
+
+
+def _literal_md_kwarg(node: ast.expr) -> object:
+    if isinstance(node, ast.Constant):
+        return node.value
+    if isinstance(node, ast.Name):
+        return _MARKDOWNIFY_NAME_CONSTANTS.get(node.id, _UNSUPPORTED_KWARG)
+    if isinstance(node, (ast.List, ast.Tuple)):
+        values = [_literal_md_kwarg(elt) for elt in node.elts]
+        if any(value is _UNSUPPORTED_KWARG for value in values):
+            return _UNSUPPORTED_KWARG
+        return values
+    return _UNSUPPORTED_KWARG
 
 
 def _slug(value: str) -> str:
@@ -380,12 +421,12 @@ def run_differential(cases: Iterable[Case], adapters: list[Adapter], *, max_diff
     for case in cases:
         normalized_html = normalize_input_html(case)
         html_bytes = normalized_html.encode("utf-8", errors="replace")
-        oracle_output = oracle.convert(html_bytes)
+        oracle_output = _oracle_output(case, oracle, html_bytes)
         normalized_oracle = normalize_markdown(oracle_output)
         candidate_results: list[CandidateResult] = []
         for adapter in candidates:
             try:
-                output = adapter.convert(html_bytes)
+                output = _candidate_output(case, adapter, html_bytes)
                 normalized = normalize_markdown(output)
                 passed = (
                     commonmark_semantic_equal(normalized_oracle, normalized)
@@ -426,6 +467,23 @@ def run_differential(cases: Iterable[Case], adapters: list[Adapter], *, max_diff
             )
         )
     return results
+
+
+def _oracle_output(case: Case, oracle: Adapter, html_bytes: bytes) -> str:
+    if case.layer == "markdownify_tests" and case.upstream_expected_markdown is not None:
+        return case.upstream_expected_markdown
+    return oracle.convert(html_bytes)
+
+
+def _candidate_output(case: Case, adapter: Adapter, html_bytes: bytes) -> str:
+    if case.layer == "markdownify_tests" and adapter.name in {"html2md", "html2md_streaming"}:
+        import html2md
+
+        options = markdownify_compat(**case.metadata.get("markdownify_options", {}))
+        if adapter.name == "html2md_streaming":
+            return "".join(html2md.convert_stream([html_bytes], options=options))
+        return html2md.convert(html_bytes, options=options)
+    return adapter.convert(html_bytes)
 
 
 def summarize(results: list[CaseResult]) -> dict[str, object]:

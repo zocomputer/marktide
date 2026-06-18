@@ -8,6 +8,7 @@ from differential import (
     Case,
     commonmark_semantic_equal,
     load_golden_cases,
+    load_markdownify_cases,
     load_turndown_cases,
     normalize_input_html,
     normalize_markdown,
@@ -105,6 +106,42 @@ def test_load_golden_cases_globs_oracle_schema_and_skips_negative_schema(tmp_pat
     assert cases[0].layer == "golden"
     assert cases[0].html == "<p>x</p>"
     assert cases[0].upstream_expected_markdown == "x"
+
+
+def test_load_markdownify_cases_captures_md_options_and_excludes_custom_converter(tmp_path: Path):
+    tests_root = tmp_path / "markdownify" / "tests"
+    tests_root.mkdir(parents=True)
+    (tests_root / "test_conversions.py").write_text(
+        """
+from markdownify import ATX, BACKSLASH
+from .utils import md
+
+def test_options():
+    assert md('<h1>x</h1>', heading_style=ATX, newline_style=BACKSLASH, wrap_width=None, keep_inline_images_in=['h3']) == '# x'
+""",
+        encoding="utf-8",
+    )
+    (tests_root / "test_custom_converter.py").write_text(
+        """
+from .utils import md
+
+def test_custom():
+    assert md('<h1>x</h1>') == 'custom'
+""",
+        encoding="utf-8",
+    )
+
+    cases = load_markdownify_cases(tmp_path)
+
+    assert [case.id for case in cases] == ["markdownify:test_conversions:6"]
+    assert cases[0].upstream_expected_markdown == "# x"
+    assert cases[0].metadata["markdownify_options"] == {
+        "strip_document": None,
+        "heading_style": "atx",
+        "newline_style": "backslash",
+        "wrap_width": None,
+        "keep_inline_images_in": ["h3"],
+    }
 
 
 def test_run_differential_compares_candidates_against_default_oracle():
