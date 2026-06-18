@@ -50,6 +50,21 @@ _RE_ESCAPE_MISC_LIST = re.compile(r"((?:\s|^)[0-9]{1,9})([.)](?:\s|$))")
 # markdownify's `_noformat` pseudo-tag: inside any of these, text is not escaped.
 _NOFORMAT_TAGS = frozenset(("pre", "code", "kbd", "samp"))
 
+# markdownify should_remove_whitespace_inside: whitespace immediately inside these
+# block-level elements is trimmed at their edges. should_remove_whitespace_outside is
+# this set plus `pre` — used to drop whitespace adjacent to a block sibling (item-D).
+_BLOCK_INSIDE_TAGS = frozenset((
+    "h1", "h2", "h3", "h4", "h5", "h6",
+    "p", "blockquote", "article", "div", "section",
+    "ol", "ul", "li", "dl", "dt", "dd",
+    "table", "thead", "tbody", "tfoot", "tr", "td", "th",
+))
+
+
+def _is_block_outside(tag: str) -> bool:
+    """markdownify should_remove_whitespace_outside: a block element or pre."""
+    return tag in _BLOCK_INSIDE_TAGS or tag == "pre"
+
 
 class MarkdownEmitter:
     """SAX target that emits Markdown. ``close()`` returns the assembled document."""
@@ -89,12 +104,15 @@ class MarkdownEmitter:
 
     def emit_text(self, text: str) -> None:
         """Append HTML text content, reproducing markdownify's ``process_text``:
-        normalise whitespace unless inside ``pre``, then escape unless inside a
-        ``_noformat`` element (``pre``/``code``/``kbd``/``samp``). The two gates differ
-        (whitespace skips for ``pre`` only; escaping skips for all four)."""
+        normalise whitespace unless inside ``pre``, escape unless inside a ``_noformat``
+        element (``pre``/``code``/``kbd``/``samp``), then trim whitespace adjacent to
+        block siblings (item-D). The trailing whitespace is *deferred* one event (held on
+        the parent frame) so the next sibling can decide whether to drop it — a bounded
+        O(1) lookahead that preserves streaming and chunk-invariance."""
         if not text:
             return
-        if self.state.pre_depth == 0:
+        in_pre = self.state.pre_depth > 0
+        if not in_pre:
             if self.options.wrap:
                 text = _RE_ALL_WHITESPACE.sub(" ", text)
             else:
@@ -105,12 +123,32 @@ class MarkdownEmitter:
         if not text:
             return
         buf = self._buf()
-        # Whitespace-only text between top-level blocks is formatting, not content —
-        # markdownify's block-boundary trim drops it. Doing so at the drainable root
-        # also keeps the child-boundary collapse from mis-counting newlines.
-        if buf is self.root and not text.strip():
+        parent = self.state.top
+        if parent is None:
+            buf.append(text)  # top-level text with no element wrapper (lxml normally wraps)
             return
-        buf.append(text)
+        # A previous text sibling's deferred trailing whitespace is kept (this neighbour
+        # is more text, not a block).
+        if parent.pending_ws:
+            buf.append(parent.pending_ws)
+            parent.pending_ws = ""
+        # D leading trim: drop leading whitespace after a block sibling, or as the first
+        # child of a block-level element.
+        if not in_pre and (
+            parent.last_child_block
+            or (not parent.seen_child and parent.tag in _BLOCK_INSIDE_TAGS)
+        ):
+            text = text.lstrip(" \t\r\n")
+        if in_pre:
+            body, trailing = text, ""
+        else:
+            body = text.rstrip(" \t\r\n")
+            trailing = text[len(body):]
+        if body:
+            buf.append(body)
+        parent.pending_ws = trailing  # defer: dropped if the next sibling is a block
+        parent.seen_child = True
+        parent.last_child_block = False
 
     def escape(self, text: str) -> str:
         """Escape Markdown-significant characters per ``Options`` (markdownify ``escape``).
@@ -171,6 +209,16 @@ class MarkdownEmitter:
 
     def start(self, tag: str, attrs: dict[str, str]) -> None:
         tag = tag.lower()
+        # Resolve the parent's deferred text whitespace now that the next sibling (this
+        # element) is known: drop it before a block, keep it before an inline element.
+        parent = self.state.top
+        if parent is not None:
+            if parent.pending_ws:
+                if not _is_block_outside(tag):
+                    self._buf().append(parent.pending_ws)
+                parent.pending_ws = ""
+            parent.seen_child = True
+            parent.last_child_block = _is_block_outside(tag)
         frame = self.state.push(tag, dict(attrs))
         handler = self._handlers.get(tag)
         converts = handler is not None and self._filter.converts(tag)
@@ -188,6 +236,13 @@ class MarkdownEmitter:
         frame = self.state.pop()
         if frame is None:
             return
+        # This element's last text child has no next sibling: keep its deferred trailing
+        # whitespace only if the element is not block-level (markdownify rstrips the last
+        # text inside a block element).
+        if frame.pending_ws:
+            if frame.tag not in _BLOCK_INSIDE_TAGS:
+                frame.content.append(frame.pending_ws)
+            frame.pending_ws = ""
         # Join children, collapsing newlines at boundaries — except inside pre, where
         # newlines are verbatim. pre_depth still counts this element here (the pre
         # handler decrements it in its own end, which runs below).
@@ -212,7 +267,10 @@ class MarkdownEmitter:
         self.emit_text(data)
 
     def comment(self, text: str) -> None:
-        return None  # markdownify drops HTML comments
+        # lxml surfaces an HTML CDATA section as a comment "[CDATA[...]]"; markdownify
+        # emits the CDATA content as text. Ordinary comments are dropped.
+        if text.startswith("[CDATA[") and text.endswith("]]"):
+            self.emit_text(text[7:-2])
 
     # --- streaming drain / final flush ---------------------------------------
 

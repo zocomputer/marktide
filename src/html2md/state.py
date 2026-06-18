@@ -35,6 +35,15 @@ class Frame:
     # buffering ancestor (or the drainable root), so output is not trapped inside an
     # always-open wrapper like the auto-inserted <html>/<body> (design §4.7).
     buffering: bool = True
+    # Sibling-whitespace bookkeeping for markdownify's block-boundary trim (design
+    # §4.7 item-D). pending_ws holds the trailing whitespace of this frame's most recent
+    # text child, deferred one event until the next sibling reveals whether it must be
+    # dropped (next sibling is a block) or kept (inline) — a bounded O(1) lookahead.
+    # last_child_block records whether the previous child was a block element (so the
+    # next text node's leading whitespace is dropped); seen_child marks any prior child.
+    pending_ws: str = ""
+    last_child_block: bool = False
+    seen_child: bool = False
 
 
 @dataclass(slots=True)
