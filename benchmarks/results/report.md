@@ -1,221 +1,92 @@
-# Phase 3 HTML→Markdown final comparison report
+# Phase 1 HTML→Markdown benchmark report
 
-Generated: `2026-06-17T23:09:09-0700`
-Stable converter commit measured: `af097fc` (`fix(marktide): restore streaming chunk-invariance (zo-1fp.19)`) plus benchmark cadence fix `2b1b550`.
-Fixture manifest: `benchmarks/fixtures.lock.json` (`benchmarks/fixtures.lock.json is the canonical fixture manifest; no separate benchmarks/fixtures/manifest.json is used.`)
-Conformance corpus: `1107` cases from `tests/conformance/`
-Gate version: `v1`
+Generated: `2026-06-18T09:05:00-0700`
+Gate: `v1`
+Fixture manifest: `/Users/dcosson/h2home/projects/new-html-parser/benchmarks/fixtures.lock.json` (canonical; no separate `manifest.json` is used)
 
-## Executive summary
+## Verdict: BUILD phase 2
 
-**Winner: `marktide_streaming`.** It is the only candidate with markdownify-compatible semantics, worker-thread async health on large documents, native streaming TTFO/cadence, and comparatively low memory growth.
+Throughput is a warm single-conversion measurement after a tiny adapter warmup; output hash/bytes and heartbeat metrics describe that exact conversion. Native streaming adapters additionally report TTFO and inter-chunk cadence from their streaming API.
 
-Headline xlarge result: `marktide_streaming` converted the 109.85 MiB fixture in 5.99s (18.32 MiB/s), versus `markdownify` at 53.44s (2.06 MiB/s), a 8.9× wall-time win.
-Streaming latency: xlarge TTFO was 2.42ms with 227 emitted chunks and 29.51ms maximum inter-chunk gap.
-Async health: xlarge `marktide_streaming` missed 0.00% of heartbeats with 5.42ms max stall; xlarge `markdownify` missed 70.02% with 500.11ms max stall.
-Memory: xlarge `marktide_streaming` peak RSS delta was 244.7 MiB (2.23× input), versus `markdownify` 2808.9 MiB (25.57×) and `html_to_markdown` 4306.6 MiB (39.21×).
-Conformance: raw primary markdownify-oracle fidelity for `marktide`/`marktide_streaming` is 296/298 (99.329%). Counting the two documented lxml/browser parser divergences in `tests/conformance/allowed_divergences.toml`, effective primary fidelity is 298/298 (100.000%).
+## Matrix results
 
-Recommendation: use `marktide_streaming` for large/user-supplied documents and keep `marktide.convert` as the one-shot compatibility API for simple call sites. Treat the remaining non-primary corpus gaps as follow-up normalization/oracle work, not blockers for the markdownify replacement decision.
+| Adapter | Fixture | Status | MiB/s | Wall s | Missed beat % | Max delay ms | p99 delay ms | TTFO ms | Max stream gap ms | Stream chunks | Output/Input | Peak RSS Δ MiB | RSS/Input | Async pass |
+|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| markdownify | small | ok | 6.71 | 0.015 | 0.00 | 9.60 | 9.60 | — | — | — | 0.915 | 2.8 | 28.86 | yes |
+| html_to_markdown | small | ok | 24.17 | 0.004 | 0.00 | 0.14 | 0.14 | — | — | — | 0.915 | 1.6 | 16.58 | yes |
+| htmd_py | small | ok | 44.97 | 0.002 | 0.00 | 0.25 | 0.25 | — | — | — | 0.916 | 1.5 | 15.47 | yes |
+| html2text_rs | small | ok | 35.59 | 0.003 | 0.00 | 0.31 | 0.31 | — | — | — | 0.916 | 2.1 | 21.53 | yes |
+| marktide | small | ok | 52.10 | 0.002 | 0.00 | 0.33 | 0.33 | — | — | — | 0.916 | 0.9 | 9.09 | yes |
+| marktide_streaming | small | ok | 58.95 | 0.002 | 0.00 | 0.46 | 0.46 | 0.82 | 0.50 | 2 | 0.916 | 0.8 | 7.65 | yes |
+| lxml_naive | small | ok | 27.55 | 0.004 | 0.00 | 0.22 | 0.22 | — | — | — | 0.908 | 0.8 | 8.13 | yes |
+| markdownify | medium | ok | 3.91 | 1.367 | 66.27 | 28.20 | 28.20 | — | — | — | 0.379 | 138.1 | 25.83 | no |
+| html_to_markdown | medium | ok | 22.09 | 0.242 | 50.00 | 236.97 | 236.97 | — | — | — | 1.717 | 209.8 | 39.24 | no |
+| htmd_py | medium | ok | 65.12 | 0.082 | 100.00 | 77.15 | 77.15 | — | — | — | 0.734 | 80.6 | 15.07 | no |
+| html2text_rs | medium | ok | 34.81 | 0.154 | 0.00 | 0.71 | 0.71 | — | — | — | 0.627 | 190.4 | 35.61 | yes |
+| marktide | medium | ok | 23.17 | 0.231 | 0.00 | 0.94 | 0.94 | — | — | — | 0.379 | 23.0 | 4.31 | yes |
+| marktide_streaming | medium | ok | 22.70 | 0.236 | 0.00 | 8.08 | 8.08 | 2.09 | 20.06 | 12 | 0.379 | 14.7 | 2.74 | yes |
+| lxml_naive | medium | ok | 73.64 | 0.073 | 22.22 | 16.74 | 16.74 | — | — | — | 0.239 | 61.1 | 11.42 | no |
+| markdownify | large | ok | 2.71 | 20.280 | 62.35 | 281.63 | 32.06 | — | — | — | 0.379 | 1405.0 | 25.58 | no |
+| html_to_markdown | large | ok | 23.28 | 2.360 | 50.00 | 2354.28 | 2354.28 | — | — | — | 1.717 | 2146.6 | 39.08 | no |
+| htmd_py | large | ok | 66.56 | 0.825 | 50.00 | 820.17 | 820.17 | — | — | — | 0.734 | 786.3 | 14.32 | no |
+| html2text_rs | large | ok | 37.52 | 1.464 | 0.78 | 33.72 | 6.52 | — | — | — | 0.634 | 1957.3 | 35.64 | no |
+| marktide | large | ok | 23.19 | 2.369 | 0.24 | 12.00 | 1.15 | — | — | — | 0.379 | 228.6 | 4.16 | yes |
+| marktide_streaming | large | ok | 23.58 | 2.330 | 0.24 | 10.01 | 1.12 | 1.97 | 25.55 | 114 | 0.379 | 124.5 | 2.27 | yes |
+| lxml_naive | large | ok | 71.49 | 0.768 | 10.99 | 101.62 | 101.62 | — | — | — | 0.239 | 621.1 | 11.31 | no |
+| markdownify | xlarge | ok | 2.01 | 54.549 | 60.39 | 512.69 | 17.83 | — | — | — | 0.379 | 2811.1 | 25.59 | no |
+| html_to_markdown | xlarge | ok | 22.96 | 4.784 | 50.00 | 4778.20 | 4778.20 | — | — | — | 1.717 | 3761.0 | 34.24 | no |
+| htmd_py | xlarge | ok | 64.10 | 1.714 | 50.00 | 1708.69 | 1708.69 | — | — | — | 0.734 | 1569.2 | 14.29 | no |
+| html2text_rs | xlarge | ok | 36.22 | 3.033 | 0.38 | 71.58 | 1.63 | — | — | — | 0.635 | 3906.7 | 35.57 | no |
+| marktide | xlarge | ok | 23.15 | 4.746 | 0.12 | 18.82 | 1.25 | — | — | — | 0.379 | 453.3 | 4.13 | no |
+| marktide_streaming | xlarge | ok | 23.24 | 4.727 | 0.00 | 8.83 | 1.10 | 2.16 | 31.58 | 227 | 0.379 | 247.3 | 2.25 | yes |
+| lxml_naive | xlarge | ok | 70.32 | 1.562 | 13.07 | 200.64 | 26.23 | — | — | — | 0.239 | 1238.8 | 11.28 | no |
 
-## Inputs and methodology
+## Memory scaling
 
-### Contenders
+| Adapter | Fixture | Input MiB | Peak RSS Δ MiB | RSS/Input | Samples |
+|---|---:|---:|---:|---:|---:|
+| markdownify | small | 0.10 | 2.8 | 28.86 | 3 |
+| markdownify | medium | 5.35 | 138.1 | 25.83 | 45 |
+| markdownify | large | 54.92 | 1405.0 | 25.58 | 607 |
+| markdownify | xlarge | 109.85 | 2811.1 | 25.59 | 1669 |
+| html_to_markdown | small | 0.10 | 1.6 | 16.58 | 3 |
+| html_to_markdown | medium | 5.35 | 209.8 | 39.24 | 4 |
+| html_to_markdown | large | 54.92 | 2146.6 | 39.08 | 4 |
+| html_to_markdown | xlarge | 109.85 | 3761.0 | 34.24 | 4 |
+| htmd_py | small | 0.10 | 1.5 | 15.47 | 3 |
+| htmd_py | medium | 5.35 | 80.6 | 15.07 | 3 |
+| htmd_py | large | 54.92 | 786.3 | 14.32 | 4 |
+| htmd_py | xlarge | 109.85 | 1569.2 | 14.29 | 4 |
+| html2text_rs | small | 0.10 | 2.1 | 21.53 | 3 |
+| html2text_rs | medium | 5.35 | 190.4 | 35.61 | 10 |
+| html2text_rs | large | 54.92 | 1957.3 | 35.64 | 74 |
+| html2text_rs | xlarge | 109.85 | 3906.7 | 35.57 | 148 |
+| marktide | small | 0.10 | 0.9 | 9.09 | 3 |
+| marktide | medium | 5.35 | 23.0 | 4.31 | 14 |
+| marktide | large | 54.92 | 228.6 | 4.16 | 119 |
+| marktide | xlarge | 109.85 | 453.3 | 4.13 | 235 |
+| marktide_streaming | small | 0.10 | 0.8 | 7.65 | 3 |
+| marktide_streaming | medium | 5.35 | 14.7 | 2.74 | 14 |
+| marktide_streaming | large | 54.92 | 124.5 | 2.27 | 116 |
+| marktide_streaming | xlarge | 109.85 | 247.3 | 2.25 | 234 |
+| lxml_naive | small | 0.10 | 0.8 | 8.13 | 3 |
+| lxml_naive | medium | 5.35 | 61.1 | 11.42 | 6 |
+| lxml_naive | large | 54.92 | 621.1 | 11.31 | 32 |
+| lxml_naive | xlarge | 109.85 | 1238.8 | 11.28 | 60 |
 
-| Adapter | API path | Engine | Streaming-capable | Notes |
-|---|---|---|---:|---|
-| `markdownify` | `markdownify.markdownify(str)` | BeautifulSoup / pure Python | No | Incumbent baseline and markdownify-oracle reference. |
-| `html_to_markdown` | `html_to_markdown.convert(str).content` | Rust via PyO3 | No | Fast one-shot candidate with material oracle divergence. |
-| `htmd_py` | `htmd.convert_html(str)` | Rust via PyO3 | No | Fastest one-shot candidate; not streaming and not markdownify-compatible enough. |
-| `html2text_rs` | `html2text_rs.text_markdown(str)` | Rust via PyO3 | No | Good GIL behavior, but semantic mismatch. |
-| `marktide` | `marktide.convert(bytes)` | lxml target parser + Python emitter | No | Local one-shot API; same semantics as streaming path. |
-| `marktide_streaming` | `marktide.convert_stream(chunked bytes)` | lxml target parser + Python emitter | Yes | Local streaming API; measured with 64 KiB input chunks for TTFO/cadence. |
-| `lxml_naive` | harness baseline | libxml2 parse + naive Python walk | No | Parser/tree-walk baseline only; not a semantic contender. |
+## Gate v1 evaluation
 
-### Performance methodology
-
-- Fixtures: `small`, `medium`, `large`, `xlarge` from `benchmarks/fixtures.lock.json`.
-- Each row is warmed with a tiny payload, then measured on one full fixture conversion.
-- Heartbeat metrics are sampled while conversion runs in a worker thread.
-- `marktide_streaming` cadence consumes the native stream from 64 KiB fixture input chunks.
-- RSS is sampled from `resource.getrusage(...).ru_maxrss` while each row conversion is in flight.
-
-## Performance matrix
-
-| Adapter | Fixture | Status | MiB/s | Wall s | Missed beat % | Max stall ms | p99 stall ms | TTFO ms | Max stream gap ms | Stream chunks | Output/Input | Peak RSS Δ MiB | Async pass | Streaming cadence pass |
-|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|
-| `markdownify` | small | ok | 8.16 | 0.012 | 0.00 | 7.00 | 7.00 | — | — | — | 0.915 | 3.0 | yes | n/a |
-| `markdownify` | medium | ok | 4.08 | 1.311 | 71.62 | 28.45 | 28.45 | — | — | — | 0.379 | 138.1 | no | n/a |
-| `markdownify` | large | ok | 2.77 | 19.847 | 69.29 | 262.27 | 38.34 | — | — | — | 0.379 | 1405.1 | no | n/a |
-| `markdownify` | xlarge | ok | 2.06 | 53.435 | 70.02 | 500.11 | 16.39 | — | — | — | 0.379 | 2808.9 | no | n/a |
-| `html_to_markdown` | small | ok | 38.49 | 0.003 | 0.00 | 0.65 | 0.65 | — | — | — | 0.915 | 1.7 | yes | n/a |
-| `html_to_markdown` | medium | ok | 23.74 | 0.225 | 50.00 | 220.23 | 220.23 | — | — | — | 1.717 | 211.2 | no | n/a |
-| `html_to_markdown` | large | ok | 23.73 | 2.314 | 50.00 | 2309.32 | 2309.32 | — | — | — | 1.717 | 2145.6 | no | n/a |
-| `html_to_markdown` | xlarge | ok | 24.03 | 4.572 | 50.00 | 4566.50 | 4566.50 | — | — | — | 1.717 | 4306.6 | no | n/a |
-| `htmd_py` | small | ok | 71.44 | 0.001 | 0.00 | 0.93 | 0.93 | — | — | — | 0.916 | 1.4 | yes | n/a |
-| `htmd_py` | medium | ok | 63.42 | 0.084 | 100.00 | 79.33 | 79.33 | — | — | — | 0.734 | 80.6 | no | n/a |
-| `htmd_py` | large | ok | 66.10 | 0.831 | 50.00 | 825.93 | 825.93 | — | — | — | 0.734 | 786.5 | no | n/a |
-| `htmd_py` | xlarge | ok | 67.47 | 1.628 | 50.00 | 1623.11 | 1623.11 | — | — | — | 0.734 | 1569.1 | no | n/a |
-| `html2text_rs` | small | ok | 37.74 | 0.003 | 0.00 | 0.63 | 0.63 | — | — | — | 0.916 | 2.1 | yes | n/a |
-| `html2text_rs` | medium | ok | 35.97 | 0.149 | 0.00 | 1.30 | 1.30 | — | — | — | 0.627 | 190.4 | yes | n/a |
-| `html2text_rs` | large | ok | 37.71 | 1.457 | 0.41 | 34.09 | 1.78 | — | — | — | 0.634 | 1956.0 | no | n/a |
-| `html2text_rs` | xlarge | ok | 38.04 | 2.887 | 0.42 | 69.56 | 1.33 | — | — | — | 0.635 | 3905.5 | no | n/a |
-| `marktide` | small | ok | 26.34 | 0.004 | 0.00 | 0.33 | 0.33 | — | — | — | 0.916 | 1.0 | yes | n/a |
-| `marktide` | medium | ok | 18.26 | 0.293 | 0.00 | 1.79 | 1.79 | — | — | — | 0.379 | 23.3 | yes | n/a |
-| `marktide` | large | ok | 18.10 | 3.034 | 0.00 | 8.43 | 1.89 | — | — | — | 0.379 | 226.4 | yes | n/a |
-| `marktide` | xlarge | ok | 18.37 | 5.979 | 0.10 | 20.88 | 1.88 | — | — | — | 0.379 | 452.3 | no | n/a |
-| `marktide_streaming` | small | ok | 24.03 | 0.004 | 0.00 | 0.25 | 0.25 | 2.19 | 1.47 | 2 | 0.916 | 0.8 | yes | yes |
-| `marktide_streaming` | medium | ok | 18.26 | 0.293 | 0.00 | 1.76 | 1.76 | 2.30 | 36.12 | 12 | 0.379 | 14.2 | yes | yes |
-| `marktide_streaming` | large | ok | 18.25 | 3.010 | 0.00 | 3.97 | 1.89 | 2.49 | 29.67 | 114 | 0.379 | 123.6 | yes | yes |
-| `marktide_streaming` | xlarge | ok | 18.32 | 5.994 | 0.00 | 5.42 | 1.94 | 2.42 | 29.51 | 227 | 0.379 | 244.7 | yes | yes |
-| `lxml_naive` | small | ok | 138.20 | 0.001 | 0.00 | 1.11 | 1.11 | — | — | — | 0.908 | 0.9 | yes | n/a |
-| `lxml_naive` | medium | ok | 73.09 | 0.073 | 22.22 | 16.14 | 16.14 | — | — | — | 0.239 | 61.3 | no | n/a |
-| `lxml_naive` | large | ok | 70.82 | 0.775 | 14.63 | 111.25 | 111.25 | — | — | — | 0.239 | 620.8 | no | n/a |
-| `lxml_naive` | xlarge | ok | 73.37 | 1.497 | 16.25 | 205.14 | 16.34 | — | — | — | 0.239 | 1238.7 | no | n/a |
-
-## Peak RSS / memory scaling
-
-The decisive memory pattern is the slope, not a single fixture. `marktide_streaming` and `marktide` stay around 4.5× input on xlarge while `markdownify` is about 25.6× and `html_to_markdown` about 39×. This is not perfectly constant memory yet, but it is a large practical reduction and the streaming path emits output promptly instead of waiting for EOF.
-
-| Adapter | Fixture | Input MiB | Peak RSS Δ MiB | RSS/Input | Samples | Interpretation |
-|---|---:|---:|---:|---:|---:|---|
-| `markdownify` | small | 0.10 | 3.0 | 30.62 | 3 | incumbent high O(input) baseline |
-| `markdownify` | medium | 5.35 | 138.1 | 25.83 | 46 | incumbent high O(input) baseline |
-| `markdownify` | large | 54.92 | 1405.1 | 25.58 | 613 | incumbent high O(input) baseline |
-| `markdownify` | xlarge | 109.85 | 2808.9 | 25.57 | 1659 | incumbent high O(input) baseline |
-| `html_to_markdown` | small | 0.10 | 1.7 | 17.54 | 3 | one-shot/native comparison row |
-| `html_to_markdown` | medium | 5.35 | 211.2 | 39.51 | 4 | one-shot/native comparison row |
-| `html_to_markdown` | large | 54.92 | 2145.6 | 39.07 | 4 | one-shot/native comparison row |
-| `html_to_markdown` | xlarge | 109.85 | 4306.6 | 39.21 | 4 | one-shot/native comparison row |
-| `htmd_py` | small | 0.10 | 1.4 | 14.67 | 3 | one-shot/native comparison row |
-| `htmd_py` | medium | 5.35 | 80.6 | 15.08 | 3 | one-shot/native comparison row |
-| `htmd_py` | large | 54.92 | 786.5 | 14.32 | 4 | one-shot/native comparison row |
-| `htmd_py` | xlarge | 109.85 | 1569.1 | 14.28 | 4 | one-shot/native comparison row |
-| `html2text_rs` | small | 0.10 | 2.1 | 21.53 | 3 | one-shot/native comparison row |
-| `html2text_rs` | medium | 5.35 | 190.4 | 35.60 | 10 | one-shot/native comparison row |
-| `html2text_rs` | large | 54.92 | 1956.0 | 35.61 | 72 | one-shot/native comparison row |
-| `html2text_rs` | xlarge | 109.85 | 3905.5 | 35.55 | 140 | one-shot/native comparison row |
-| `marktide` | small | 0.10 | 1.0 | 10.37 | 3 | lowest semantic contender slope |
-| `marktide` | medium | 5.35 | 23.3 | 4.36 | 17 | lowest semantic contender slope |
-| `marktide` | large | 54.92 | 226.4 | 4.12 | 149 | lowest semantic contender slope |
-| `marktide` | xlarge | 109.85 | 452.3 | 4.12 | 291 | lowest semantic contender slope |
-| `marktide_streaming` | small | 0.10 | 0.8 | 7.65 | 3 | lowest semantic contender slope |
-| `marktide_streaming` | medium | 5.35 | 14.2 | 2.66 | 17 | lowest semantic contender slope |
-| `marktide_streaming` | large | 54.92 | 123.6 | 2.25 | 148 | lowest semantic contender slope |
-| `marktide_streaming` | xlarge | 109.85 | 244.7 | 2.23 | 292 | lowest semantic contender slope |
-| `lxml_naive` | small | 0.10 | 0.9 | 8.93 | 3 | baseline only |
-| `lxml_naive` | medium | 5.35 | 61.3 | 11.47 | 6 | baseline only |
-| `lxml_naive` | large | 54.92 | 620.8 | 11.30 | 31 | baseline only |
-| `lxml_naive` | xlarge | 109.85 | 1238.7 | 11.28 | 58 | baseline only |
-
-## Gate summary
-
-The harness gate is intentionally strict and still labels some rows as failing because the v1 thresholds were drafted before final streaming cadence and memory evidence existed. The decision here uses the measured evidence plus conformance gate: one-shot libraries fail streaming by design; `markdownify` fails performance/async/memory; `marktide_streaming` is the recommended product path.
-
-| Adapter | Throughput signal | Async signal | RSS signal | Streaming TTFO/cadence | Conformance signal | Overall |
+| Adapter | Throughput | Async | RSS | Streaming TTFO | Fidelity prelim | Passes all |
 |---|---|---|---|---|---|---|
-| `markdownify` | mixed/fail | mixed/fail | high or baseline | no native streaming | oracle baseline | No — incumbent/oracle only |
-| `html_to_markdown` | pass | mixed/fail | high or baseline | no native streaming | primary 54.7% | No — semantic/streaming gap |
-| `htmd_py` | pass | mixed/fail | high or baseline | no native streaming | primary 46.0% | No — semantic/streaming gap |
-| `html2text_rs` | pass | mixed/fail | high or baseline | no native streaming | primary 38.9% | No — semantic/streaming gap |
-| `marktide` | mixed/fail | mixed/fail | best semantic slope | no native streaming | effective primary 100.000% | Partial — compatibility API, not streaming |
-| `marktide_streaming` | mixed/fail | pass | best semantic slope | pass | effective primary 100.000% | Yes — recommended streaming path |
-| `lxml_naive` | pass | mixed/fail | high or baseline | no native streaming | baseline only | No — semantic baseline only |
+| html_to_markdown | True | False | False | False | True | False |
+| htmd_py | True | False | False | False | True | False |
+| html2text_rs | True | False | False | False | False | False |
+| marktide | True | False | False | False | True | False |
+| marktide_streaming | True | True | False | True | True | False |
+| lxml_naive | True | False | False | False | False | False |
 
-## Conformance / quality matrix
+## Notes
 
-The primary markdownify oracle is `golden + markdownify_tests` because those layers express the intended markdownify-compatible contract. Secondary layers (`commonmark_expected_html`, `turndown`, `turndown_options`, `pandoc`) are useful stress oracles and explain residual semantic risk, but they are not the drop-in markdownify gate.
-
-### Primary markdownify oracle
-
-| Adapter | Passed | Failed | Errors | Raw fidelity | Effective fidelity | Notes |
-|---|---:|---:|---:|---:|---:|---|
-| `marktide` | 296 | 2 | 0 | 99.329% | 100.000% | Two documented lxml/browser parser divergences counted as effective passes. |
-| `marktide_streaming` | 296 | 2 | 0 | 99.329% | 100.000% | Two documented lxml/browser parser divergences counted as effective passes. |
-| `html_to_markdown` | 163 | 135 | 0 | 54.698% | 54.698% | Not markdownify-compatible enough for drop-in replacement. |
-| `htmd_py` | 137 | 161 | 0 | 45.973% | 45.973% | Not markdownify-compatible enough for drop-in replacement. |
-| `html2text_rs` | 116 | 182 | 0 | 38.926% | 38.926% | Not markdownify-compatible enough for drop-in replacement. |
-| `lxml_naive` | 67 | 229 | 2 | 22.483% | 22.483% | Baseline only; includes errors. |
-
-### All conformance layers
-
-| Adapter | Layer | Passed | Failed | Errors | Fidelity |
-|---|---|---:|---:|---:|---:|
-| `marktide` | `commonmark_expected_html` | 647 | 7 | 0 | 98.9% |
-| `marktide_streaming` | `commonmark_expected_html` | 647 | 7 | 0 | 98.9% |
-| `html_to_markdown` | `commonmark_expected_html` | 472 | 182 | 0 | 72.2% |
-| `htmd_py` | `commonmark_expected_html` | 544 | 110 | 0 | 83.2% |
-| `html2text_rs` | `commonmark_expected_html` | 419 | 235 | 0 | 64.1% |
-| `lxml_naive` | `commonmark_expected_html` | 256 | 397 | 1 | 39.1% |
-| `marktide` | `golden` | 64 | 0 | 0 | 100.0% |
-| `marktide_streaming` | `golden` | 64 | 0 | 0 | 100.0% |
-| `html_to_markdown` | `golden` | 36 | 28 | 0 | 56.2% |
-| `htmd_py` | `golden` | 31 | 33 | 0 | 48.4% |
-| `html2text_rs` | `golden` | 30 | 34 | 0 | 46.9% |
-| `lxml_naive` | `golden` | 18 | 46 | 0 | 28.1% |
-| `marktide` | `markdownify_tests` | 232 | 2 | 0 | 99.1% |
-| `marktide_streaming` | `markdownify_tests` | 232 | 2 | 0 | 99.1% |
-| `html_to_markdown` | `markdownify_tests` | 127 | 107 | 0 | 54.3% |
-| `htmd_py` | `markdownify_tests` | 106 | 128 | 0 | 45.3% |
-| `html2text_rs` | `markdownify_tests` | 86 | 148 | 0 | 36.8% |
-| `lxml_naive` | `markdownify_tests` | 49 | 183 | 2 | 20.9% |
-| `marktide` | `pandoc` | 7 | 1 | 0 | 87.5% |
-| `marktide_streaming` | `pandoc` | 7 | 1 | 0 | 87.5% |
-| `html_to_markdown` | `pandoc` | 1 | 7 | 0 | 12.5% |
-| `htmd_py` | `pandoc` | 1 | 7 | 0 | 12.5% |
-| `html2text_rs` | `pandoc` | 0 | 8 | 0 | 0.0% |
-| `lxml_naive` | `pandoc` | 0 | 8 | 0 | 0.0% |
-| `marktide` | `turndown` | 122 | 3 | 0 | 97.6% |
-| `marktide_streaming` | `turndown` | 122 | 3 | 0 | 97.6% |
-| `html_to_markdown` | `turndown` | 79 | 46 | 0 | 63.2% |
-| `htmd_py` | `turndown` | 75 | 50 | 0 | 60.0% |
-| `html2text_rs` | `turndown` | 47 | 78 | 0 | 37.6% |
-| `lxml_naive` | `turndown` | 30 | 94 | 1 | 24.0% |
-| `marktide` | `turndown_options` | 22 | 0 | 0 | 100.0% |
-| `marktide_streaming` | `turndown_options` | 22 | 0 | 0 | 100.0% |
-| `html_to_markdown` | `turndown_options` | 11 | 11 | 0 | 50.0% |
-| `htmd_py` | `turndown_options` | 12 | 10 | 0 | 54.5% |
-| `html2text_rs` | `turndown_options` | 2 | 20 | 0 | 9.1% |
-| `lxml_naive` | `turndown_options` | 1 | 21 | 0 | 4.5% |
-
-## Charts
-
-- [Throughput by size](charts/throughput_by_size.png)
-- [Memory scaling peak RSS](charts/memory_scaling_peak_rss.png)
-- [Async stalls](charts/async_stalls.png)
-- [TTFO and cadence](charts/ttfo_cadence.png)
-
-## Comparison framing
-
-### `markdownify`: incumbent oracle, not the performance target
-
-`markdownify` remains the compatibility reference, but xlarge conversion took 53.44s, missed 70.02% of heartbeat samples, and peaked at 2808.9 MiB RSS delta. It should stay in the harness as an oracle, not as the large-document runtime path.
-
-### Rust one-shot libraries: fast but incomplete replacements
-
-`htmd_py` is the raw throughput leader and `html_to_markdown` is also fast, but both are one-shot APIs with severe worker-thread heartbeat stalls on large/xlarge fixtures and materially lower primary markdownify fidelity. They are useful comparison points, not drop-in replacements.
-
-### `html2text_rs`: async-friendly signal, semantic mismatch
-
-`html2text_rs` has relatively good heartbeat behavior compared with the other one-shot native libraries, but its markdownify-oracle fidelity is far below the required bar. It proves that GIL behavior alone is not sufficient.
-
-### `lxml_naive`: parser baseline only
-
-`lxml_naive` isolates libxml2 parse/tree-walk shape. It is fast, but its output is intentionally not compatible enough to be a candidate.
-
-### `marktide` and `marktide_streaming`: same semantics, different API surfaces
-
-`marktide.convert` provides the one-shot compatibility surface. `marktide.convert_stream` is the product path for large or user-supplied input: the final xlarge run emitted 227 chunks, first output in 2.42ms, and kept max inter-chunk gap under 31ms while matching the one-shot conversion semantics under the chunk-invariance test suite.
-
-## Reproduction commands
-
-```bash
-uv run python -m benchmarks.harness.runner \
-  --sizes small medium large xlarge \
-  --adapters markdownify html_to_markdown htmd_py html2text_rs marktide marktide_streaming lxml_naive \
-  --output benchmarks/results/phase3.json \
-  --report benchmarks/results/report.md \
-  --timeout-s 1800 --interval-s 0.005 --memory-interval-s 0.02
-uv run --group benchmark python benchmarks/charts.py benchmarks/results/phase3.json
-uv run python tests/conformance/differential.py --include-lxml-naive
-```
+- TTFO criterion is measured only for adapters exposing streaming_cadence; one-shot-only libraries structurally fail it.
+- Fidelity is preliminary here; tests/conformance differential harness owns exact conformance scoring.
+- `output_to_input_ratio` is included to catch silent truncation/flat output curves across fixture sizes.
