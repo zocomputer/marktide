@@ -24,7 +24,7 @@ PROPERTY_DIR = Path(__file__).resolve().parent
 if str(PROPERTY_DIR) not in sys.path:
     sys.path.insert(0, str(PROPERTY_DIR))
 
-from html_strategies import block_html, html_document, html_fragment_pair
+from html_strategies import block_html, html_document, html_fragment_pair  # noqa: E402
 
 F = TypeVar("F", bound=Callable)
 FAST_SUITE_TIMEOUT_S = 10.0
@@ -106,11 +106,6 @@ def test_concatenation_homomorphism(fragments: tuple[str, str]):
     separate = _normalize_for_relation(convert(left) + "\n\n" + convert(right))
     combined = _normalize_for_relation(convert(left + right))
 
-    if combined != separate:
-        pytest.xfail(
-            "known phase-2 foundation gap: block-boundary paragraph emission is not wired yet; "
-            "this relation should pass once block handlers land"
-        )
     assert combined == separate
 
 
@@ -152,6 +147,7 @@ def test_fast_profile_is_default_and_bounded():
     assert active.deadline.total_seconds() == pytest.approx(0.2)
 
 
+@bounded_runtime()
 @given(html_document())
 def test_html_generator_smoke(example: str):
     assert example.startswith("<!doctype html>")

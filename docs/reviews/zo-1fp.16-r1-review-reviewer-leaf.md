@@ -70,3 +70,11 @@ Avoid mutating `sys.path` before a module-level import, or mark the import with 
 3 findings: 0 P0, 3 P1, 0 P2, 0 P3
 
 **Verdict**: Not approved
+
+## Disposition
+
+| # | Severity | Finding | Disposition | Commit | Notes |
+|---|----------|---------|-------------|--------|-------|
+| 1 | P1 | Passing concatenation property is still coded as an xfail-on-regression | Incorporated | this commit | Removed the dynamic `pytest.xfail(...)` from `tests/property/test_metamorphic.py::test_concatenation_homomorphism`; reviewer confirmed proposed disposition via h2. |
+| 2 | P1 | `test_html_generator_smoke` is generative but lacks the hard wall-clock wrapper | Incorporated | this commit | Added `@bounded_runtime()` to `tests/property/test_metamorphic.py::test_html_generator_smoke`; reviewer confirmed proposed disposition via h2. |
+| 3 | P1 | Property suite files fail the project lint command | Incorporated | this commit | Added targeted `# noqa: E402` to the intentional path-injected `html_strategies` import; reviewer confirmed proposed disposition via h2. |
