@@ -20,28 +20,26 @@ from .blocks import chomp, in_inline, in_noformat
 _RE_BACKTICKS = re.compile(r"`+")
 
 
-class _InlineMarkup:
-    """markdownify ``abstract_inline_conversion``: wrap the chomped children in a fixed
-    markup pair (``**`` for strong, ``*`` for em…). Empty content emits nothing; inside a
-    ``_noformat`` ancestor the children pass through unwrapped."""
+def _markup_pair(markup: str) -> tuple[str, str]:
+    """markdownify ``abstract_inline_conversion``: an HTML-tag-shaped markup like ``<sub>``
+    closes with ``</sub>``; everything else (``**``, ``*``, ``~~``) is symmetric."""
+    if markup.startswith("<") and markup.endswith(">"):
+        return markup, "</" + markup[1:]
+    return markup, markup
 
-    __slots__ = ("_markup",)
 
-    def __init__(self, markup: str) -> None:
-        self._markup = markup
-
-    def start(self, em, attrs) -> None:
-        return None
-
-    def end(self, em) -> None:
-        content = em.content
-        if in_noformat(em):
-            em.emit(content)
-            return
-        prefix, suffix, text = chomp(content)
-        if not text:
-            return
-        em.emit("%s%s%s%s%s" % (prefix, self._markup, text, self._markup, suffix))
+def _emit_inline(em, markup: str) -> None:
+    """markdownify ``abstract_inline_conversion`` body: pass through inside ``_noformat``,
+    else wrap the chomped children, suppressing empty content."""
+    content = em.content
+    if in_noformat(em):
+        em.emit(content)
+        return
+    prefix, suffix, text = chomp(content)
+    if not text:
+        return
+    open_markup, close_markup = _markup_pair(markup)
+    em.emit("%s%s%s%s%s" % (prefix, open_markup, text, close_markup, suffix))
 
 
 class _Strong:
@@ -53,7 +51,7 @@ class _Strong:
         return None
 
     def end(self, em) -> None:
-        _InlineMarkup(em.options.strong_em_symbol * 2).end(em)
+        _emit_inline(em, em.options.strong_em_symbol * 2)
 
 
 class _Emphasis:
@@ -65,7 +63,43 @@ class _Emphasis:
         return None
 
     def end(self, em) -> None:
-        _InlineMarkup(em.options.strong_em_symbol).end(em)
+        _emit_inline(em, em.options.strong_em_symbol)
+
+
+class _Del:
+    """``del``/``s``/``strike`` → ``~~`` strikethrough."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        _emit_inline(em, "~~")
+
+
+class _Sub:
+    """``sub`` → ``options.sub_symbol`` (empty by default → plain text)."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        _emit_inline(em, em.options.sub_symbol)
+
+
+class _Sup:
+    """``sup`` → ``options.sup_symbol`` (empty by default → plain text)."""
+
+    __slots__ = ()
+
+    def start(self, em, attrs) -> None:
+        return None
+
+    def end(self, em) -> None:
+        _emit_inline(em, em.options.sup_symbol)
 
 
 class _Code:
@@ -185,4 +219,9 @@ HANDLERS: dict[str, TagHandler] = {
     "br": _Break(),
     "a": _Link(),
     "img": _Image(),
+    "del": _Del(),
+    "s": _Del(),
+    "strike": _Del(),
+    "sub": _Sub(),
+    "sup": _Sup(),
 }

@@ -110,3 +110,41 @@ def test_image_emits_alt_src_title() -> None:
 
 def test_span_is_transparent() -> None:
     assert convert("<p><span>wrap <b>x</b></span></p>") == "wrap **x**"
+
+
+# --- markdownify Options fidelity (review findings) -----------------------------
+
+def test_paragraph_honours_wrap_width() -> None:
+    from html2md import Options
+
+    md = convert("<p>123456789 123456789</p>", options=Options(wrap=True, wrap_width=10))
+    assert md == "123456789\n123456789"
+
+
+def test_pre_honours_code_language_callback() -> None:
+    from html2md import Options
+
+    opts = Options(code_language_callback=lambda frame: "python")
+    assert convert("<pre>x = 1</pre>", options=opts) == "```python\nx = 1\n```"
+
+
+def test_strip_pre_strip_one_removes_single_newline() -> None:
+    from html2md import Options
+
+    one = convert("<pre>\n\nfoo\n\n</pre>", options=Options(strip_pre="strip_one"))
+    full = convert("<pre>\n\nfoo\n\n</pre>", options=Options(strip_pre="strip"))
+    assert one == "```\n\nfoo\n```"
+    assert full == "```\nfoo\n```"
+
+
+def test_strikethrough_and_sub_sup_symbols() -> None:
+    from html2md import Options
+
+    assert convert("<p><del>x</del></p>") == "~~x~~"
+    assert convert("<p><s>x</s></p>") == "~~x~~"
+    assert convert("<sub>foo</sub>", options=Options(sub_symbol="~")) == "~foo~"
+    assert convert("<sup>foo</sup>", options=Options(sup_symbol="^")) == "^foo^"
+    # an HTML-tag-shaped symbol closes with the matching tag
+    assert convert("<sub>foo</sub>", options=Options(sub_symbol="<sub>")) == "<sub>foo</sub>"
+    # default symbols are empty → plain text passthrough
+    assert convert("<p>a<sub>b</sub>c</p>") == "abc"

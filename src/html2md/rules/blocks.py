@@ -14,6 +14,7 @@ char and ordered index come from the :class:`~html2md.state.ListContext` pushed 
 from __future__ import annotations
 
 import re
+from textwrap import fill
 
 from ..state import ListContext
 from .base import PrefixSuffixHandler, TagHandler, TransparentHandler
@@ -23,6 +24,8 @@ _RE_LINE = re.compile(r"^(.*)", flags=re.MULTILINE)
 _RE_ALL_WS = re.compile(r"[\t \r\n]+")
 _RE_PRE_LSTRIP = re.compile(r"^[ \n]*\n")
 _RE_PRE_RSTRIP = re.compile(r"[ \n]*$")
+_RE_PRE_LSTRIP1 = re.compile(r"^ *\n")
+_RE_PRE_RSTRIP1 = re.compile(r"\n *$")
 
 _HEADING_TAGS = frozenset(f"h{n}" for n in range(1, 7))
 _CELL_TAGS = frozenset(("td", "th"))
@@ -61,6 +64,13 @@ def _strip_pre(text: str) -> str:
     return text
 
 
+def _strip1_pre(text: str) -> str:
+    """Strip a single leading and trailing newline (markdownify ``strip_one``)."""
+    text = _RE_PRE_LSTRIP1.sub("", text)
+    text = _RE_PRE_RSTRIP1.sub("", text)
+    return text
+
+
 # --- handlers ------------------------------------------------------------------
 
 class _Paragraph:
@@ -74,6 +84,19 @@ class _Paragraph:
             em.emit(" " + em.content.strip(" \t\r\n") + " ")
             return
         text = em.content.strip(" \t\r\n")
+        if em.options.wrap and em.options.wrap_width is not None:
+            new_lines = []
+            for line in text.split("\n"):
+                line = line.lstrip(" \t\r\n")
+                trailing = line[len(line.rstrip()):]
+                line = fill(
+                    line,
+                    width=em.options.wrap_width,
+                    break_long_words=False,
+                    break_on_hyphens=False,
+                )
+                new_lines.append(line + trailing)
+            text = "\n".join(new_lines)
         em.emit("\n\n%s\n\n" % text if text else "")
 
 
@@ -139,8 +162,13 @@ class _Pre:
             em.emit("")
             return
         code_language = em.options.code_language
+        if em.options.code_language_callback is not None:
+            # markdownify passes the element; html2md hands the just-popped frame.
+            code_language = em.options.code_language_callback(em.frame) or code_language
         if em.options.strip_pre == "strip":
             text = _strip_pre(text)
+        elif em.options.strip_pre == "strip_one":
+            text = _strip1_pre(text)
         em.emit("\n\n```%s\n%s\n```\n\n" % (code_language, text))
 
 
