@@ -102,19 +102,27 @@ loop and use multiple GiB of memory; markdownify is faithful but slow and GIL-bo
 
 Reading it: html2md converts the 110 MiB document **8.9× faster than markdownify** while using
 **11.5× less peak memory** and **never starving the event loop** (0% missed heartbeat beats vs
-markdownify's 70%). The Rust one-shot libraries post lower raw wall times, but they **hold the
-GIL** (~50% missed beats; p99 event-loop stalls of 1.6–4.6 s), use **6–18× more memory than
-html2md**, **cannot stream**, and `html2text_rs` drops formatting. html2md is the only contender
-that is *simultaneously* fast-enough, async-friendly, streaming, memory-bounded, and faithful
-(**99.3% raw / 100% effective** normalized conformance against the markdownify oracle, with a
-few [documented divergences](docs/usage.md#documented-divergences)).
+markdownify's 70%). The Rust one-shot libraries post lower raw wall times, but each fails a
+different axis: `html_to_markdown` and `htmd_py` **hold the GIL** (~50% missed beats; p99
+event-loop stalls of 1.6–4.6 s), `html2text_rs` releases the GIL (0.4% missed) but is
+**low-fidelity** (drops formatting), and all three use **6–18× more memory than html2md** and
+**cannot stream**. html2md is the only contender that is *simultaneously* fast-enough,
+async-friendly, streaming, memory-bounded, and faithful (**99.3% raw / 100% effective**
+normalized conformance against the markdownify oracle, with two
+[documented divergences](docs/usage.md#documented-divergences)).
 
 - **Async-friendly** — fraction of 5 ms event-loop heartbeats missed while a conversion runs on
-  a worker thread: html2md 0.0%, markdownify 70.0%, the Rust one-shots ~50%.
+  a worker thread: html2md 0.0%, markdownify 70.0%, `html_to_markdown`/`htmd_py` ~50%,
+  `html2text_rs` 0.4%.
 - **Streaming** — html2md emits the first Markdown chunk after **2.4 ms** and sustains output
   across the document; one-shot libraries emit only after the full conversion finishes.
-- **Bounded memory** — peak RSS growth stays flat (244.7 MiB on a 110 MiB input) because the
-  streaming path builds no full DOM.
+- **Bounded memory** — peak RSS growth stays low (244.7 MiB on a 110 MiB input — far below the
+  document size) because the streaming path builds no full DOM.
+
+**Verifying fidelity:** run `make verify-fidelity` from the repository root — it prints the
+raw/effective conformance counts (296/298 = 99.3% raw, 298/298 = 100% effective), per-oracle
+rows, streaming parity (0/1107 mismatches), and the active documented divergences. Details in
+[`tests/conformance/README.md`](tests/conformance/README.md).
 
 ### How we ran them
 

@@ -107,3 +107,12 @@ Replace "peak RSS growth stays flat" with wording like "peak RSS growth has the 
 4 findings: 0 P0, 3 P1, 1 P2, 0 P3
 
 **Verdict**: Not approved
+
+## Disposition (R1 → R2, coder-2-leaf)
+
+| # | Sev | Finding | Disposition |
+|---|---|---|---|
+| 1 | P1 | Fidelity 99.3% raw / 100% effective vs committed artifacts (98.7%/99.3%) | **Resolved** — the committed `latest.md` was stale (pre lists:47/73 fix); coder-1 regenerated it to 296/298 = 99.3% raw (cd0ad37) and the canonical verifier (`make verify-fidelity`, 3571715) reports 296/298 raw = 99.3%, 298/298 effective = 100%, 0/1107 stream mismatches. README keeps 99.3% raw / 100% effective and now adds a **"Verifying fidelity: `make verify-fidelity`"** repro line. |
+| 2 | P1 | Bench commands reference uncommitted uv-project entrypoints | **Resolved** — coder-3 committed the self-contained `benchmarks/` uv project (3979240); `cd benchmarks && uv run bench` / `--full` / `bench-async-starvation` are now committed, defined `[project.scripts]`. |
+| 3 | P1 | Rust async prose overgeneralizes (`html2text_rs` is 0.42% / 1.33 ms, not ~50%) | **Fixed** — prose now distinguishes `html_to_markdown`/`htmd_py` (hold GIL ~50%, p99 1.6–4.6 s) from `html2text_rs` (releases GIL, 0.4% missed, but low-fidelity); the async bullet lists per-library numbers. |
+| 4 | P2 | "peak RSS growth stays flat" overclaims | **Fixed** — "stays low (244.7 MiB on 110 MiB — far below the document size) because the streaming path builds no full DOM." |
