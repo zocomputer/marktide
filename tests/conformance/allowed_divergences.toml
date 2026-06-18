@@ -1,0 +1,29 @@
+# Intentional divergences from the markdownify_default_oracle.
+#
+# This file is a candidate ledger for zo-1fp.14 triage. The differential
+# harness does not consume it yet; each entry must be re-reviewed before it is
+# promoted into a gating allow-list.
+
+[[divergence]]
+source = "golden"
+case_id = "golden:edge_cases:table_td_first_row_not_header"
+diff_summary = "markdownify emits an empty synthetic header row for an HTML table whose first row contains only <td> cells"
+reason = "Candidate genuine markdownify quirk: an empty header preserves markdown table syntax but creates a visual/semantic header that did not exist in the source HTML; a higher-fidelity converter should either select an explicit configured header policy or preserve raw HTML rather than inventing a blank header."
+owner = "coder-1-leaf"
+revisit = "before enabling allowed_divergences.toml in the gating differential; coordinate with table handler owner after zo-1fp.13 lands"
+
+[[divergence]]
+source = "golden"
+case_id = "golden:edge_cases:table_colspan_and_ragged_rows"
+diff_summary = "markdownify flattens colspan/ragged rows into a pipe table with synthetic empty cells"
+reason = "Candidate genuine markdownify quirk: Markdown pipe tables cannot faithfully encode colspan, so flattening can misrepresent the table. Prefer an explicit lossy-table policy or raw-HTML fallback instead of silently copying the oracle."
+owner = "coder-1-leaf"
+revisit = "before enabling table fidelity gates; decide raw-HTML fallback versus markdownify-compatible lossy table emission"
+
+[[divergence]]
+source = "golden"
+case_id = "golden:edge_cases:fenced_pre_code_language_class_ignored_by_default"
+diff_summary = "markdownify drops the language-python class and emits an unlabelled fenced code block"
+reason = "Candidate genuine markdownify quirk: preserving an HTML code language class as a fence info string is more useful and semantically available, but this conflicts with strict markdownify default compatibility."
+owner = "coder-1-leaf"
+revisit = "when code_language_callback/options are wired; keep default markdownify-compatible unless product explicitly chooses richer default semantics"
