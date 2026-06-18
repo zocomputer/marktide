@@ -943,8 +943,8 @@ This section covers unit / component / integration tests that ship with the code
 - **Mocking:** none for emitter rules (feed real fragments). The async bridge is unit-tested
   with a fake driver to isolate `ChunkPump` queue/threading from lxml.
 - **Coverage:** every application package carries a coverage gate.
-- **Runner:** `make test` → `pytest tests/unit` (CI, every PR). `make coverage` enforces the
-  threshold.
+- **Runner:** part of `make test`; `make unit` for unit+component alone; `make cov` for the
+  coverage report.
 
 ### 7.2 Component tests — `tests/component/`
 - **What:** full `convert()` over committed fixture documents (small/synthetic, not the
@@ -962,10 +962,9 @@ This section covers unit / component / integration tests that ship with the code
   round-trip of emitted Markdown; an end-to-end async test that runs a conversion under a live
   heartbeat and **asserts** worker-thread full-convert p99 scheduling delay ≤ 2 ms (the probe,
   promoted from benchmark to assertion).
-- **Runner:** `make test-integration` → `pytest tests/integration tests/conformance`. Heavier;
-  runs in CI nightly and on-demand, not on every PR (corpus is downloaded/pinned). The
+- **Runner:** `make conformance` → `pytest tests/conformance`; included in `make test`. The
   regenerator (`scripts/regenerate_conformance_corpus.py`) + a `fixtures.lock.json` hash
-  verification are prerequisite steps in the nightly job.
+  verification are prerequisites when the pinned corpus is refreshed.
 
 ### 7.4 Benchmarks — `benchmarks/`
 - **What:** the phase-1 and phase-3 harness (§3, §8). Not pytest; a CLI
@@ -973,8 +972,10 @@ This section covers unit / component / integration tests that ship with the code
 - **Runner:** `make bench` (on-demand) + a nightly perf-tracking job that fails on
   regression beyond a tolerance.
 
-`make test` = unit + component (fast, every PR). `make test-all` = + integration. `make bench`
-= harness. All wired in the repo `Makefile`.
+**Implemented Makefile targets** (the source of truth is `make help`): CI runs exactly
+`make lint` (ruff + ty) and `make test` (the full suite — unit, component, conformance,
+property, e2e). `make bench` runs the benchmark harness; `make verify-fidelity` reproduces the
+conformance headline. Subset targets (`make unit`/`conformance`/`property`/`e2e`) run one slice.
 
 ---
 

@@ -10,6 +10,17 @@ Status: **draft, pre-implementation.** Every harness below specifies, per house 
 **(1)** exact repo path, **(2)** runner / make target, **(3)** CI / nightly / on-demand
 placement, **(4)** artifact / output format.
 
+> **Implementation note.** This is the *plan*; the `make` targets below (`make diff-test`,
+> `make fuzz`, `make load`, `make smoke`, `make gil-proof`, `make test-integration`, …) are
+> illustrative names for planned harnesses, **not** all implemented. The shipped Makefile —
+> the source of truth, via `make help` — provides exactly two CI targets, `make lint`
+> (ruff + ty) and `make test` (the full suite: unit, component, conformance, property, e2e),
+> plus utilities (`make bench`, `make verify-fidelity`, `make cov`) and per-slice subsets
+> (`make unit`/`conformance`/`property`/`e2e`). Several planned suites here (differential,
+> async/GIL probe, fixtures) are realised inside `tests/conformance`, `tests/property`, and
+> `benchmarks/` under those targets; the remainder (fuzz, load, smoke, manual QA) is future
+> work.
+
 ---
 
 ## 0. Test taxonomy & where each lives
