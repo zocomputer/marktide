@@ -26,9 +26,11 @@ from benchmarks.harness.adapters.base import get_adapters  # noqa: E402
 from differential import CaseResult, load_cases, run_differential  # noqa: E402
 
 PRIMARY_LAYERS = frozenset({"golden", "markdownify_tests"})
-LAYER_ORDER = (
+PRIMARY_LAYER_ORDER = (
     "golden",
     "markdownify_tests",
+)
+GUARDRAIL_LAYER_ORDER = (
     "commonmark_expected_html",
     "pandoc",
     "turndown",
@@ -95,6 +97,24 @@ def _fmt_counts(counts: Counts) -> str:
     )
 
 
+def _print_layer_summary(
+    *,
+    heading: str,
+    underline: str,
+    layers: tuple[str, ...],
+    results: list[CaseResult],
+    allowed_ids: set[str],
+) -> None:
+    print(heading)
+    print(underline)
+    for layer in layers:
+        layer_results = [case for case in results if case.layer == layer]
+        if not layer_results:
+            continue
+        counts = _counts(layer_results, adapter="html2md", allowed=allowed_ids)
+        print(f"{layer:24} {_fmt_counts(counts)}")
+
+
 def main() -> int:
     allowed = _load_allowed_divergences()
     allowed_ids = set(allowed)
@@ -121,24 +141,50 @@ def main() -> int:
         ):
             stream_mismatches.append(case.id)
 
-    print("html2md fidelity verification")
-    print("================================")
-    print("Primary markdownify-oracle layers: golden + corrected markdownify_tests")
-    print(f"html2md:           {_fmt_counts(primary_counts)}")
-    print(f"html2md_streaming: {_fmt_counts(primary_stream_counts)}")
-    print(f"Primary allowed divergences counted: {primary_counts.allowed_failures}")
+    print("html2md PRIMARY fidelity verification")
+    print("======================================")
+    print("PRIMARY DROP-IN CONTRACT: golden + corrected markdownify_tests")
+    print("This is the README fidelity claim. Guardrail/triangulation rows below are diagnostics.")
+    print(
+        "PRIMARY RESULT: "
+        f"effective {primary_counts.effective_passed}/{primary_counts.total} = "
+        f"{_percent(primary_counts.effective_passed, primary_counts.total)}; "
+        f"raw {primary_counts.raw_passed}/{primary_counts.total} = "
+        f"{_percent(primary_counts.raw_passed, primary_counts.total)}"
+    )
     print(f"Primary unallowed failures: {len(primary_counts.unallowed_failures)}")
+    print(
+        "Primary allowed parser divergences counted as effective passes: "
+        f"{primary_counts.allowed_failures}"
+    )
+    print(f"html2md_streaming primary check: {_fmt_counts(primary_stream_counts)}")
     print()
-    print("Per-oracle summary (html2md)")
-    print("----------------------------")
-    for layer in LAYER_ORDER:
-        layer_results = [case for case in results if case.layer == layer]
-        if not layer_results:
-            continue
-        counts = _counts(layer_results, adapter="html2md", allowed=allowed_ids)
-        print(f"{layer:24} {_fmt_counts(counts)}")
+    _print_layer_summary(
+        heading="Primary drop-in oracle breakdown (part of the 100% effective claim)",
+        underline="------------------------------------------------------------------",
+        layers=PRIMARY_LAYER_ORDER,
+        results=results,
+        allowed_ids=allowed_ids,
+    )
+    print()
+    print("Guardrail / triangulation oracles (diagnostic only; NOT the headline claim)")
+    print("-------------------------------------------------------------------------")
+    print(
+        "These layers compare against other tools/spec suites with different conventions. "
+        "They are intentionally not expected to be 100% and do not change the primary result."
+    )
+    _print_layer_summary(
+        heading="Guardrail layer breakdown (html2md)",
+        underline="----------------------------------",
+        layers=GUARDRAIL_LAYER_ORDER,
+        results=results,
+        allowed_ids=allowed_ids,
+    )
     all_counts = _counts(results, adapter="html2md", allowed=allowed_ids)
-    print(f"{'all_layers':24} {_fmt_counts(all_counts)}")
+    print(
+        f"{'all_layers_diagnostic':24} {_fmt_counts(all_counts)} "
+        "(diagnostic aggregate only; not the drop-in fidelity claim)"
+    )
     print()
     print("Streaming parity")
     print("----------------")
@@ -146,16 +192,31 @@ def main() -> int:
     print()
     print("Documented divergences that are active failures in this run")
     print("----------------------------------------------------------")
-    active_allowed = sorted(
+    active_primary_allowed = sorted(
         case.id
-        for case in results
+        for case in primary
         if case.id in allowed_ids and not _candidate(case, "html2md").passed
     )
-    if active_allowed:
-        for case_id in active_allowed:
+    active_guardrail_allowed = sorted(
+        case.id
+        for case in results
+        if case.layer not in PRIMARY_LAYERS
+        and case.id in allowed_ids
+        and not _candidate(case, "html2md").passed
+    )
+    if active_primary_allowed:
+        print("Primary allowed divergences counted in the 100% effective claim:")
+        for case_id in active_primary_allowed:
             print(f"- {case_id}: {allowed[case_id]}")
     else:
-        print("(none)")
+        print("Primary allowed divergences counted in the 100% effective claim: (none)")
+    print()
+    if active_guardrail_allowed:
+        print("Guardrail-only documented divergences (diagnostic; NOT part of primary fidelity):")
+        for case_id in active_guardrail_allowed:
+            print(f"- {case_id}: {allowed[case_id]}")
+    else:
+        print("Guardrail-only documented divergences: (none)")
 
     failed = False
     if primary_counts.effective_passed / primary_counts.total < 0.99:

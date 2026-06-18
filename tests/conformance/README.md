@@ -79,12 +79,16 @@ and exits non-zero if the primary markdownify-oracle gate falls below 99%, if an
 primary unallowed failures remain, or if `html2md_streaming` differs from one-shot
 `html2md` on any corpus case.
 
-Canonical headline from the current corpus:
+The command leads with the primary drop-in contract. This is the fidelity claim
+used by the README and release report:
 
 - `golden`: 64/64 raw and effective.
 - corrected `markdownify_tests`: 232/234 raw; 234/234 effective after the two documented
   lxml-vs-BS4 parser divergences.
 - primary total (`golden` + corrected `markdownify_tests`): 296/298 raw = 99.3%;
   298/298 effective = 100.0%.
-- guardrails are printed for CommonMark, Pandoc, Turndown, and Turndown option-surface
-  cases, plus all-layer totals and streaming parity.
+
+The command also prints CommonMark, Pandoc, Turndown, Turndown option-surface, and
+all-layer rows as guardrail / triangulation diagnostics. Those rows compare against
+other tools or spec suites with different conventions; they are intentionally not
+the primary 100% drop-in fidelity claim.
