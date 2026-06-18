@@ -94,7 +94,7 @@ def markdownify_compat(**md_kwargs: Any) -> Options:
         if key not in _OPTION_FIELDS:
             raise TypeError(f"markdownify_compat() got an unexpected keyword argument {key!r}")
 
-    normalised = {
+    normalised: dict[str, Any] = {
         key: (tuple(value) if key in _TUPLE_FIELDS and value is not None else value)
         for key, value in md_kwargs.items()
     }
