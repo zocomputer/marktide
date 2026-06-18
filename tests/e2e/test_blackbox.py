@@ -8,18 +8,13 @@ What it covers:
 - ``huge_tree`` keeps a >10 MB single text node from being truncated (design §4.1);
 - the 110 MiB ``xlarge`` fixture converts without truncation (proportional output).
 
-Runner / CI placement
----------------------
-- ``pytest tests/e2e``               → PR CI: always-on inline + huge_tree checks, plus the
-  ``small`` (100 KiB) and ``medium`` (5 MiB) benchmark fixtures when present.
-- ``pytest tests/e2e --run-nightly`` → nightly / on-demand: adds ``large`` (50 MiB) and
-  ``xlarge`` (110 MiB).
-(Suggested make targets: ``make e2e`` and ``make e2e-full`` once a Makefile exists.)
-
-The real fixtures are the locally-generated, gitignored benchmark corpus
-(``benchmarks/fixtures/*.html`` via ``scripts/regenerate_benchmark_fixtures.py``); a test is
-skipped if its fixture is absent, so the suite still runs (inline + huge_tree) without them.
-Artifact: JUnit XML from the CI runner.
+Runner
+------
+Runs as part of ``make test`` (and ``make e2e``). The real benchmark fixtures are the
+locally-generated, gitignored corpus (``benchmarks/fixtures/*.html`` via
+``scripts/regenerate_benchmark_fixtures.py``); every fixture-backed test **skips when its
+fixture is absent**, so the suite always runs the inline + huge_tree checks with nothing
+gitignored present, and exercises the real ``small``→``xlarge`` documents wherever they exist.
 """
 
 from __future__ import annotations
@@ -123,7 +118,7 @@ def test_huge_tree_no_truncation_on_large_text_node() -> None:
     assert len(md) > 10_000_000
 
 
-# --- real benchmark fixtures: small/medium default, large/xlarge nightly --------
+# --- real benchmark fixtures (all skip-if-absent) --------------------------------
 
 @pytest.mark.parametrize("name", ["small", "medium"])
 def test_real_fixture_no_crash_valid_markdown(name: str) -> None:
@@ -145,7 +140,6 @@ def test_real_fixture_async_matches_sync(name: str) -> None:
     assert asyncio.run(convert_async(data)) == whole
 
 
-@pytest.mark.nightly
 @pytest.mark.parametrize("name", ["large", "xlarge"])
 def test_large_fixture_no_truncation(name: str) -> None:
     data = _load(name)
@@ -155,13 +149,11 @@ def test_large_fixture_no_truncation(name: str) -> None:
     assert len(md) > len(data) // 10
 
 
-@pytest.mark.nightly
 def test_xlarge_convert_equals_stream() -> None:
     data = _load("xlarge")
     assert convert(data) == "".join(convert_stream(_chunks(data)))
 
 
-@pytest.mark.nightly
 def test_xlarge_async_matches_sync() -> None:
     data = _load("xlarge")
     assert asyncio.run(convert_async(data)) == convert(data)

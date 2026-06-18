@@ -1,51 +1,62 @@
 # html2md developer task targets.
 #
-# Commands mirror the conventions used across the project: `uv run` for the test
-# suite (dev deps come from the [dependency-groups].dev group), and `uvx` for
-# tools that are not in the dependency group (ruff, ty, pytest-cov).
+# CI runs exactly two: `make lint` and `make test`. Everything else is a
+# convenience subset or a utility. `make test` is the full gate (unit, component,
+# conformance, property, e2e); the e2e suite skips the >50 MiB benchmark fixtures
+# when they are absent, so `make test` is runnable with nothing gitignored present.
 
 .DEFAULT_GOAL := help
-.PHONY: help test conformance verify-fidelity property e2e e2e-full cov lint typecheck bench bench-baseline all
+.PHONY: help lint test ruff typecheck unit conformance property e2e \
+        verify-fidelity cov bench bench-baseline all
 
-PYTEST := uv run pytest
-# Suites/harnesses that exercise the markdownify oracle + Rust adapters need the
-# benchmark dependency group.
-PYTEST_BENCH := uv run --group benchmark pytest
+# `uv run` for the suite; the benchmark group provides the markdownify oracle + Rust
+# adapters that the conformance/property layers and the e2e fixtures rely on.
+PYTEST := uv run --group benchmark pytest
 
-help:  ## List available targets
-	@grep -E '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
+help:  ## List targets
+	@awk 'BEGIN{FS=":.*## "} \
+	     /^##@/{printf "\n\033[1m%s\033[0m\n", substr($$0,5); next} \
+	     /^[a-zA-Z0-9_-]+:.*## /{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-test:  ## Fast unit + component tests (PR gate)
+##@ Primary — CI runs exactly these two
+lint:  ## Ruff lint + ty type check
+	uvx ruff check .
+	uvx ty check src
+
+test:  ## Full test suite: unit, component, conformance, property, e2e
+	$(PYTEST) tests/unit tests/component tests/conformance tests/property tests/e2e
+
+##@ Tests — each is a subset of `make test`
+unit:  ## Unit + component tests
 	$(PYTEST) tests/unit tests/component
 
 conformance:  ## Conformance / differential corpus tests
-	$(PYTEST_BENCH) tests/conformance
-
-verify-fidelity:  ## Reproduce markdownify fidelity headline (raw/effective + divergences)
-	uv run --group benchmark python tests/conformance/verify_fidelity.py
+	$(PYTEST) tests/conformance
 
 property:  ## Bounded Hypothesis property / metamorphic tests
-	$(PYTEST_BENCH) tests/property
+	$(PYTEST) tests/property
 
-e2e:  ## Black-box E2E (inline + huge_tree + small/medium fixtures)
+e2e:  ## Black-box E2E (skips the >50 MiB fixtures when absent)
 	$(PYTEST) tests/e2e
 
-e2e-full:  ## Black-box E2E incl. large/xlarge fixtures (nightly / on-demand)
-	$(PYTEST) tests/e2e --run-nightly
+verify-fidelity:  ## Reproduce the markdownify fidelity headline (raw/effective + divergences)
+	uv run --group benchmark python tests/conformance/verify_fidelity.py
 
-cov:  ## Unit + component coverage report for the html2md package
-	uv run --with pytest-cov pytest --cov=html2md --cov-report=term-missing tests/unit tests/component
-
-lint:  ## Ruff lint
+##@ Lint — each is a subset of `make lint`
+ruff:  ## Ruff lint only
 	uvx ruff check .
 
-typecheck:  ## Static type check (ty) of the package
+typecheck:  ## ty type check only
 	uvx ty check src
 
-bench:  ## Run the phase-1 benchmark harness -> benchmarks/results/phase1.{json,md}
+##@ Utilities
+cov:  ## Coverage report for the html2md package
+	uv run --group benchmark --with pytest-cov pytest --cov=html2md --cov-report=term-missing tests/unit tests/component
+
+bench:  ## Run the benchmark harness -> benchmarks/results/phase1.{json,md}
 	uv run --group benchmark python -m benchmarks.harness.runner
 
 bench-baseline:  ## Run the harness and write the perf-regression baseline
 	uv run --group benchmark python -m benchmarks.harness.runner --output benchmarks/results/baseline.json --report benchmarks/results/baseline.md
 
-all: lint typecheck test conformance property e2e  ## Lint + typecheck + the full PR test suite
+all: lint test  ## The CI gate: lint + the full test suite
