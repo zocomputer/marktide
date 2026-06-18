@@ -4,6 +4,7 @@ from pathlib import Path
 
 SCRIPT_PATH = Path(__file__).resolve().parents[2] / "scripts" / "regenerate_conformance_corpus.py"
 spec = importlib.util.spec_from_file_location("regenerate_conformance_corpus", SCRIPT_PATH)
+assert spec is not None
 regenerate = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 sys.modules[spec.name] = regenerate

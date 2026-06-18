@@ -11,6 +11,7 @@ and reuses the staged conformance corpus from ``tests.conformance.differential``
 from __future__ import annotations
 
 import importlib
+import importlib.util
 import re
 import sys
 from collections.abc import Iterable
@@ -23,7 +24,7 @@ CONFORMANCE_DIR = REPO_ROOT / "tests" / "conformance"
 if str(CONFORMANCE_DIR) not in sys.path:
     sys.path.insert(0, str(CONFORMANCE_DIR))
 
-from differential import Case, load_cases  # noqa: E402
+from differential import Case, load_cases  # noqa: E402  # ty: ignore[unresolved-import]
 
 FIXED_CHUNK_SIZES = (1, 7, 64, 4096)
 MAX_ADVERSARIAL_OFFSETS_PER_CASE = 96

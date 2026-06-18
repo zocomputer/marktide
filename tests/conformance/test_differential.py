@@ -1,10 +1,15 @@
 import json
 import sys
 from pathlib import Path
+from typing import cast
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from differential import (
+from benchmarks.harness.adapters.base import Adapter, OptionMap  # noqa: E402
+
+from differential import (  # noqa: E402
     Case,
     commonmark_semantic_equal,
     load_golden_cases,
@@ -20,7 +25,7 @@ from differential import (
 class FakeAdapter:
     package = "fake"
     engine = "fake"
-    option_map = None
+    option_map = OptionMap()
 
     def __init__(self, name: str, suffix: str = "") -> None:
         self.name = name
@@ -34,7 +39,7 @@ class FakeAdapter:
 class StaticAdapter:
     package = "fake"
     engine = "fake"
-    option_map = None
+    option_map = OptionMap()
 
     def __init__(self, name: str, output: str) -> None:
         self.name = name
@@ -146,7 +151,7 @@ def test_custom():
 
 def test_run_differential_compares_candidates_against_default_oracle():
     cases = [Case(id="case:1", layer="unit", source_path="inline", html="<p>Hello</p>")]
-    adapters = [
+    adapters: list[Adapter] = [
         FakeAdapter("markdownify_default_oracle"),
         FakeAdapter("markdownify", suffix=" normalized"),
         FakeAdapter("candidate_same"),
@@ -158,12 +163,14 @@ def test_run_differential_compares_candidates_against_default_oracle():
     assert by_name["candidate_same"].passed is True
     assert by_name["candidate_diff"].passed is False
     assert "different" in (by_name["candidate_diff"].diff or "")
-    assert summarize(results)["by_adapter"]["candidate_same"]["passed"] == 1
+    summary = summarize(results)
+    by_adapter = cast(dict[str, dict[str, int]], summary["by_adapter"])
+    assert by_adapter["candidate_same"]["passed"] == 1
 
 
 def test_commonmark_layer_compares_rendered_semantic_html():
     cases = [Case(id="commonmark:semantic", layer="commonmark_expected_html", source_path="inline", html="<p>x</p>")]
-    adapters = [
+    adapters: list[Adapter] = [
         StaticAdapter("markdownify_default_oracle", "*x*"),
         StaticAdapter("candidate_same_html", "_x_"),
     ]
@@ -195,7 +202,7 @@ def test_primary_markdownify_summary_is_separate_from_guardrail_layers():
         Case(id="golden:1", layer="golden", source_path="inline", html="<p>a</p>"),
         Case(id="commonmark:1", layer="commonmark_expected_html", source_path="inline", html="<p>b</p>"),
     ]
-    adapters = [
+    adapters: list[Adapter] = [
         FakeAdapter("markdownify_default_oracle"),
         FakeAdapter("candidate_same"),
     ]
@@ -203,5 +210,7 @@ def test_primary_markdownify_summary_is_separate_from_guardrail_layers():
     summary = summarize(run_differential(cases, adapters))
 
     assert summary["primary_markdownify_layers"] == ["golden", "markdownify_tests"]
-    assert summary["primary_markdownify_oracle"]["candidate_same"]["passed"] == 1
-    assert summary["by_adapter"]["candidate_same"]["passed"] == 2
+    primary_counts = cast(dict[str, dict[str, int]], summary["primary_markdownify_oracle"])
+    by_adapter = cast(dict[str, dict[str, int]], summary["by_adapter"])
+    assert primary_counts["candidate_same"]["passed"] == 1
+    assert by_adapter["candidate_same"]["passed"] == 2

@@ -15,7 +15,7 @@ import sys
 import time
 from pathlib import Path
 from collections.abc import Callable
-from typing import TypeVar
+from typing import TypeVar, cast
 
 import pytest
 from hypothesis import given
@@ -76,7 +76,7 @@ def bounded_runtime(seconds: float = FAST_SUITE_TIMEOUT_S):
                 raise TimeoutError(f"property suite exceeded {seconds:.1f}s wall-clock budget")
             return result
 
-        return wrapper  # type: ignore[return-value]
+        return cast(F, wrapper)
 
     return decorate
 
@@ -143,6 +143,7 @@ def test_fast_profile_is_default_and_bounded():
     from hypothesis import settings
 
     active = settings.default
+    assert active is not None
     assert active.max_examples == 100
     assert active.deadline.total_seconds() == pytest.approx(0.2)
 

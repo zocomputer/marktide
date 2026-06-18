@@ -15,17 +15,17 @@ import re
 import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable, cast
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from lxml import etree
-from lxml import html as lxml_html
+import lxml.etree as etree  # noqa: E402  # ty: ignore[unresolved-import]
+import lxml.html as lxml_html  # noqa: E402
 
-from benchmarks.harness.adapters.base import Adapter, get_adapters
-from html2md.options import markdownify_compat
+from benchmarks.harness.adapters.base import Adapter, OptionMap, get_adapters  # noqa: E402
+from html2md.options import markdownify_compat  # noqa: E402
 
 DEFAULT_FIXTURE_ROOT = REPO_ROOT / "tests" / "conformance" / "fixtures"
 DEFAULT_REPORT_DIR = REPO_ROOT / "tests" / "conformance" / "reports"
@@ -43,7 +43,7 @@ class Html2mdAdapter:
     name: str = "html2md"
     package: str = "html2md local"
     engine: str = "lxml target parser + Python emitter"
-    option_map: object | None = None
+    option_map: OptionMap = field(default_factory=OptionMap)
 
     def convert(self, html_bytes: bytes) -> str:
         import html2md
@@ -479,7 +479,9 @@ def _candidate_output(case: Case, adapter: Adapter, html_bytes: bytes) -> str:
     if case.layer == "markdownify_tests" and adapter.name in {"html2md", "html2md_streaming"}:
         import html2md
 
-        options = markdownify_compat(**case.metadata.get("markdownify_options", {}))
+        raw_options = case.metadata.get("markdownify_options", {})
+        md_options = cast(dict[str, Any], raw_options if isinstance(raw_options, dict) else {})
+        options = markdownify_compat(**md_options)
         if adapter.name == "html2md_streaming":
             return "".join(html2md.convert_stream([html_bytes], options=options))
         return html2md.convert(html_bytes, options=options)
@@ -534,6 +536,10 @@ def _case_to_dict(case: CaseResult) -> dict[str, object]:
 
 
 def _summary_markdown(summary: dict[str, object], json_path: Path) -> str:
+    primary_layers = cast(list[str], summary["primary_markdownify_layers"])
+    primary_counts = cast(dict[str, dict[str, int]], summary["primary_markdownify_oracle"])
+    by_adapter = cast(dict[str, dict[str, int]], summary["by_adapter"])
+    by_layer = cast(dict[str, dict[str, dict[str, int]]], summary["by_layer"])
     lines = ["# Conformance differential report", ""]
     lines.append(f"Full per-fixture JSON: `{json_path}`")
     lines.append("")
@@ -541,12 +547,12 @@ def _summary_markdown(summary: dict[str, object], json_path: Path) -> str:
     lines.append("")
     lines.append("## Primary markdownify-oracle fidelity")
     lines.append("")
-    layers = ", ".join(f"`{layer}`" for layer in summary["primary_markdownify_layers"])  # type: ignore[index]
+    layers = ", ".join(f"`{layer}`" for layer in primary_layers)
     lines.append(f"Primary layers: {layers}")
     lines.append("")
     lines.append("| Adapter | Passed | Failed | Errors | Fidelity |")
     lines.append("| --- | ---: | ---: | ---: | ---: |")
-    for adapter, counts in sorted(summary["primary_markdownify_oracle"].items()):  # type: ignore[index, union-attr]
+    for adapter, counts in sorted(primary_counts.items()):
         total = counts["passed"] + counts["failed"] + counts["error"]
         fidelity = (counts["passed"] / total * 100) if total else 0.0
         lines.append(
@@ -557,12 +563,12 @@ def _summary_markdown(summary: dict[str, object], json_path: Path) -> str:
     lines.append("")
     lines.append("| Adapter | Passed | Failed | Errors |")
     lines.append("| --- | ---: | ---: | ---: |")
-    for adapter, counts in sorted(summary["by_adapter"].items()):  # type: ignore[index, union-attr]
+    for adapter, counts in sorted(by_adapter.items()):
         lines.append(f"| `{adapter}` | {counts['passed']} | {counts['failed']} | {counts['error']} |")
     lines.append("")
     lines.append("## Totals by layer")
     lines.append("")
-    for layer, adapters in sorted(summary["by_layer"].items()):  # type: ignore[index, union-attr]
+    for layer, adapters in sorted(by_layer.items()):
         lines.append(f"### `{layer}`")
         lines.append("")
         lines.append("| Adapter | Passed | Failed | Errors |")

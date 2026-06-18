@@ -29,3 +29,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/html2md"]
+
+[tool.ruff]
+extend-exclude = ["tests/conformance/fixtures"]
