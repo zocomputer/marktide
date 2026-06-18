@@ -87,8 +87,9 @@ table, every public function in detail, and a **migrating-from-markdownify** gui
 
 html2md set out to replace `markdownify` on **five axes at once** — fast, async-friendly,
 streaming, bounded-memory, and faithful. The phase-3 comparison shows no existing library
-clears all five: the Rust one-shot converters are faster in raw wall time but stall the event
-loop and use multiple GiB of memory; markdownify is faithful but slow and GIL-bound.
+clears all five: the Rust one-shot converters are faster in raw wall time but each misses at
+least one axis — most stall the event loop, and all use multiple GiB of memory and can't
+stream; markdownify is faithful but slow and GIL-bound.
 
 ### Phase-3 results — `xlarge` fixture (~110 MiB document)
 
@@ -116,8 +117,9 @@ normalized conformance against the markdownify oracle, with two
   `html2text_rs` 0.4%.
 - **Streaming** — html2md emits the first Markdown chunk after **2.4 ms** and sustains output
   across the document; one-shot libraries emit only after the full conversion finishes.
-- **Bounded memory** — peak RSS growth stays low (244.7 MiB on a 110 MiB input — far below the
-  document size) because the streaming path builds no full DOM.
+- **Bounded memory** — peak RSS growth (244.7 MiB on this 110 MiB input) is **11.5× lower than
+  markdownify's** and 6–18× lower than the Rust one-shots, because the streaming path builds no
+  full DOM and drains completed blocks rather than holding the whole document.
 
 **Verifying fidelity:** run `make verify-fidelity` from the repository root — it prints the
 raw/effective conformance counts (296/298 = 99.3% raw, 298/298 = 100% effective), per-oracle

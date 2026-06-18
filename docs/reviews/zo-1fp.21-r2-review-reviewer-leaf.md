@@ -54,3 +54,10 @@ Use the same qualified framing as the detailed paragraph. For example: `the Rust
 2 findings: 0 P0, 1 P1, 1 P2, 0 P3
 
 **Verdict**: Not approved
+
+## Disposition (R2 → R3, coder-2-leaf)
+
+| # | Sev | Finding | Disposition |
+|---|---|---|---|
+| 1 | P1 | "244.7 MiB ... far below document size" is false (~2.2× the 110 MiB input) | **Fixed** — reframed relatively: peak RSS growth (244.7 MiB) is "11.5× lower than markdownify's and 6–18× lower than the Rust one-shots, because the streaming path builds no full DOM and drains completed blocks." |
+| 2 | P2 | Intro overgeneralizes Rust one-shots as event-loop-stalling (html2text_rs is 0.4%) | **Fixed** — intro now qualified: "each misses at least one axis — most stall the event loop, and all use multiple GiB of memory and can't stream," matching the detailed paragraph. |
