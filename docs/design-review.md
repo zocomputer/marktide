@@ -182,3 +182,47 @@ Add a small "artifact schemas and thresholds" section to `docs/test-plan.md` def
 8 findings: 0 P0, 5 P1, 3 P2, 0 P3
 
 **Verdict**: Not approved for implementation until the P1 findings are incorporated. The overall architecture is promising, and the docs hit the major required themes, but the oracle/normalizer, option compatibility, streaming flush safety, GIL bound, and numeric gates need to be made concrete before parallel implementation starts.
+
+## Round 2 re-review — `2e7856c`
+
+Date: 2026-06-18  
+Reviewer: `reviewer-leaf`  
+Source docs: `docs/design.md`, `docs/test-plan.md`  
+Reviewed commit: `2e7856c` (`docs(html2md): incorporate reviewer-leaf round-1 review (5 P1 + 3 P2)`)
+
+### Verification summary
+
+Reviewed the incorporated `docs/design.md` / `docs/test-plan.md` against all Round 1 findings. The eight findings are resolved sufficiently to launch phase-2 implementation.
+
+| # | R1 severity | Finding | R2 verification | Status |
+|---|---|---|---|---|
+| 1 | P1 | Normalization / secondary-corpus transforms too vague | `docs/design.md` §5.3.1 now defines an ordered `normalize_md(text) -> str` algorithm plus a hard "never" list; §5.3.2 defines `turndown_to_markdownify` and `pandoc_to_canonical` with non-goals; §5.3.3 defines `allowed_divergences.toml`; `docs/test-plan.md` §2.3 adds normalizer/transform unit tests and negative cases. | Resolved |
+| 2 | P1 | `Options` did not track `markdownify==1.2.2` defaults | `docs/design.md` §6.3 now models the markdownify option surface with the correct defaults (`bullets="*+-"`, `escape_misc=False`, separate `escape_asterisks` / `escape_underscores`, `strip` / `convert` mutual exclusion, missing knobs restored). `bs4_options` is explicitly rejected because it is BeautifulSoup-specific. | Resolved |
+| 3 | P1 | Streaming safe-flush barriers undefined | `docs/design.md` §4.7 now defines safe-emission barriers per construct, retained state between flushes, the O(largest block) buffering bound, and the prefix-immutability test. | Resolved |
+| 4 | P1 | Callback-heavy chunks could overclaim GIL friendliness | `docs/design.md` §3.3.2 and `docs/test-plan.md` §3 now add callback-density fixtures, per-feed event/callback/wall-time metrics, a max-feed-time bound, and concrete fallbacks. | Resolved |
+| 5 | P1 | Acceptance thresholds were placeholders | `docs/design.md` §3.5 and §8.3 now define gate `v1`: throughput, async-yield, peak RSS, TTFO/cadence, fidelity, and regression-tolerance thresholds. | Resolved |
+| 6 | P2 | No time-to-first-output gate | `docs/design.md` §3.5 criterion 4 and `docs/test-plan.md` §4 now require TTFO ≤ 50 ms and max inter-chunk gap ≤ 100 ms for large/xlarge streaming paths. | Resolved |
+| 7 | P2 | Benchmark fixture reproducibility | `docs/design.md` §3.2 and `docs/test-plan.md` §4 now require fixture provenance/hash verification and separate safe-boundary vs intentionally malformed cases before timing. | Resolved |
+| 8 | P2 | Optional `ConversionResult` API unresolved | `docs/design.md` §6.2 resolves the public API to plain `str` return values and removes `ConversionResult` / `convert_detailed` from scope. | Resolved |
+
+### Gate metric sanity check
+
+The Round 2 change from a primary p99 heartbeat gate to **missed-beat percentage plus max delay** is sound. For event-loop responsiveness, rare long GIL-held windows are user-visible and can be hidden by percentiles on long runs. The new gate in `docs/design.md` §3.5 criterion 2 — **< 2% of heartbeats delayed > 2 ms and max delay < 15 ms**, with p99 ≤ 2 ms still reported as a secondary signal — is concrete, falsifiable, and better aligned with the zo-1fp.7 evidence than p99 alone.
+
+### Spike representation check
+
+The incorporated plan accurately reflects the relevant spike evidence:
+
+- zo-1fp.4 / `docs/gil-spike-findings.md`: parse-only lxml is GIL-friendly, while Python walk/emit is the dominant GIL holder; design §3.3.1 / §3.5 avoid parse-only overclaiming.
+- zo-1fp.6 / `docs/chunk-size-sweep.md`: 64 KiB is a reasonable default on the parse-side throughput/jitter plateau; design §4.2 / §10 reflect this as a responsiveness knob, not a total-GIL-work solution.
+- zo-1fp.7 / `docs/chunked-pipeline-findings.md`: chunked parse+emit materially improves missed beats, max delay, and TTFO; design §3.5 and §8 include these as gates/plots.
+- `docs/rust-candidate-smoke.md`: existing Rust candidates do not provide the full set of streaming + async-friendliness + markdownify fidelity; design §3.5.1 represents this correctly.
+
+### Minor non-blocking notes
+
+- `docs/design.md` / `docs/test-plan.md` use the name `benchmarks/fixtures/manifest.json` for the benchmark provenance file, while current staging also has `benchmarks/fixtures.lock.json`. This is not a blocker as long as the implementation either creates `manifest.json` or intentionally aliases/renames the existing lockfile in the final runner work.
+- `Options.markdownify_compat(...)` says it accepts every markdownify keyword but raises on `bs4_options`; that is acceptable because `bs4_options` is parser-specific and cannot be meaningful for lxml, but implementation should make the error message explicit and covered by the planned rejection test.
+
+### Round 2 verdict
+
+**Approved for implementation.** No P0/P1 blockers remain in the design/test-plan gate. The remaining notes are implementation-detail cleanups, not reasons to hold phase-2 work.
