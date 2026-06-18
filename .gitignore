@@ -9,4 +9,8 @@ build/
 # Large test fixtures — generated/downloaded, not committed
 benchmarks/fixtures/*.html
 benchmarks/results/*.json
+# Spike-generated sample docs (regenerate via gen_sample_html.py)
+benchmarks/spikes/sample_*.html
 .DS_Store
+# External conformance corpora — regenerated, not committed
+tests/conformance/fixtures/

@@ -1,0 +1,26 @@
+python 3.12.13 | GIL switch 5ms | sample 50.00MB (sample_50mb.html) | heartbeat target 1ms | single-shot per stage
+
+Main-thread asyncio heartbeat jitter while each workload runs:
+
+  idle        work=    -  s n= 1182  mean=  0.269 p50=  0.278 p95=  0.308 p99=  0.331 max=   3.961 ms  <- measurement floor
+  lxml_parse  work=  0.498s n=  317  mean=  0.572 p50=  0.271 p95=  0.283 p99=  0.299 max= 101.208 ms  <- stage (a): C parse
+  tree_walk   work=  0.201s n=   14  mean= 12.910 p50= 13.084 p95= 15.314 p99= 15.314 max=  15.314 ms  <- stage (b): Python walk
+  md_emit     work=  1.028s n=   69  mean= 13.784 p50= 13.525 p95= 15.338 p99= 32.935 max=  32.935 ms  <- stage (c): Python emit
+  bs4         work= 13.098s n=  757  mean= 16.294 p50= 13.398 p95= 15.350 p99=105.706 max= 460.920 ms  <- bs4 parse
+  markdownify work= 26.134s n= 1578  mean= 15.556 p50= 13.497 p95= 15.355 p99= 36.217 max=1104.286 ms  <- lib we replace
+  pyloop      work=  0.408s n=   28  mean= 13.307 p50= 13.730 p95= 15.344 p99= 15.349 max=  15.349 ms  <- pure-Python CPU
+  direct      work=  0.450s n=   78  mean= 34.851 p50=  0.283 p95=435.309 p99=514.905 max= 514.905 ms  <- run ON the loop (no offload) — negative control
+
+Per-stage read (lower jitter = more async-friendly):
+  idle        p99=  0.331ms   (floor)
+  lxml_parse  p99=  0.299ms   stage (a) C parse
+  tree_walk   p99= 15.314ms   stage (b) Python walk
+  md_emit     p99= 32.935ms   stage (c) Python emit
+  pyloop      p99= 15.349ms   GIL-holding control
+
+Verdict:
+  (a) lxml parse RELEASES the GIL: True  (parse-body p50/p95/p99 0.271/0.283/0.299ms == idle 0.278/0.308/0.331ms; lone max=101.2ms = the single ElementTree-construction boundary)
+  (b) Python tree walk HOLDS the GIL: True  (p50 13.084ms — every heartbeat delayed)
+  (c) Python md emit HOLDS the GIL: True  (p50 13.525ms — every heartbeat delayed)
+  => Offloading the PARSE keeps the loop alive; the Python walk+emit do NOT.
+     Phase-2 must chunk walk+emit with awaits (or push them into C) to stay async-friendly.
