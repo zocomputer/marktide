@@ -2,8 +2,11 @@
 #
 # CI runs exactly two: `make lint` and `make test`. Everything else is a
 # convenience subset or a utility. `make test` is the full gate (unit, component,
-# conformance, property, e2e); the e2e suite skips the >50 MiB benchmark fixtures
-# when they are absent, so `make test` is runnable with nothing gitignored present.
+# conformance, property, e2e, plus the markdownify fidelity verifier); the e2e
+# suite skips the >50 MiB benchmark fixtures when they are absent, so `make test`
+# is runnable with nothing gitignored present. The fidelity verifier runs the
+# differential corpus against real marktide and fails on any primary unallowed
+# divergence — the pytest conformance layer only exercises the harness machinery.
 
 .DEFAULT_GOAL := help
 .PHONY: help lint test ruff typecheck unit conformance property e2e \
@@ -23,8 +26,9 @@ lint:  ## Ruff lint + ty type check
 	uvx ruff check .
 	uvx ty check src
 
-test:  ## Full test suite: unit, component, conformance, property, e2e
+test:  ## Full test suite: unit, component, conformance, property, e2e + fidelity gate
 	$(PYTEST) tests/unit tests/component tests/conformance tests/property tests/e2e
+	uv run --group benchmark python tests/conformance/verify_fidelity.py
 
 ##@ Tests — each is a subset of `make test`
 unit:  ## Unit + component tests
