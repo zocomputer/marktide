@@ -60,6 +60,26 @@ def test_ordered_list_honours_start_attr() -> None:
     assert convert('<ol start="3"><li>three</li><li>four</li></ol>') == "3. three\n4. four"
 
 
+def test_consecutive_empty_lists_match_markdownify_blank_line_count() -> None:
+    # markdownify's convert_list emits '\n\n' + text + ('\n' if before_paragraph else '').
+    # An empty list followed by another list has before_paragraph=False (2 newlines); the
+    # last one before a paragraph has before_paragraph=True (3 newlines). marktide used to
+    # emit a fixed '\n\n\n\n' (4) per empty list, so stacked empty lists (real on the
+    # weather.gov nav) accumulated extra blank lines. Counts below are the markdownify oracle.
+    assert convert("<p>a</p><ul></ul><ul></ul><p>b</p>") == "a\n\n\n\n\n\n\nb"
+    assert convert("<p>a</p><ul></ul><ul></ul><ul></ul><p>b</p>") == "a\n\n\n\n\n\n\n\n\nb"
+    assert convert("<p>a</p><ol></ol><ol></ol><p>b</p>") == "a\n\n\n\n\n\n\nb"
+
+
+def test_single_empty_list_and_edges_unchanged() -> None:
+    # Regression guard for the cases that already matched markdownify and must stay matching.
+    assert convert("<p>a</p><ul></ul><p>b</p>") == "a\n\n\n\nb"
+    assert convert("<p>a</p><ul></ul>") == "a"
+    assert convert("<ul></ul><p>b</p>") == "b"
+    assert convert("<p>a</p><ul></ul>text<p>b</p>") == "a\n\ntext\n\nb"
+    assert convert("<div><ul></ul><ul></ul></div>") == ""
+
+
 def test_code_span_backtick_fence_grows_and_pads() -> None:
     assert convert("<p><code>a`b</code></p>") == "`` a`b ``"
 

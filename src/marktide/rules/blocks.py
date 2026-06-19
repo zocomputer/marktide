@@ -200,13 +200,20 @@ class _ListContainer:
         # Nested list (inside an <li>): no leading blank line, trim trailing.
         if em.state.has_ancestor("li"):
             em.emit("\n" + text.rstrip())
+        elif not text.strip():
+            # Empty list: markdownify's convert_list emits '\n\n' + ('\n' if
+            # before_paragraph else ''). before_paragraph is a forward-looking
+            # next-sibling check (true unless the next block-content sibling is another
+            # list), so defer the whole output to the next SAX event — chunk-invariant,
+            # mirroring the pending_ws deferral. A non-empty list (below) anchors its
+            # content so the fixed trailing '\n\n' collapses correctly without lookahead,
+            # but an all-newline empty list cannot, which is why only this branch defers.
+            em.mark_empty_list_pending()
         else:
-            # markdownify's convert_list appends a blank line when the list is followed
-            # by a non-list block (before_paragraph). We always emit it: the emitter's
-            # trailing-newline hold-back drops it at document end, and boundary-collapse
-            # caps it at one blank line before a following list/block — so no next-sibling
-            # lookahead is needed. (Verified against markdownify across the list-boundary
-            # cases.)
+            # Non-empty list: emit the trailing '\n\n' unconditionally; the emitter's
+            # trailing-newline hold-back drops it at document end and boundary-collapse
+            # caps it at one blank line before a following list/block. (Verified against
+            # markdownify across the list-boundary cases.)
             em.emit("\n\n" + text.rstrip() + "\n\n")
 
 

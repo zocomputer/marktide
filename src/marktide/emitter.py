@@ -74,6 +74,9 @@ _BLOCK_INSIDE_TAGS = frozenset((
 ))
 
 
+_LIST_TAGS = frozenset(("ul", "ol"))
+
+
 def _is_block_outside(tag: str) -> bool:
     """markdownify should_remove_whitespace_outside: a block element or pre."""
     return tag in _BLOCK_INSIDE_TAGS or tag == "pre"
@@ -85,6 +88,7 @@ class MarkdownEmitter:
     __slots__ = (
         "options", "state", "root", "_handlers", "_filter", "_content", "_frame",
         "_started", "_carry", "_tail", "_text_buf", "_buf_target", "_buf_stack",
+        "_pending_empty_list",
     )
 
     def __init__(self, options: Options | None = None) -> None:
@@ -106,6 +110,9 @@ class MarkdownEmitter:
         #                                    node (lxml splits special-element text by
         #                                    feed boundary; coalescing makes it
         #                                    chunk-invariant before normalisation)
+        self._pending_empty_list = False   # an empty <ul>/<ol> closed; its markdownify
+        #                                    output ('\n\n' + maybe '\n') is deferred until
+        #                                    the next event reveals before_paragraph
 
     # --- handler-facing context API ------------------------------------------
 
@@ -120,6 +127,18 @@ class MarkdownEmitter:
         """Append raw, handler-produced Markdown (never escaped) to the current buffer."""
         if markdown:
             self._buf().append(markdown)
+
+    def mark_empty_list_pending(self) -> None:
+        """Record that an empty ``<ul>``/``<ol>`` just closed (called by the list handler).
+        Its markdownify output is held until the next event resolves ``before_paragraph``."""
+        self._pending_empty_list = True
+
+    def _resolve_empty_list(self, before_paragraph: bool) -> None:
+        """Flush a deferred empty list as markdownify's ``convert_list`` would: ``'\\n\\n'``
+        plus one more ``'\\n'`` when the next block-content sibling is not another list.
+        Emitted as a single child string so the boundary-collapse matches the oracle."""
+        self._pending_empty_list = False
+        self.emit("\n\n\n" if before_paragraph else "\n\n")
 
     def emit_text(self, text: str) -> None:
         """Append HTML text content, reproducing markdownify's ``process_text``:
@@ -233,6 +252,11 @@ class MarkdownEmitter:
     def start(self, tag: str, attrs: dict[str, str]) -> None:
         self._flush_text()  # finalise the preceding text node before this child
         tag = tag.lower()
+        # A deferred empty list resolves now that its next sibling is known: a non-list
+        # element sibling means before_paragraph (markdownify counts any non-ul/ol element
+        # as block content). Emitted before this child so the blank lines land in order.
+        if self._pending_empty_list:
+            self._resolve_empty_list(tag not in _LIST_TAGS)
         # Resolve the parent's deferred text whitespace now that the next sibling (this
         # element) is known: drop it before a block, keep it before an inline element.
         parent = self.state.top
@@ -262,6 +286,11 @@ class MarkdownEmitter:
 
     def end(self, tag: str) -> None:
         self._flush_text()  # finalise this element's trailing text before it closes
+        # A deferred empty list whose containing element is closing has no next sibling,
+        # so before_paragraph is false. Resolve before the buffer restore/pop so the blank
+        # lines land in the closing element's own buffer (where the list was a child).
+        if self._pending_empty_list:
+            self._resolve_empty_list(False)
         tag = tag.lower()
         frame = self.state.pop()
         if frame is None:
@@ -317,6 +346,11 @@ class MarkdownEmitter:
         if self._text_buf:
             text = "".join(self._text_buf)
             self._text_buf.clear()
+            # A non-whitespace text sibling is block content, so a deferred empty list
+            # resolves with before_paragraph. Whitespace-only text is ignored adjacent to
+            # blocks (markdownify), so it leaves the list pending for the real next sibling.
+            if self._pending_empty_list and text.strip():
+                self._resolve_empty_list(True)
             self.emit_text(text)
 
     def comment(self, text: str) -> None:
@@ -353,6 +387,8 @@ class MarkdownEmitter:
         ``convert__document_`` strips separator newlines only). Works whether or not
         ``drain`` was called first (one-shot ``convert`` vs streaming)."""
         self._flush_text()  # finalise any trailing text node
+        if self._pending_empty_list:  # document ends with an empty list: before_paragraph=False
+            self._resolve_empty_list(False)
         s = self._tail + self._fold_children(self.root) + self._carry  # flush all held
         self.root.clear()
         self._carry = ""
