@@ -22,7 +22,7 @@ trailing_whitespace = "Trim trailing horizontal whitespace on each line for sema
 blank_lines = "For semantic comparisons, collapse runs of more than two blank lines to two; exact-output compatibility tests may opt out per case."
 html_equivalence = "For non-exact cases, render Markdown back to HTML, parse with lxml.html, remove insignificant whitespace-only text nodes, sort attributes, and compare normalized DOM plus extracted text/link/image/table/code invariants."
 markdown_validation = "Every converter output should parse with the selected CommonMark parser without errors before semantic comparison."
-expected_output_policy = "markdownify and Turndown cases are exact-output compatibility baselines by default; Pandoc and CommonMark layers are oracle/semantic-validation inputs, not byte-for-byte expected Markdown for this library."
+expected_output_policy = "markdownify and Turndown cases are exact-output compatibility baselines by default; the CommonMark layer is oracle/semantic-validation input, not byte-for-byte expected Markdown for this library."
 
 [sources.markdownify]
 name = "python-markdownify"
@@ -86,32 +86,6 @@ selected_paths = [
 ]
 case_format = "Reference parser/runner for div.case HTML fixtures."
 expected_output_normalization = "Not a case corpus itself; used to implement the fixture parser correctly."
-
-[sources.pandoc]
-name = "pandoc"
-license = "GPL-2.0-or-later (project COPYING.md is GPL v2 text; Pandoc source headers state GPL version 2 or later)"
-url = "https://github.com/jgm/pandoc.git"
-commit = "850c7b9613aa7beb1aed8c2c1f7abb01eaf3023e"
-fixture_path = "tests/conformance/fixtures/pandoc"
-role = "Oracle/reference HTML reader and writer edge cases for semantic comparison."
-selected_paths = [
-  "test/Tests/Readers/HTML.hs",
-  "test/Tests/Writers/HTML.hs",
-  "test/html-reader.html",
-  "test/lhs-test.html",
-  "test/s5-basic.html",
-  "test/s5-fancy.html",
-  "test/s5-fragment.html",
-  "test/s5-inserts.html",
-  "test/fb2/images-embedded.html",
-  "test/ipynb/rank.out.html",
-  "data/templates/default.html4",
-  "data/templates/default.html5",
-  "COPYING.md",
-]
-case_format = "Haskell reader/writer specs plus standalone HTML fixtures. Future harness should invoke Pandoc or translate selected tests into neutral JSON cases."
-expected_output_normalization = "Never compare byte-for-byte against Pandoc Markdown; compare normalized rendered HTML/DOM and structural invariants."
-local_counts = { html_files = 8, reader_haskell_specs = 1, writer_haskell_specs = 1 }
 
 [sources.commonmark_spec]
 name = "commonmark-spec"

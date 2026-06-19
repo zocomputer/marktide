@@ -21,21 +21,6 @@
       "README.rst",
       "LICENSE"
     ],
-    "pandoc": [
-      "test/Tests/Readers/HTML.hs",
-      "test/Tests/Writers/HTML.hs",
-      "test/html-reader.html",
-      "test/lhs-test.html",
-      "test/s5-basic.html",
-      "test/s5-fancy.html",
-      "test/s5-fragment.html",
-      "test/s5-inserts.html",
-      "test/fb2/images-embedded.html",
-      "test/ipynb/rank.out.html",
-      "data/templates/default.html4",
-      "data/templates/default.html5",
-      "COPYING.md"
-    ],
     "turndown": [
       "test/index.html",
       "test/turndown-test.js",
@@ -58,11 +43,6 @@
     "markdownify": {
       "assertion_count_approx": 323,
       "test_py_files": 8
-    },
-    "pandoc": {
-      "html_files": 8,
-      "reader_haskell_specs": 1,
-      "writer_haskell_specs": 1
     },
     "turndown": {
       "attendant_case_count": 147

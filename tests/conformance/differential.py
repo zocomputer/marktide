@@ -21,7 +21,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-import lxml.etree as etree  # noqa: E402  # ty: ignore[unresolved-import]
 import lxml.html as lxml_html  # noqa: E402
 
 from benchmarks.harness.adapters.base import Adapter, OptionMap, get_adapters  # noqa: E402
@@ -99,35 +98,6 @@ def normalize_markdown(text: str) -> str:
     text = "\n".join(lines).strip()
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text + "\n" if text else ""
-
-
-def normalize_input_html(case: Case) -> str:
-    """Apply corpus-specific source normalization before oracle conversion.
-
-    The primary markdownify-oracle layers intentionally pass through unchanged.
-    Secondary corpora can contain fixture chrome that is useful for smoke
-    coverage but should not dominate fidelity accounting.
-    """
-
-    if case.layer != "pandoc":
-        return case.html
-    return strip_pandoc_chrome(case.html)
-
-
-def strip_pandoc_chrome(html: str) -> str:
-    """Return body content with Pandoc template/presentation chrome removed."""
-
-    try:
-        document = lxml_html.fromstring(html)
-    except (ValueError, etree.ParserError):
-        return html
-    for element in document.xpath("//head|//style|//script|//meta|//link|//title"):
-        parent = element.getparent()
-        if parent is not None:
-            parent.remove(element)
-    bodies = document.xpath("//body")
-    root = bodies[0] if bodies else document
-    return _inner_html(root)
 
 
 def commonmark_semantic_equal(expected_markdown: str, actual_markdown: str) -> bool:
@@ -221,21 +191,6 @@ def load_turndown_cases(root: Path = DEFAULT_FIXTURE_ROOT) -> list[Case]:
                 html=_inner_html(input_nodes[0]),
                 upstream_expected_markdown=expected_nodes[0].text if expected_nodes else None,
                 metadata={"name": name, "data_options": data_options},
-            )
-        )
-    return cases
-
-
-def load_pandoc_cases(root: Path = DEFAULT_FIXTURE_ROOT) -> list[Case]:
-    base = root / "pandoc"
-    cases = []
-    for path in sorted((base / "test").rglob("*.html")):
-        cases.append(
-            Case(
-                id=f"pandoc:{_slug(str(path.relative_to(base)))}",
-                layer="pandoc",
-                source_path=_display_path(path),
-                html=path.read_text(encoding="utf-8", errors="replace"),
             )
         )
     return cases
@@ -409,7 +364,6 @@ def load_cases(root: Path = DEFAULT_FIXTURE_ROOT) -> list[Case]:
         *load_golden_cases(root),
         *load_markdownify_cases(root),
         *load_turndown_cases(root),
-        *load_pandoc_cases(root),
         *load_commonmark_cases(root),
     ]
 
@@ -419,8 +373,7 @@ def run_differential(cases: Iterable[Case], adapters: list[Adapter], *, max_diff
     candidates = [adapter for adapter in adapters if not adapter.name.startswith("markdownify")]
     results: list[CaseResult] = []
     for case in cases:
-        normalized_html = normalize_input_html(case)
-        html_bytes = normalized_html.encode("utf-8", errors="replace")
+        html_bytes = case.html.encode("utf-8", errors="replace")
         oracle_output = _oracle_output(case, oracle, html_bytes)
         normalized_oracle = normalize_markdown(oracle_output)
         candidate_results: list[CandidateResult] = []

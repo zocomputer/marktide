@@ -15,7 +15,6 @@ from differential import (  # noqa: E402
     load_golden_cases,
     load_markdownify_cases,
     load_turndown_cases,
-    normalize_input_html,
     normalize_markdown,
     run_differential,
     summarize,
@@ -179,22 +178,6 @@ def test_commonmark_layer_compares_rendered_semantic_html():
 
     assert results[0].results[0].passed is True
     assert commonmark_semantic_equal("x\n", "x\n\n") is True
-
-
-def test_pandoc_input_normalization_strips_template_chrome():
-    case = Case(
-        id="pandoc:chrome",
-        layer="pandoc",
-        source_path="inline",
-        html="<html><head><title>T</title><style>.x{}</style></head><body><h1>Body</h1><script>x()</script></body></html>",
-    )
-
-    normalized = normalize_input_html(case)
-
-    assert "<h1>Body</h1>" in normalized
-    assert "style" not in normalized
-    assert "script" not in normalized
-    assert "title" not in normalized
 
 
 def test_primary_markdownify_summary_is_separate_from_guardrail_layers():

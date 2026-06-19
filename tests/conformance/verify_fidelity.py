@@ -32,7 +32,6 @@ PRIMARY_LAYER_ORDER = (
 )
 GUARDRAIL_LAYER_ORDER = (
     "commonmark_expected_html",
-    "pandoc",
     "turndown",
     "turndown_options",
 )

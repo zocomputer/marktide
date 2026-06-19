@@ -24745,414 +24745,6 @@
       "source_path": "tests/conformance/fixtures/turndown/test/index.html"
     },
     {
-      "id": "pandoc:test_fb2_images-embedded_html",
-      "input_bytes": 5640,
-      "layer": "pandoc",
-      "metadata": {},
-      "normalized_oracle_sha256": "1a30f24c79d2c077b8cc95f9bebc8d7e405b1ac455bcd848393a34ace3aa0df4",
-      "oracle_sha256": "8a488c932cdb7abc2d390ca2500ffde3fe0d1e2071b7207d6583bdf38ec714fe",
-      "results": [
-        {
-          "adapter": "html_to_markdown",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "1a30f24c79d2c077b8cc95f9bebc8d7e405b1ac455bcd848393a34ace3aa0df4",
-          "output_sha256": "1a30f24c79d2c077b8cc95f9bebc8d7e405b1ac455bcd848393a34ace3aa0df4",
-          "passed": true
-        },
-        {
-          "adapter": "htmd_py",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "1a30f24c79d2c077b8cc95f9bebc8d7e405b1ac455bcd848393a34ace3aa0df4",
-          "output_sha256": "8a488c932cdb7abc2d390ca2500ffde3fe0d1e2071b7207d6583bdf38ec714fe",
-          "passed": true
-        },
-        {
-          "adapter": "html2text_rs",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,3 +1,3 @@\n-![This image was embedded using data URI scheme](data:image/png;base64,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\n... diff truncated at 4000 chars ...\n",
-          "error": null,
-          "normalized_output_sha256": "d31a33df3b2acd54d6f0f00db01728ecf1a253d4a4f6e9f647752d776dc82876",
-          "output_sha256": "d31a33df3b2acd54d6f0f00db01728ecf1a253d4a4f6e9f647752d776dc82876",
-          "passed": false
-        },
-        {
-          "adapter": "marktide",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "1a30f24c79d2c077b8cc95f9bebc8d7e405b1ac455bcd848393a34ace3aa0df4",
-          "output_sha256": "8a488c932cdb7abc2d390ca2500ffde3fe0d1e2071b7207d6583bdf38ec714fe",
-          "passed": true
-        },
-        {
-          "adapter": "marktide_streaming",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "1a30f24c79d2c077b8cc95f9bebc8d7e405b1ac455bcd848393a34ace3aa0df4",
-          "output_sha256": "8a488c932cdb7abc2d390ca2500ffde3fe0d1e2071b7207d6583bdf38ec714fe",
-          "passed": true
-        }
-      ],
-      "source_path": "tests/conformance/fixtures/pandoc/test/fb2/images-embedded.html"
-    },
-    {
-      "id": "pandoc:test_html-reader_html",
-      "input_bytes": 16562,
-      "layer": "pandoc",
-      "metadata": {},
-      "normalized_oracle_sha256": "a4aa790fa4a58b579b01898b567235440e4a66042c4dba025a0491362458c5c9",
-      "oracle_sha256": "f8fe60359f819a7f8675ab7f9cd1e2b9d26458c4ea76f8a4af73349eb441cb83",
-      "results": [
-        {
-          "adapter": "html_to_markdown",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,15 +1,12 @@\n-Pandoc Test Suite\n-=================\n+# Pandoc Test Suite\n \n This is a set of tests for pandoc. Most of them are adapted from John Gruber's markdown test suite.\n \n ---\n \n-Headers\n-=======\n-\n-Level 2 with an [embedded link](/url)\n--------------------------------------\n+# Headers\n+\n+## Level 2 with an [embedded link](/url)\n \n ### Level 3 with *emphasis*\n \n@@ -17,90 +14,88 @@\n \n ##### Level 5\n \n-Level 1\n-=======\n-\n-Level 2 with *emphasis*\n------------------------\n+# Level 1\n+\n+## Level 2 with *emphasis*\n \n ### Level 3\n \n with no blank line\n \n-Level 2\n--------\n+## Level 2\n \n with no blank line\n \n ---\n \n-Paragraphs\n-==========\n+# Paragraphs\n \n Here's a regular paragraph.\n \n In Markdown 1.0.0 and earlier. Version 8. This line turns into a list item. Because a hard-wrapped line in the middle of a paragraph looked like a list item.\n \n-Here's one with a bullet. \\* criminey.\n+Here's one with a bullet. * criminey.\n \n There should be a hard line break\n here.\n \n ---\n \n-Block Quotes\n-============\n+# Block Quotes\n \n E-mail style:\n-\n > This is a block quote. It is pretty short.\n-\n > Code in a block quote:\n >\n > ```\n > sub status {\n->     print \"working\";\n+> print \"working\";\n > }\n+>\n > ```\n->\n > A list:\n >\n > 1. item one\n > 2. item two\n->\n > Nested block quotes:\n >\n+>\n+>\n+>\n > > nested\n >\n+>\n+>\n+>\n > > nested\n \n This should not be a block quote: 2 > 1.\n \n Box-style:\n-\n > Example:\n >\n > ```\n > sub status {\n->     print \"working\";\n+> print \"working\";\n > }\n+>\n > ```\n-\n > 1. do laundry\n > 2. take out the trash\n \n Here's a nested one:\n-\n > Joe said:\n >\n+>\n+>\n+>\n > > Don't quote me.\n \n And a following paragraph.\n \n ---\n \n-Inline quotes\n-=============\n+# Inline quotes\n \n Normal text but then a \"inline quote\".\n \n@@ -108,8 +103,7 @@\n \n ---\n \n-Code Blocks\n-===========\n+# Code Blocks\n \n Code:\n \n@@ -121,62 +115,66 @@\n }\n \n this code block is indented by one tab\n-```\n-\n+\n+```\n And:\n \n ```\n     this code block is indented by two tabs\n \n These should not be escaped:  \\$ \\\\ \\> \\[ \\{\n-```\n-\n----\n-\n-Lists\n-=====\n-\n-Unordered\n----------\n+\n+```\n+\n+---\n+\n+# Lists\n+\n+## Unordered\n \n Asterisks tight:\n \n-* asterisk 1\n-* asterisk 2\n-* asterisk 3\n+- asterisk 1\n+- asterisk 2\n+- asterisk 3\n \n Asterisks loose:\n \n-* asterisk 1\n-* asterisk 2\n-* asterisk 3\n+- asterisk 1\n+\n+- asterisk 2\n+\n+- asterisk 3\n \n Pluses tight:\n \n-* Plus 1\n-* Plus 2\n-* Plus 3\n+- Plus 1\n+- Plus 2\n+- Plus 3\n \n Pluses loose:\n \n-* Plus 1\n-* Plus 2\n-* Plus 3\n+- Plus 1\n+\n+- Plus 2\n+\n+- Plus 3\n \n Minuses tight:\n \n-* Minus 1\n-* Minus 2\n-* Minus 3\n+- Minus 1\n+- Minus 2\n+- Minus 3\n \n Minuses loose:\n \n-* Minus 1\n-* Minus 2\n-* Minus 3\n-\n-Ordered\n--------\n+- Minus 1\n+\n+- Minus 2\n+\n+- Minus 3\n+\n+## Ordered\n \n Tight:\n \n@@ -193,104 +191,110 @@\n Loose using tabs:\n \n 1. First\n+\n 2. Second\n+\n 3. Third\n \n and using spaces:\n \n 1. One\n+\n 2. Two\n+\n 3. Three\n \n Multiple paragraphs:\n \n 1. Item 1, graf one.\n \n-   Item 1. graf two. The quick brown fox jumped over the lazy dog's back.\n+    Item 1. graf two. The quick brown fox jumped over the lazy dog's back.\n+\n 2. Item 2.\n+\n 3. Item 3.\n \n List styles:\n \n-Nested\n-------\n-\n-* Tab\n-  + Tab\n-    - Tab\n+## Nested\n+\n+- Tab\n+  * Tab\n+    + Tab\n \n Here's another:\n \n 1. First\n 2. Second:\n-   * Fee\n-   * Fie\n-   * Foe\n+  - Fee\n+  - Fie\n+  - Foe\n 3. Third\n \n Same thing but with paragraphs:\n \n 1. First\n+\n 2. Second:\n \n-   * Fee\n-   * Fie\n-   * Foe\n+  - Fee\n+  - Fie\n+  - Foe\n+\n 3. Third\n \n-Tabs and spaces\n----------------\n-\n-* this is a list item indented with tabs\n-* this is a list item indented with spaces\n-\n-  + this is an example list item indented with tabs\n-  + this is an example list item indented with spaces\n-\n-Fancy list markers\n-------------------\n+## Tabs and spaces\n+\n+- this is a list item indented with tabs\n+\n+- this is a list item indented with spaces\n+\n+  * this is an example list item indented with tabs\n+\n+  * this is an example list item indented with spaces\n+\n+## Fancy list markers\n \n 2. begins with 2\n+\n 3. and \n... diff truncated at 4000 chars ...\n",
-          "error": null,
-          "normalized_output_sha256": "ec33c22be4b058e1858d10e869b1953634c8683c0fad1aed9d53de95932cf569",
-          "output_sha256": "c953af0afffc801fb716239fc37fbd87827e98cc7b224178de9787614e9ad1bd",
-          "passed": false
-        },
-        {
-          "adapter": "htmd_py",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,15 +1,12 @@\n-Pandoc Test Suite\n-=================\n+# Pandoc Test Suite\n \n This is a set of tests for pandoc. Most of them are adapted from John Gruber's markdown test suite.\n \n----\n-\n-Headers\n-=======\n-\n-Level 2 with an [embedded link](/url)\n--------------------------------------\n+* * *\n+\n+# Headers\n+\n+## Level 2 with an [embedded link](/url)\n \n ### Level 3 with *emphasis*\n \n@@ -17,25 +14,21 @@\n \n ##### Level 5\n \n-Level 1\n-=======\n-\n-Level 2 with *emphasis*\n------------------------\n+# Level 1\n+\n+## Level 2 with *emphasis*\n \n ### Level 3\n \n with no blank line\n \n-Level 2\n--------\n+## Level 2\n \n with no blank line\n \n----\n-\n-Paragraphs\n-==========\n+* * *\n+\n+# Paragraphs\n \n Here's a regular paragraph.\n \n@@ -44,12 +37,11 @@\n Here's one with a bullet. \\* criminey.\n \n There should be a hard line break\n-here.\n-\n----\n-\n-Block Quotes\n-============\n+ here.\n+\n+* * *\n+\n+# Block Quotes\n \n E-mail style:\n \n@@ -65,8 +57,8 @@\n >\n > A list:\n >\n-> 1. item one\n-> 2. item two\n+> 1.  item one\n+> 2.  item two\n >\n > Nested block quotes:\n >\n@@ -86,8 +78,8 @@\n > }\n > ```\n \n-> 1. do laundry\n-> 2. take out the trash\n+> 1.  do laundry\n+> 2.  take out the trash\n \n Here's a nested one:\n \n@@ -97,19 +89,17 @@\n \n And a following paragraph.\n \n----\n-\n-Inline quotes\n-=============\n-\n-Normal text but then a \"inline quote\".\n-\n-\"Missing a cite attribute means its just normal text\"\n-\n----\n-\n-Code Blocks\n-===========\n+* * *\n+\n+# Inline quotes\n+\n+Normal text but then a inline quote.\n+\n+Missing a cite attribute means its just normal text\n+\n+* * *\n+\n+# Code Blocks\n \n Code:\n \n@@ -131,172 +121,182 @@\n These should not be escaped:  \\$ \\\\ \\> \\[ \\{\n ```\n \n----\n-\n-Lists\n-=====\n-\n-Unordered\n----------\n+* * *\n+\n+# Lists\n+\n+## Unordered\n \n Asterisks tight:\n \n-* asterisk 1\n-* asterisk 2\n-* asterisk 3\n+*   asterisk 1\n+*   asterisk 2\n+*   asterisk 3\n \n Asterisks loose:\n \n-* asterisk 1\n-* asterisk 2\n-* asterisk 3\n+*   asterisk 1\n+\n+*   asterisk 2\n+\n+*   asterisk 3\n \n Pluses tight:\n \n-* Plus 1\n-* Plus 2\n-* Plus 3\n+*   Plus 1\n+*   Plus 2\n+*   Plus 3\n \n Pluses loose:\n \n-* Plus 1\n-* Plus 2\n-* Plus 3\n+*   Plus 1\n+\n+*   Plus 2\n+\n+*   Plus 3\n \n Minuses tight:\n \n-* Minus 1\n-* Minus 2\n-* Minus 3\n+*   Minus 1\n+*   Minus 2\n+*   Minus 3\n \n Minuses loose:\n \n-* Minus 1\n-* Minus 2\n-* Minus 3\n-\n-Ordered\n--------\n+*   Minus 1\n+\n+*   Minus 2\n+\n+*   Minus 3\n+\n+## Ordered\n \n Tight:\n \n-1. First\n-2. Second\n-3. Third\n+1.  First\n+2.  Second\n+3.  Third\n \n and:\n \n-1. One\n-2. Two\n-3. Three\n+1.  One\n+2.  Two\n+3.  Three\n \n Loose using tabs:\n \n-1. First\n-2. Second\n-3. Third\n+1.  First\n+\n+2.  Second\n+\n+3.  Third\n \n and using spaces:\n \n-1. One\n-2. Two\n-3. Three\n+1.  One\n+\n+2.  Two\n+\n+3.  Three\n \n Multiple paragraphs:\n \n-1. Item 1, graf one.\n-\n-   Item 1. graf two. The quick brown fox jumped over the lazy dog's back.\n-2. Item 2.\n-3. Item 3.\n+1.  Item 1, graf one.\n+\n+    Item 1. graf two. The quick brown fox jumped over the lazy dog's back.\n+\n+2.  Item 2.\n+\n+3.  Item 3.\n \n List styles:\n \n-Nested\n-------\n-\n-* Tab\n-  + Tab\n-    - Tab\n+## Nested\n+\n+*   Tab\n+    *   Tab\n+        *   Tab\n \n Here's another:\n \n-1. First\n-2. Second:\n-   * Fee\n-   * Fie\n-   * Foe\n-3. Third\n+1.  First\n+2.  Second:\n+    *   Fee\n+    *   Fie\n+    *   Foe\n+3.  Third\n \n Same thing but with paragraphs:\n \n-1. First\n-2. Second:\n-\n-   * Fee\n-   * Fie\n-   * Foe\n-3. Third\n-\n-Tabs and spaces\n----------------\n-\n-* this is a list item indented with tabs\n-* this is a list item indented with spaces\n-\n-  + this is an example list item indented with tabs\n-  + this is an example list item indented with spaces\n-\n-Fancy list markers\n-------------------\n-\n-2. begins with 2\n-3. and now 3\n-\n-   with a continuation\n-\n-   4. sublist with roman numerals, starting with 4\n-   5. more items\n-      1. a subsublist\n-      2. a subsublist\n+1.  First\n+\n+2.  Second:\n+\n+    *   Fee\n+    *   Fie\n+    *   Foe\n+3.  Third\n+\n+## Tabs and spaces\n+\n+*   this is a list item indented with tabs\n+\n+*   this is a list item indented with spaces\n... diff truncated at 4000 chars ...\n",
-          "error": null,
-          "normalized_output_sha256": "593115c3977fccdf775aafe190aedea62113e02e49f6c89a9a623210dcca0db8",
-          "output_sha256": "96d28da7e9d6625a76bf5a57fefcc11e31176eabca4b284972a13e3f9cf55736",
-          "passed": false
-        },
-        {
-          "adapter": "html2text_rs",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,15 +1,10 @@\n-Pandoc Test Suite\n-=================\n+# Pandoc Test Suite\n \n This is a set of tests for pandoc. Most of them are adapted from John Gruber's markdown test suite.\n \n----\n-\n-Headers\n-=======\n-\n-Level 2 with an [embedded link](/url)\n--------------------------------------\n+# Headers\n+\n+## Level 2 with an [embedded link][1]\n \n ### Level 3 with *emphasis*\n \n@@ -17,39 +12,31 @@\n \n ##### Level 5\n \n-Level 1\n-=======\n-\n-Level 2 with *emphasis*\n------------------------\n+# Level 1\n+\n+## Level 2 with *emphasis*\n \n ### Level 3\n \n with no blank line\n \n-Level 2\n--------\n+## Level 2\n \n with no blank line\n \n----\n-\n-Paragraphs\n-==========\n+# Paragraphs\n \n Here's a regular paragraph.\n \n-In Markdown 1.0.0 and earlier. Version 8. This line turns into a list item. Because a hard-wrapped line in the middle of a paragraph looked like a list item.\n-\n-Here's one with a bullet. \\* criminey.\n+In Markdown 1.0.0 and earlier. Version 8. This line turns into a list item. Because a hard-wrapped\n+line in the middle of a paragraph looked like a list item.\n+\n+Here's one with a bullet. * criminey.\n \n There should be a hard line break\n here.\n \n----\n-\n-Block Quotes\n-============\n+# Block Quotes\n \n E-mail style:\n \n@@ -57,14 +44,12 @@\n \n > Code in a block quote:\n >\n-> ```\n-> sub status {\n+> `sub status {\n >     print \"working\";\n > }\n-> ```\n+> `\n >\n > A list:\n->\n > 1. item one\n > 2. item two\n >\n@@ -80,11 +65,10 @@\n \n > Example:\n >\n-> ```\n-> sub status {\n+> `sub status {\n >     print \"working\";\n > }\n-> ```\n+> `\n \n > 1. do laundry\n > 2. take out the trash\n@@ -97,113 +81,89 @@\n \n And a following paragraph.\n \n----\n-\n-Inline quotes\n-=============\n-\n-Normal text but then a \"inline quote\".\n-\n-\"Missing a cite attribute means its just normal text\"\n-\n----\n-\n-Code Blocks\n-===========\n+# Inline quotes\n+\n+Normal text but then a inline quote.\n+\n+Missing a cite attribute means its just normal text\n+\n+# Code Blocks\n \n Code:\n \n-```\n----- (should be four hyphens)\n+`---- (should be four hyphens)\n \n sub status {\n     print \"working\";\n }\n \n this code block is indented by one tab\n-```\n+`\n \n And:\n \n-```\n-    this code block is indented by two tabs\n+`    this code block is indented by two tabs\n \n These should not be escaped:  \\$ \\\\ \\> \\[ \\{\n-```\n-\n----\n-\n-Lists\n-=====\n-\n-Unordered\n----------\n+`\n+\n+# Lists\n+\n+## Unordered\n \n Asterisks tight:\n-\n * asterisk 1\n * asterisk 2\n * asterisk 3\n \n Asterisks loose:\n-\n * asterisk 1\n * asterisk 2\n * asterisk 3\n \n Pluses tight:\n-\n * Plus 1\n * Plus 2\n * Plus 3\n \n Pluses loose:\n-\n * Plus 1\n * Plus 2\n * Plus 3\n \n Minuses tight:\n-\n * Minus 1\n * Minus 2\n * Minus 3\n \n Minuses loose:\n-\n * Minus 1\n * Minus 2\n * Minus 3\n \n-Ordered\n--------\n+## Ordered\n \n Tight:\n-\n 1. First\n 2. Second\n 3. Third\n \n and:\n-\n 1. One\n 2. Two\n 3. Three\n \n Loose using tabs:\n-\n 1. First\n 2. Second\n 3. Third\n \n and using spaces:\n-\n 1. One\n 2. Two\n 3. Three\n \n Multiple paragraphs:\n-\n 1. Item 1, graf one.\n \n    Item 1. graf two. The quick brown fox jumped over the lazy dog's back.\n@@ -212,15 +172,12 @@\n \n List styles:\n \n-Nested\n-------\n-\n+## Nested\n * Tab\n-  + Tab\n-    - Tab\n+  * Tab\n+    * Tab\n \n Here's another:\n-\n 1. First\n 2. Second:\n    * Fee\n@@ -229,76 +186,58 @@\n 3. Third\n \n Same thing but with paragraphs:\n-\n 1. First\n 2. Second:\n-\n    * Fee\n    * Fie\n    * Foe\n 3. Third\n \n-Tabs and spaces\n----------------\n-\n+## Tabs and spaces\n * this is a list item indented with tabs\n * this is a list item indented with spaces\n-\n-  + this is an example list item indented with tabs\n-  + this is an example list item indented with spaces\n-\n-Fancy list markers\n-------------------\n-\n+  * this is an example list item indented with tabs\n+  * this is an example list item indented with spaces\n+\n+## Fancy list markers\n 2. begins with 2\n 3. and now 3\n \n    with a continuation\n-\n    4. sublist with roman numerals, starting with 4\n    5. more items\n       1. a subsublist\n       2. a subsublist\n \n Nesting:\n-\n 1. Upper Alpha\n    1. Upper Roman.\n       6. Dec\n... diff truncated at 4000 chars ...\n",
-          "error": null,
-          "normalized_output_sha256": "98903ec0596dfd8d21fbbc37bee0890aaeab7e043c973a133f3355afaa3384d5",
-          "output_sha256": "85fe254ce290dc833b525213cc52489fb9385ae88a274f41623218aa5dd329ab",
-          "passed": false
-        },
-        {
-          "adapter": "marktide",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -314,7 +314,7 @@\n \n These are all underlined: foo and bar.\n \n-These are all strikethrough: ~~foo~~, bar, and ~~baz~~.\n+These are all strikethrough: ~~foo~~, ~~bar~~, and ~~baz~~.\n \n ---\n \n",
-          "error": null,
-          "normalized_output_sha256": "beb332243b9a6db1bb6a64230a5058b91748ad8b3821c7892c0d1b4824f31d4f",
-          "output_sha256": "8263f620435e43437b283aa301696ae18ff62f1e5d29ba91ac1c8aa3fa5614ac",
-          "passed": false
-        },
-        {
-          "adapter": "marktide_streaming",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -314,7 +314,7 @@\n \n These are all underlined: foo and bar.\n \n-These are all strikethrough: ~~foo~~, bar, and ~~baz~~.\n+These are all strikethrough: ~~foo~~, ~~bar~~, and ~~baz~~.\n \n ---\n \n",
-          "error": null,
-          "normalized_output_sha256": "beb332243b9a6db1bb6a64230a5058b91748ad8b3821c7892c0d1b4824f31d4f",
-          "output_sha256": "8263f620435e43437b283aa301696ae18ff62f1e5d29ba91ac1c8aa3fa5614ac",
-          "passed": false
-        }
-      ],
-      "source_path": "tests/conformance/fixtures/pandoc/test/html-reader.html"
-    },
-    {
-      "id": "pandoc:test_ipynb_rank_out_html",
-      "input_bytes": 1219,
-      "layer": "pandoc",
-      "metadata": {},
-      "normalized_oracle_sha256": "ab007e9bcb057f73c23a98ad703da98a34e980b701e07161f09a7c137ce58926",
-      "oracle_sha256": "9a5c014c2cfdb4308472caf4834d1d34a2a03d86c4ee2b338fc4895b878d1d7b",
-      "results": [
-        {
-          "adapter": "html_to_markdown",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,10 +1,10 @@\n ```\n-import matplotlib.pyplot as plt\n+[](#cb1-1)import matplotlib.pyplot as plt\n ```\n \n ```\n-fig, ax = plt.subplots(figsize=(1, 1), dpi=4)\n-ax.imshow([[0, 1], [2, 3]]);\n+[](#cb2-1)fig, ax = plt.subplots(figsize=(1, 1), dpi=4)\n+[](#cb2-2)ax.imshow([[0, 1], [2, 3]]);\n ```\n \n *you should see this when converting from ipynb to html instead of the image below.*\n",
-          "error": null,
-          "normalized_output_sha256": "c400959dc731154fd90b0e6a53eeb7e7cf5779e5eba01cd54d04c20165c8f277",
-          "output_sha256": "c400959dc731154fd90b0e6a53eeb7e7cf5779e5eba01cd54d04c20165c8f277",
-          "passed": false
-        },
-        {
-          "adapter": "htmd_py",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,10 +1,10 @@\n ```\n-import matplotlib.pyplot as plt\n+[](#cb1-1)import matplotlib.pyplot as plt\n ```\n \n ```\n-fig, ax = plt.subplots(figsize=(1, 1), dpi=4)\n-ax.imshow([[0, 1], [2, 3]]);\n+[](#cb2-1)fig, ax = plt.subplots(figsize=(1, 1), dpi=4)\n+[](#cb2-2)ax.imshow([[0, 1], [2, 3]]);\n ```\n \n *you should see this when converting from ipynb to html instead of the image below.*\n",
-          "error": null,
-          "normalized_output_sha256": "c400959dc731154fd90b0e6a53eeb7e7cf5779e5eba01cd54d04c20165c8f277",
-          "output_sha256": "dc471ecd5c4c40b16e6775742c32e2b34a60ec2b7bf98e7a1c19e13dfeb99db7",
-          "passed": false
-        },
-        {
-          "adapter": "html2text_rs",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,10 +1,6 @@\n-```\n-import matplotlib.pyplot as plt\n-```\n+`import matplotlib.pyplot as plt`\n \n-```\n-fig, ax = plt.subplots(figsize=(1, 1), dpi=4)\n-ax.imshow([[0, 1], [2, 3]]);\n-```\n+`fig, ax = plt.subplots(figsize=(1, 1), dpi=4)\n+ax.imshow([[0, 1], [2, 3]]);`\n \n *you should see this when converting from ipynb to html instead of the image below.*\n",
-          "error": null,
-          "normalized_output_sha256": "778d6be659ce5365b637512afd4da4e5864f05949a403d993c9c174c67ec488b",
-          "output_sha256": "778d6be659ce5365b637512afd4da4e5864f05949a403d993c9c174c67ec488b",
-          "passed": false
-        },
-        {
-          "adapter": "marktide",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "ab007e9bcb057f73c23a98ad703da98a34e980b701e07161f09a7c137ce58926",
-          "output_sha256": "9a5c014c2cfdb4308472caf4834d1d34a2a03d86c4ee2b338fc4895b878d1d7b",
-          "passed": true
-        },
-        {
-          "adapter": "marktide_streaming",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "ab007e9bcb057f73c23a98ad703da98a34e980b701e07161f09a7c137ce58926",
-          "output_sha256": "9a5c014c2cfdb4308472caf4834d1d34a2a03d86c4ee2b338fc4895b878d1d7b",
-          "passed": true
-        }
-      ],
-      "source_path": "tests/conformance/fixtures/pandoc/test/ipynb/rank.out.html"
-    },
-    {
-      "id": "pandoc:test_lhs-test_html",
-      "input_bytes": 1199,
-      "layer": "pandoc",
-      "metadata": {},
-      "normalized_oracle_sha256": "7e7c0ae4039fb8024f2d6f6d158324abec5ccc9d063fec47fb7be5145a88b2e5",
-      "oracle_sha256": "3c495ae53110b0171b7a845c6609d4a077428336198adde510a12c27853005ff",
-      "results": [
-        {
-          "adapter": "html_to_markdown",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,13 +1,12 @@\n-lhs test\n-========\n+# lhs test\n \n `unsplit` is an arrow that takes a pair of values and combines them to\n return a single value:\n \n ```\n-unsplit :: (Arrow a) => (b -> c -> d) -> a (b, c) d\n-unsplit = arr . uncurry\n-          -- arr (\\op (x,y) -> x `op` y)\n+[](#cb1-1)unsplit :: (Arrow a) => (b -> c -> d) -> a (b, c) d\n+[](#cb1-2)unsplit = arr . uncurry\n+[](#cb1-3)          -- arr (\\op (x,y) -> x `op` y)\n ```\n \n `(***)` combines two arrows into a new arrow by running the two arrows on a\n@@ -17,7 +16,5 @@\n ```\n f *** g = first f >>> second g\n ```\n-\n Block quote:\n-\n > foo bar\n",
-          "error": null,
-          "normalized_output_sha256": "eedceee82730bd6f3986469b10e85dd193a5af64337c215a863fc4184c929525",
-          "output_sha256": "eedceee82730bd6f3986469b10e85dd193a5af64337c215a863fc4184c929525",
-          "passed": false
-        },
-        {
-          "adapter": "htmd_py",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,18 +1,14 @@\n-lhs test\n-========\n+# lhs test\n \n-`unsplit` is an arrow that takes a pair of values and combines them to\n-return a single value:\n+`unsplit` is an arrow that takes a pair of values and combines them to return a single value:\n \n ```\n-unsplit :: (Arrow a) => (b -> c -> d) -> a (b, c) d\n-unsplit = arr . uncurry\n-          -- arr (\\op (x,y) -> x `op` y)\n+[](#cb1-1)unsplit :: (Arrow a) => (b -> c -> d) -> a (b, c) d\n+[](#cb1-2)unsplit = arr . uncurry\n+[](#cb1-3)          -- arr (\\op (x,y) -> x `op` y)\n ```\n \n-`(***)` combines two arrows into a new arrow by running the two arrows on a\n-pair of values (one arrow on the first item of the pair and one arrow on the\n-second item of the pair).\n+`(***)` combines two arrows into a new arrow by running the two arrows on a pair of values (one arrow on the first item of the pair and one arrow on the second item of the pair).\n \n ```\n f *** g = first f >>> second g\n",
-          "error": null,
-          "normalized_output_sha256": "1fa11fe45e9fcb51943ae67f560f00c254193acab20f1ff9709f441d519bd5ea",
-          "output_sha256": "5d049f134010a2a39a91887d48b619b27a96daf9c0298490168b62af6ae4347e",
-          "passed": false
-        },
-        {
-          "adapter": "html2text_rs",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,22 +1,15 @@\n-lhs test\n-========\n+# lhs test\n \n-`unsplit` is an arrow that takes a pair of values and combines them to\n-return a single value:\n+`unsplit` is an arrow that takes a pair of values and combines them to return a single value:\n \n-```\n-unsplit :: (Arrow a) => (b -> c -> d) -> a (b, c) d\n+`unsplit :: (Arrow a) => (b -> c -> d) -> a (b, c) d\n unsplit = arr . uncurry\n-          -- arr (\\op (x,y) -> x `op` y)\n-```\n+          -- arr (\\op (x,y) -> x `op` y)`\n \n-`(***)` combines two arrows into a new arrow by running the two arrows on a\n-pair of values (one arrow on the first item of the pair and one arrow on the\n-second item of the pair).\n+`(***)` combines two arrows into a new arrow by running the two arrows on a pair of values (one\n+arrow on the first item of the pair and one arrow on the second item of the pair).\n \n-```\n-f *** g = first f >>> second g\n-```\n+`f *** g = first f >>> second g`\n \n Block quote:\n \n",
-          "error": null,
-          "normalized_output_sha256": "04e3ff01bad3158d984a2f330ce1d6a8d1bf1bee37ce998de21a3d1ad08ce991",
-          "output_sha256": "04e3ff01bad3158d984a2f330ce1d6a8d1bf1bee37ce998de21a3d1ad08ce991",
-          "passed": false
-        },
-        {
-          "adapter": "marktide",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "7e7c0ae4039fb8024f2d6f6d158324abec5ccc9d063fec47fb7be5145a88b2e5",
-          "output_sha256": "3c495ae53110b0171b7a845c6609d4a077428336198adde510a12c27853005ff",
-          "passed": true
-        },
-        {
-          "adapter": "marktide_streaming",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "7e7c0ae4039fb8024f2d6f6d158324abec5ccc9d063fec47fb7be5145a88b2e5",
-          "output_sha256": "3c495ae53110b0171b7a845c6609d4a077428336198adde510a12c27853005ff",
-          "passed": true
-        }
-      ],
-      "source_path": "tests/conformance/fixtures/pandoc/test/lhs-test.html"
-    },
-    {
-      "id": "pandoc:test_s5-basic_html",
-      "input_bytes": 694,
-      "layer": "pandoc",
-      "metadata": {},
-      "normalized_oracle_sha256": "fa2a130cda4eb3a0b13871ba50243c28ff25453eb479f011564ae22726109652",
-      "oracle_sha256": "adac0de6495dc20860a081d5086de25da909e3ece4198c4377b538c301437f1d",
-      "results": [
-        {
-          "adapter": "html_to_markdown",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,24 +1,19 @@\n-July 15, 2006\n-=============\n+# July 15, 2006\n \n-My S5 Document\n---------------\n+## My S5 Document\n \n-My S5 Document\n-==============\n+# My S5 Document\n \n-### Sam Smith Jen Jones\n+### Sam Smith  Jen Jones\n \n #### July 15, 2006\n \n-First slide\n-===========\n+# First slide\n \n-* first bullet\n-* second bullet\n+- first bullet\n+- second bullet\n \n-Math\n-====\n+# Math\n \n-* $\\frac{d}{dx}f(x)=\\lim\\_{h\\to\n-  0}\\frac{f(x+h)-f(x)}{h}$\n+- $\\frac{d}{dx}f(x)=\\lim_{h\\to\n+0}\\frac{f(x+h)-f(x)}{h}$\n",
-          "error": null,
-          "normalized_output_sha256": "609e14c414d8bd57242222d949fa7ce9be912c358740c628a7d5fbcd4b5ea6e4",
-          "output_sha256": "609e14c414d8bd57242222d949fa7ce9be912c358740c628a7d5fbcd4b5ea6e4",
-          "passed": false
-        },
-        {
-          "adapter": "htmd_py",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,24 +1,19 @@\n-July 15, 2006\n-=============\n+# July 15, 2006\n \n-My S5 Document\n---------------\n+## My S5 Document\n \n-My S5 Document\n-==============\n+# My S5 Document\n \n-### Sam Smith Jen Jones\n+### Sam Smith\n+Jen Jones\n \n #### July 15, 2006\n \n-First slide\n-===========\n+# First slide\n \n-* first bullet\n-* second bullet\n+*   first bullet\n+*   second bullet\n \n-Math\n-====\n+# Math\n \n-* $\\frac{d}{dx}f(x)=\\lim\\_{h\\to\n-  0}\\frac{f(x+h)-f(x)}{h}$\n+*   $\\\\frac{d}{dx}f(x)=\\\\lim\\_{h\\\\to 0}\\\\frac{f(x+h)-f(x)}{h}$\n",
-          "error": null,
-          "normalized_output_sha256": "591a632ad3cfa47a962e3eb653768d2e062af7f3eda45c4725b9f24ef9666389",
-          "output_sha256": "8660efbbe0e7eb74464a798e003013ce1f9b7e5203ea836eebdf6ad945ac68eb",
-          "passed": false
-        },
-        {
-          "adapter": "html2text_rs",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,24 +1,17 @@\n-July 15, 2006\n-=============\n+# July 15, 2006\n \n-My S5 Document\n---------------\n+## My S5 Document\n \n-My S5 Document\n-==============\n+# My S5 Document\n \n-### Sam Smith Jen Jones\n+### Sam Smith\n+### Jen Jones\n \n #### July 15, 2006\n \n-First slide\n-===========\n-\n+# First slide\n * first bullet\n * second bullet\n \n-Math\n-====\n-\n-* $\\frac{d}{dx}f(x)=\\lim\\_{h\\to\n-  0}\\frac{f(x+h)-f(x)}{h}$\n+# Math\n+* $\\frac{d}{dx}f(x)=\\lim_{h\\to 0}\\frac{f(x+h)-f(x)}{h}$\n",
-          "error": null,
-          "normalized_output_sha256": "cae746bb59098b875b96fa4e86477d29975b8b3a7a4ca0acc8eecd3ebfe222f9",
-          "output_sha256": "cae746bb59098b875b96fa4e86477d29975b8b3a7a4ca0acc8eecd3ebfe222f9",
-          "passed": false
-        },
-        {
-          "adapter": "marktide",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "fa2a130cda4eb3a0b13871ba50243c28ff25453eb479f011564ae22726109652",
-          "output_sha256": "adac0de6495dc20860a081d5086de25da909e3ece4198c4377b538c301437f1d",
-          "passed": true
-        },
-        {
-          "adapter": "marktide_streaming",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "fa2a130cda4eb3a0b13871ba50243c28ff25453eb479f011564ae22726109652",
-          "output_sha256": "adac0de6495dc20860a081d5086de25da909e3ece4198c4377b538c301437f1d",
-          "passed": true
-        }
-      ],
-      "source_path": "tests/conformance/fixtures/pandoc/test/s5-basic.html"
-    },
-    {
-      "id": "pandoc:test_s5-fancy_html",
-      "input_bytes": 736,
-      "layer": "pandoc",
-      "metadata": {},
-      "normalized_oracle_sha256": "7ae60b7d88f7406ed0facd8544523734a07e85eecebc2e06480796342fabde66",
-      "oracle_sha256": "b4187821703a6eb609608e8e898be1b87f38da0c8c65d499a0bd5e0a42441b65",
-      "results": [
-        {
-          "adapter": "html_to_markdown",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,24 +1,19 @@\n-July 15, 2006\n-=============\n+# July 15, 2006\n \n-My S5 Document\n---------------\n+## My S5 Document\n \n-My S5 Document\n-==============\n+# My S5 Document\n \n-### Sam Smith Jen Jones\n+### Sam Smith  Jen Jones\n \n #### July 15, 2006\n \n-First slide\n-===========\n+# First slide\n \n-* first bullet\n-* second bullet\n+- first bullet\n+- second bullet\n \n-Math\n-====\n+# Math\n \n-* \\(\\frac{d}{dx}f(x)=\\lim\\_{h\\to\n-  0}\\frac{f(x+h)-f(x)}{h}\\)\n+- \\(\\frac{d}{dx}f(x)=\\lim_{h\\to\n+0}\\frac{f(x+h)-f(x)}{h}\\)\n",
-          "error": null,
-          "normalized_output_sha256": "f56f5d32c0be854c2ddbe69b44feeae2956f2fe2b4600c83e54b8957a45cb9d0",
-          "output_sha256": "f56f5d32c0be854c2ddbe69b44feeae2956f2fe2b4600c83e54b8957a45cb9d0",
-          "passed": false
-        },
-        {
-          "adapter": "htmd_py",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,24 +1,19 @@\n-July 15, 2006\n-=============\n+# July 15, 2006\n \n-My S5 Document\n---------------\n+## My S5 Document\n \n-My S5 Document\n-==============\n+# My S5 Document\n \n-### Sam Smith Jen Jones\n+### Sam Smith\n+Jen Jones\n \n #### July 15, 2006\n \n-First slide\n-===========\n+# First slide\n \n-* first bullet\n-* second bullet\n+*   first bullet\n+*   second bullet\n \n-Math\n-====\n+# Math\n \n-* \\(\\frac{d}{dx}f(x)=\\lim\\_{h\\to\n-  0}\\frac{f(x+h)-f(x)}{h}\\)\n+*   \\\\(\\\\frac{d}{dx}f(x)=\\\\lim\\_{h\\\\to 0}\\\\frac{f(x+h)-f(x)}{h}\\\\)\n",
-          "error": null,
-          "normalized_output_sha256": "663f5c36d908bd0caded3721a34c4dd1cd6750cab4ec4885e65d915838000dda",
-          "output_sha256": "1357f70a46d268f474ea6c6b3c88b9ed90aa4d35b4e620ec9a114e8a111bea6b",
-          "passed": false
-        },
-        {
-          "adapter": "html2text_rs",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,24 +1,17 @@\n-July 15, 2006\n-=============\n+# July 15, 2006\n \n-My S5 Document\n---------------\n+## My S5 Document\n \n-My S5 Document\n-==============\n+# My S5 Document\n \n-### Sam Smith Jen Jones\n+### Sam Smith\n+### Jen Jones\n \n #### July 15, 2006\n \n-First slide\n-===========\n-\n+# First slide\n * first bullet\n * second bullet\n \n-Math\n-====\n-\n-* \\(\\frac{d}{dx}f(x)=\\lim\\_{h\\to\n-  0}\\frac{f(x+h)-f(x)}{h}\\)\n+# Math\n+* \\(\\frac{d}{dx}f(x)=\\lim_{h\\to 0}\\frac{f(x+h)-f(x)}{h}\\)\n",
-          "error": null,
-          "normalized_output_sha256": "f574bc7a9d4dadf2d84643a5f422cb3f09360383feda78a3ac5567db7d982c45",
-          "output_sha256": "f574bc7a9d4dadf2d84643a5f422cb3f09360383feda78a3ac5567db7d982c45",
-          "passed": false
-        },
-        {
-          "adapter": "marktide",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "7ae60b7d88f7406ed0facd8544523734a07e85eecebc2e06480796342fabde66",
-          "output_sha256": "b4187821703a6eb609608e8e898be1b87f38da0c8c65d499a0bd5e0a42441b65",
-          "passed": true
-        },
-        {
-          "adapter": "marktide_streaming",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "7ae60b7d88f7406ed0facd8544523734a07e85eecebc2e06480796342fabde66",
-          "output_sha256": "b4187821703a6eb609608e8e898be1b87f38da0c8c65d499a0bd5e0a42441b65",
-          "passed": true
-        }
-      ],
-      "source_path": "tests/conformance/fixtures/pandoc/test/s5-fancy.html"
-    },
-    {
-      "id": "pandoc:test_s5-fragment_html",
-      "input_bytes": 225,
-      "layer": "pandoc",
-      "metadata": {},
-      "normalized_oracle_sha256": "fc861a4020d219eeb87a233a776b442340b048e54b32810e2aaf43e2dbb5c366",
-      "oracle_sha256": "7e99dac5997349291616ed542b7635102f7283fb5523f3a54ce3001fbb83782b",
-      "results": [
-        {
-          "adapter": "html_to_markdown",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,11 +1,9 @@\n-First slide\n-===========\n+# First slide\n \n-* first bullet\n-* second bullet\n+- first bullet\n+- second bullet\n \n-Math\n-====\n+# Math\n \n-* $\\frac{d}{dx}f(x)=\\lim\\_{h\\to\n-  0}\\frac{f(x+h)-f(x)}{h}$\n+- $\\frac{d}{dx}f(x)=\\lim_{h\\to\n+0}\\frac{f(x+h)-f(x)}{h}$\n",
-          "error": null,
-          "normalized_output_sha256": "23b94b939c1c5b6bef25d12474d6506741a0a458ae785cae68de5b90cd00d022",
-          "output_sha256": "30a13f0bbb3eaf857b83048970c2fd28bda31855ed991634d02cc0c101332475",
-          "passed": false
-        },
-        {
-          "adapter": "htmd_py",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,11 +1,8 @@\n-First slide\n-===========\n+# First slide\n \n-* first bullet\n-* second bullet\n+*   first bullet\n+*   second bullet\n \n-Math\n-====\n+# Math\n \n-* $\\frac{d}{dx}f(x)=\\lim\\_{h\\to\n-  0}\\frac{f(x+h)-f(x)}{h}$\n+*   $\\\\frac{d}{dx}f(x)=\\\\lim\\_{h\\\\to 0}\\\\frac{f(x+h)-f(x)}{h}$\n",
-          "error": null,
-          "normalized_output_sha256": "50b527532d4163bc06cd682bcee919809949870561bc88123cdbb6d677ef41b0",
-          "output_sha256": "b218f3514eba5c381befe2ead07d4946cdbe3e374ecad4be312f4d8d4a4517af",
-          "passed": false
-        },
-        {
-          "adapter": "html2text_rs",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,11 +1,6 @@\n-First slide\n-===========\n-\n+# First slide\n * first bullet\n * second bullet\n \n-Math\n-====\n-\n-* $\\frac{d}{dx}f(x)=\\lim\\_{h\\to\n-  0}\\frac{f(x+h)-f(x)}{h}$\n+# Math\n+* $\\frac{d}{dx}f(x)=\\lim_{h\\to 0}\\frac{f(x+h)-f(x)}{h}$\n",
-          "error": null,
-          "normalized_output_sha256": "d4dd75bcd22485770fd9c71ec757b71852d4602873375b84f190f7fe93e94b1a",
-          "output_sha256": "d4dd75bcd22485770fd9c71ec757b71852d4602873375b84f190f7fe93e94b1a",
-          "passed": false
-        },
-        {
-          "adapter": "marktide",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "fc861a4020d219eeb87a233a776b442340b048e54b32810e2aaf43e2dbb5c366",
-          "output_sha256": "7e99dac5997349291616ed542b7635102f7283fb5523f3a54ce3001fbb83782b",
-          "passed": true
-        },
-        {
-          "adapter": "marktide_streaming",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "fc861a4020d219eeb87a233a776b442340b048e54b32810e2aaf43e2dbb5c366",
-          "output_sha256": "7e99dac5997349291616ed542b7635102f7283fb5523f3a54ce3001fbb83782b",
-          "passed": true
-        }
-      ],
-      "source_path": "tests/conformance/fixtures/pandoc/test/s5-fragment.html"
-    },
-    {
-      "id": "pandoc:test_s5-inserts_html",
-      "input_bytes": 440,
-      "layer": "pandoc",
-      "metadata": {},
-      "normalized_oracle_sha256": "5cc1d7a318e36761564d2362df261fa712743fafdd815eb776f0c125727b45ff",
-      "oracle_sha256": "38148b3334bdec73e9dfd33117b983daa6052a2dc15439826b121226eeeba6ff",
-      "results": [
-        {
-          "adapter": "html_to_markdown",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,27 +1,22 @@\n-STUFF INSERTED\n STUFF INSERTED\n \n-My S5 Document\n-==============\n+STUFF INSERTED\n \n-Sam Smith\n----------\n+# My S5 Document\n \n-Jen Jones\n----------\n+## Sam Smith\n+\n+## Jen Jones\n \n ### July 15, 2006\n \n-First slide\n-===========\n+# First slide\n \n-* first bullet\n-* second bullet\n+- first bullet\n+- second bullet\n \n-Math\n-====\n+# Math\n \n-* $\\frac{d}{dx}f(x)=\\lim\\_{h\\to\n-  0}\\frac{f(x+h)-f(x)}{h}$\n-\n+- $\\frac{d}{dx}f(x)=\\lim_{h\\to\n+0}\\frac{f(x+h)-f(x)}{h}$\n STUFF INSERTED\n",
-          "error": null,
-          "normalized_output_sha256": "1391062d75f9c5e644aa05438eed4f30524737598d1d077f9429cdaeca965154",
-          "output_sha256": "2d1c950a0dfd07c991d3acc3f2923c98209daed328b6518ead5e8dda36f69b70",
-          "passed": false
-        },
-        {
-          "adapter": "htmd_py",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,27 +1,20 @@\n-STUFF INSERTED\n-STUFF INSERTED\n+STUFF INSERTED STUFF INSERTED\n \n-My S5 Document\n-==============\n+# My S5 Document\n \n-Sam Smith\n----------\n+## Sam Smith\n \n-Jen Jones\n----------\n+## Jen Jones\n \n ### July 15, 2006\n \n-First slide\n-===========\n+# First slide\n \n-* first bullet\n-* second bullet\n+*   first bullet\n+*   second bullet\n \n-Math\n-====\n+# Math\n \n-* $\\frac{d}{dx}f(x)=\\lim\\_{h\\to\n-  0}\\frac{f(x+h)-f(x)}{h}$\n+*   $\\\\frac{d}{dx}f(x)=\\\\lim\\_{h\\\\to 0}\\\\frac{f(x+h)-f(x)}{h}$\n \n STUFF INSERTED\n",
-          "error": null,
-          "normalized_output_sha256": "a6461ca94324dd4816c8c70a9a55525df4ce3bd94c06a18991a23254e66b8943",
-          "output_sha256": "da0705e6f15ff9f5746066b7e7112953bc6d90b28467851f42dcb22a59f1af74",
-          "passed": false
-        },
-        {
-          "adapter": "html2text_rs",
-          "diff": "--- markdownify_oracle.md\n+++ candidate.md\n@@ -1,27 +1,18 @@\n-STUFF INSERTED\n-STUFF INSERTED\n+STUFF INSERTED STUFF INSERTED\n \n-My S5 Document\n-==============\n+# My S5 Document\n \n-Sam Smith\n----------\n+## Sam Smith\n \n-Jen Jones\n----------\n+## Jen Jones\n \n ### July 15, 2006\n \n-First slide\n-===========\n-\n+# First slide\n * first bullet\n * second bullet\n \n-Math\n-====\n-\n-* $\\frac{d}{dx}f(x)=\\lim\\_{h\\to\n-  0}\\frac{f(x+h)-f(x)}{h}$\n+# Math\n+* $\\frac{d}{dx}f(x)=\\lim_{h\\to 0}\\frac{f(x+h)-f(x)}{h}$\n \n STUFF INSERTED\n",
-          "error": null,
-          "normalized_output_sha256": "4620510bbdec52e0b0000cd65e90169cffb9d90d9a0aa030e89aaf56ca2ea1d1",
-          "output_sha256": "4620510bbdec52e0b0000cd65e90169cffb9d90d9a0aa030e89aaf56ca2ea1d1",
-          "passed": false
-        },
-        {
-          "adapter": "marktide",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "5cc1d7a318e36761564d2362df261fa712743fafdd815eb776f0c125727b45ff",
-          "output_sha256": "38148b3334bdec73e9dfd33117b983daa6052a2dc15439826b121226eeeba6ff",
-          "passed": true
-        },
-        {
-          "adapter": "marktide_streaming",
-          "diff": null,
-          "error": null,
-          "normalized_output_sha256": "5cc1d7a318e36761564d2362df261fa712743fafdd815eb776f0c125727b45ff",
-          "output_sha256": "38148b3334bdec73e9dfd33117b983daa6052a2dc15439826b121226eeeba6ff",
-          "passed": true
-        }
-      ],
-      "source_path": "tests/conformance/fixtures/pandoc/test/s5-inserts.html"
-    },
-    {
       "id": "commonmark:0001",
       "input_bytes": 37,
       "layer": "commonmark_expected_html",
@@ -59819,28 +59411,28 @@
     "by_adapter": {
       "htmd_py": {
         "error": 0,
-        "failed": 338,
-        "passed": 769
-      },
-      "marktide": {
-        "error": 0,
-        "failed": 13,
-        "passed": 1094
-      },
-      "marktide_streaming": {
-        "error": 0,
-        "failed": 13,
-        "passed": 1094
+        "failed": 331,
+        "passed": 768
       },
       "html2text_rs": {
         "error": 0,
-        "failed": 523,
+        "failed": 515,
         "passed": 584
       },
       "html_to_markdown": {
         "error": 0,
-        "failed": 381,
-        "passed": 726
+        "failed": 374,
+        "passed": 725
+      },
+      "marktide": {
+        "error": 0,
+        "failed": 12,
+        "passed": 1087
+      },
+      "marktide_streaming": {
+        "error": 0,
+        "failed": 12,
+        "passed": 1087
       }
     },
     "by_layer": {
@@ -59849,16 +59441,6 @@
           "error": 0,
           "failed": 110,
           "passed": 544
-        },
-        "marktide": {
-          "error": 0,
-          "failed": 7,
-          "passed": 647
-        },
-        "marktide_streaming": {
-          "error": 0,
-          "failed": 7,
-          "passed": 647
         },
         "html2text_rs": {
           "error": 0,
@@ -59869,6 +59451,16 @@
           "error": 0,
           "failed": 182,
           "passed": 472
+        },
+        "marktide": {
+          "error": 0,
+          "failed": 7,
+          "passed": 647
+        },
+        "marktide_streaming": {
+          "error": 0,
+          "failed": 7,
+          "passed": 647
         }
       },
       "golden": {
@@ -59876,16 +59468,6 @@
           "error": 0,
           "failed": 33,
           "passed": 31
-        },
-        "marktide": {
-          "error": 0,
-          "failed": 0,
-          "passed": 64
-        },
-        "marktide_streaming": {
-          "error": 0,
-          "failed": 0,
-          "passed": 64
         },
         "html2text_rs": {
           "error": 0,
@@ -59896,6 +59478,16 @@
           "error": 0,
           "failed": 28,
           "passed": 36
+        },
+        "marktide": {
+          "error": 0,
+          "failed": 0,
+          "passed": 64
+        },
+        "marktide_streaming": {
+          "error": 0,
+          "failed": 0,
+          "passed": 64
         }
       },
       "markdownify_tests": {
@@ -59903,16 +59495,6 @@
           "error": 0,
           "failed": 128,
           "passed": 106
-        },
-        "marktide": {
-          "error": 0,
-          "failed": 2,
-          "passed": 232
-        },
-        "marktide_streaming": {
-          "error": 0,
-          "failed": 2,
-          "passed": 232
         },
         "html2text_rs": {
           "error": 0,
@@ -59923,33 +59505,16 @@
           "error": 0,
           "failed": 107,
           "passed": 127
-        }
-      },
-      "pandoc": {
-        "htmd_py": {
-          "error": 0,
-          "failed": 7,
-          "passed": 1
         },
         "marktide": {
           "error": 0,
-          "failed": 1,
-          "passed": 7
+          "failed": 2,
+          "passed": 232
         },
         "marktide_streaming": {
           "error": 0,
-          "failed": 1,
-          "passed": 7
-        },
-        "html2text_rs": {
-          "error": 0,
-          "failed": 8,
-          "passed": 0
-        },
-        "html_to_markdown": {
-          "error": 0,
-          "failed": 7,
-          "passed": 1
+          "failed": 2,
+          "passed": 232
         }
       },
       "turndown": {
@@ -59957,16 +59522,6 @@
           "error": 0,
           "failed": 50,
           "passed": 75
-        },
-        "marktide": {
-          "error": 0,
-          "failed": 3,
-          "passed": 122
-        },
-        "marktide_streaming": {
-          "error": 0,
-          "failed": 3,
-          "passed": 122
         },
         "html2text_rs": {
           "error": 0,
@@ -59977,6 +59532,16 @@
           "error": 0,
           "failed": 46,
           "passed": 79
+        },
+        "marktide": {
+          "error": 0,
+          "failed": 3,
+          "passed": 122
+        },
+        "marktide_streaming": {
+          "error": 0,
+          "failed": 3,
+          "passed": 122
         }
       },
       "turndown_options": {
@@ -59984,16 +59549,6 @@
           "error": 0,
           "failed": 10,
           "passed": 12
-        },
-        "marktide": {
-          "error": 0,
-          "failed": 0,
-          "passed": 22
-        },
-        "marktide_streaming": {
-          "error": 0,
-          "failed": 0,
-          "passed": 22
         },
         "html2text_rs": {
           "error": 0,
@@ -60004,10 +59559,20 @@
           "error": 0,
           "failed": 11,
           "passed": 11
+        },
+        "marktide": {
+          "error": 0,
+          "failed": 0,
+          "passed": 22
+        },
+        "marktide_streaming": {
+          "error": 0,
+          "failed": 0,
+          "passed": 22
         }
       }
     },
-    "case_count": 1107,
+    "case_count": 1099,
     "primary_markdownify_layers": [
       "golden",
       "markdownify_tests"
@@ -60018,16 +59583,6 @@
         "failed": 161,
         "passed": 137
       },
-      "marktide": {
-        "error": 0,
-        "failed": 2,
-        "passed": 296
-      },
-      "marktide_streaming": {
-        "error": 0,
-        "failed": 2,
-        "passed": 296
-      },
       "html2text_rs": {
         "error": 0,
         "failed": 182,
@@ -60037,6 +59592,16 @@
         "error": 0,
         "failed": 135,
         "passed": 163
+      },
+      "marktide": {
+        "error": 0,
+        "failed": 2,
+        "passed": 296
+      },
+      "marktide_streaming": {
+        "error": 0,
+        "failed": 2,
+        "passed": 296
       }
     }
   }

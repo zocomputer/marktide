@@ -151,7 +151,6 @@ def summarize(destination_root: Path) -> dict[str, object]:
     markdownify_files = sorted((destination_root / "markdownify" / "tests").glob("test_*.py"))
     turndown_index = destination_root / "turndown" / "test" / "index.html"
     commonmark_spec = destination_root / "commonmark-spec" / "spec.txt"
-    pandoc_root = destination_root / "pandoc" / "test"
 
     return {
         "fixture_root": str(destination_root.relative_to(REPO_ROOT)),
@@ -166,11 +165,6 @@ def summarize(destination_root: Path) -> dict[str, object]:
                 "attendant_case_count": len(
                     re.findall(r'class=["\\\']case["\\\']', turndown_index.read_text(encoding="utf-8"))
                 ),
-            },
-            "pandoc": {
-                "html_files": len(list(pandoc_root.rglob("*.html"))),
-                "reader_haskell_specs": 1,
-                "writer_haskell_specs": 1,
             },
             "commonmark-spec": {
                 "spec_examples": len(
