@@ -91,11 +91,19 @@ class CaseResult:
 
 
 def normalize_markdown(text: str) -> str:
-    """Apply policy-level normalization from tests/conformance/sources.toml."""
+    """Apply policy-level normalization from tests/conformance/sources.toml.
 
-    text = text.replace("\r\n", "\n").replace("\r", "\n")
-    lines = [line.rstrip(" \t") for line in text.split("\n")]
-    text = "\n".join(lines).strip()
+    Deliberately absorbs only *document-edge* whitespace (leading/trailing) and
+    blank-line counts — the formatting choices where marktide and markdownify
+    legitimately differ without changing rendered meaning. It does NOT rstrip
+    interior lines: a trailing space dropped mid-document (e.g.
+    "<span>Weather </span>Forecast" collapsing to "WeatherForecast", which lands
+    as "...Weather \nForecast" or "...Weather Forecast") is a real divergence and
+    must surface, not be silently equalized away. See the fix in
+    ``MarkdownEmitter.end`` and the ``inline_element_trailing_space_before_text``
+    golden case — that bug class hid behind a per-line ``rstrip`` here."""
+
+    text = text.replace("\r\n", "\n").replace("\r", "\n").strip()
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text + "\n" if text else ""
 

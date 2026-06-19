@@ -49,7 +49,19 @@ class StaticAdapter:
 
 
 def test_normalize_markdown_policy_level_transforms():
-    assert normalize_markdown("a  \r\n\r\n\r\nb\t \n") == "a\n\nb\n"
+    # CRLF folded, document edges stripped, runs of 3+ blank lines collapsed to one,
+    # exactly one trailing newline. Interior trailing whitespace ("a  ") is preserved
+    # so a mid-document dropped space surfaces as a real divergence rather than being
+    # equalized away by the comparator.
+    assert normalize_markdown("a  \r\n\r\n\r\nb\t \n") == "a  \n\nb\n"
+
+
+def test_normalize_markdown_preserves_interior_trailing_whitespace():
+    # Regression guard: the per-line rstrip that used to live here masked the
+    # passthrough-inline trailing-space bug. A trailing space before an interior
+    # newline must NOT be normalized away.
+    assert normalize_markdown("foo \nbar") == "foo \nbar\n"
+    assert normalize_markdown("foo\nbar") == "foo\nbar\n"
 
 
 def test_load_turndown_cases_from_attendant_html(tmp_path: Path):
