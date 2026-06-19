@@ -16,6 +16,14 @@
       "expected_markdown": "alpha  beta \ngamma"
     },
     {
+      "id": "inline_element_trailing_space_before_text",
+      "behavior": "whitespace collapse / boundary trim",
+      "markdownify_ref": "process_tag/process_text",
+      "description": "An inline element (span) whose text ends in a space, immediately followed by a non-whitespace text sibling. The deferred trailing whitespace must survive the inline element close so the words stay separated (e.g. real-world '<a>Hourly <span>Weather </span>Forecast</a>' must not collapse to 'WeatherForecast').",
+      "input_html": "<div>Hourly <span>Weather </span>Forecast</div>",
+      "expected_markdown": "Hourly Weather Forecast"
+    },
+    {
       "id": "link_with_title_and_parenthesized_href",
       "behavior": "links / titles / parenthesized href",
       "markdownify_ref": "convert_a",

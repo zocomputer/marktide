@@ -98,3 +98,20 @@ def test_implements_target_protocol() -> None:
     em = MarkdownEmitter()
     for method in ("start", "end", "data", "comment", "close"):
         assert callable(getattr(em, method))
+
+
+def test_inline_element_trailing_space_preserved_before_text_sibling() -> None:
+    # An inline element whose text ends in a space, immediately followed by a
+    # non-whitespace text sibling: the deferred trailing whitespace must survive
+    # the inline close so the words stay separated. Regression for the real-world
+    # "<a>Hourly <span>Weather </span>Forecast</a>" collapsing to "WeatherForecast".
+    out = _emit([
+        ("start", "div", {}),
+        ("data", "Hourly "),
+        ("start", "span", {}),
+        ("data", "Weather "),
+        ("end", "span"),
+        ("data", "Forecast"),
+        ("end", "div"),
+    ])
+    assert out == "Hourly Weather Forecast"

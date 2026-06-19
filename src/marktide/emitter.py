@@ -273,7 +273,16 @@ class MarkdownEmitter:
         # text inside a block element).
         if frame.pending_ws:
             if frame.tag not in _BLOCK_INSIDE_TAGS:
-                frame.content.append(frame.pending_ws)
+                if frame.buffering:
+                    frame.content.append(frame.pending_ws)
+                else:
+                    # Streaming/passthrough element (e.g. a transparent <span>): its
+                    # children were emitted straight to the parent buffer and its own
+                    # handler.end() is a no-op that never emits frame.content. The
+                    # deferred trailing space must follow the children into the parent
+                    # buffer, not vanish into the unused frame.content — otherwise
+                    # "<span>Weather </span>Forecast" collapses to "WeatherForecast".
+                    self.emit(frame.pending_ws)
             frame.pending_ws = ""
         # Join children, collapsing newlines at boundaries — except inside pre, where
         # newlines are verbatim. pre_depth still counts this element here (the pre
