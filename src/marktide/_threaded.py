@@ -72,17 +72,26 @@ class ChunkPump:
             await _run_to_completion(asyncio.to_thread(close))
 
 
+# --- Cancellation-safe cleanup helper ---
 async def _run_to_completion(coro: Coroutine[Any, Any, str]) -> None:
     """Await ``coro`` (the final close) to completion even if the surrounding coroutine
     is being cancelled, so the C parser is always released. The serialization lock makes
     this close wait for any in-flight feed rather than racing it."""
     task = asyncio.ensure_future(coro)
-    while True:
+    cancelled: asyncio.CancelledError | None = None
+    while not task.done():
         try:
             await asyncio.shield(task)
-            return
-        except asyncio.CancelledError:
-            # We were cancelled while awaiting the shielded close. Let it finish (it is
-            # already running and serialized behind any in-flight feed), then re-raise.
-            await asyncio.gather(task, return_exceptions=True)
-            raise
+        except asyncio.CancelledError as error:
+            # Every wait must remain shielded, including after another cancellation.
+            cancelled = error
+        except Exception:
+            if cancelled is None:
+                raise
+    if cancelled is not None:
+        # Preserve cancellation precedence while retrieving any cleanup failure.
+        if not task.cancelled():
+            task.exception()
+        raise cancelled
+    task.result()
+# --- End cancellation-safe cleanup helper ---
